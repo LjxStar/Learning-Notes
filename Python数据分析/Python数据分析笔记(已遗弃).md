@@ -38,4 +38,58 @@ conda remove -n env_name --all
 ## 2.1 项目初始化完整模板
 ```
 
+import numpy as np
+import pandas as pd
+from matplotlib import pyplot as plt
+import seaborn as sns
+import os
+import random
+import warnings
+warnings.filterwarnings("ignore")
+
+# ====================== 6. Matplotlib 中文 & 负号显示修复======================
+plt.rcParams["font.family"] = ["SimHei", "WenQuanYi Micro Hei", "Heiti TC"]  # 兼容Windows/Linux/Mac
+plt.rcParams["axes.unicode_minus"] = False  # 解决负号 "-" 显示方块问题
+
+# ====================== 7. Seaborn / 绘图全局风格 ======================
+sns.set_style("whitegrid")   # 白色网格背景
+sns.set_context("notebook")
+
+# ====================== 8. 固定随机种子，保证实验可复现 ======================
+SEED = 42
+np.random.seed(SEED)
+random.seed(SEED)
+
+# ====================== 9. 项目根目录路径设置 (跨平台，Windows/Linux/Mac 通用) ======================
+# 方式1：当前 notebook 文件所在目录作为根路径
+ROOT = Path(os.getcwd())
+# 如果你想手动指定根文件夹：ROOT = Path(r"C:/your_project")
+
+# 常用子路径，直接调用 DATA_DIR, OUTPUT_DIR
+DATA_DIR = ROOT / "data"
+OUTPUT_DIR = ROOT / "output"
+FIG_DIR = OUTPUT_DIR / "figures"
+
+# 自动创建文件夹，不存在就新建，不会报错
+for folder in [DATA_DIR, OUTPUT_DIR, FIG_DIR]:
+    folder.mkdir(exist_ok=True, parents=True)
+
+# ====================== 10. Pandas 显示设置：打印完整表格 ======================
+pd.set_option("display.max_rows", None)      # 显示所有行
+pd.set_option("display.max_columns", None)   # 显示所有列
+pd.set_option("display.width", None)
+pd.set_option("display.max_colwidth", 200)
+
+# ====================== 11. Jupyter 内嵌图片显示 ======================
+%matplotlib inline
+
+# 如果需要交互式绘图(放大拖拽图片)，打开下面一行
+# %matplotlib notebook
+
+# ====================== 12. 打印环境信息校验 ======================
+print("✅ 所有包导入成功！")
+print(f"numpy版本: {np.__version__}")
+print(f"pandas版本: {pd.__version__}")
+print(f"项目根目录: {ROOT}")
+print(f"数据文件夹: {DATA_DIR}")
 ```
