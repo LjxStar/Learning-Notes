@@ -15,4 +15,7 @@ conda --version
 ```   
 # 查看环境（或者：conda info --envs）
 conda env list
+
+# 基础创建（指定环境名 + Python 版本）
+
 ```
