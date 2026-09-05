@@ -34,5 +34,5 @@ conda remove -n env_name --all
 ```
 另一种是在图形界面 Anaconda Navigator 中操作
 ![[Pasted image 20260905100756.png|691]]
-## 1.3 jupyter notebook 的使用
 打开 Anaconda Prompt ，先激活你想要用的虚拟环境，通过 cd 切换到项目位置，输入 jupyter notebook 
+## 1.3 其它
