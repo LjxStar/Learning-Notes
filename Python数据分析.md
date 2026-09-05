@@ -35,3 +35,5 @@ conda remove -n env_name --all
 另一种是在图形界面 Anaconda Navigator 中操作
 ![[Pasted image 20260905100756.png|691]]
 ## 1.3 jupyter notebook 的使用
+打开 **Anaconda Prompt (anaconda 3)**
+1. 先**激活你想要用的虚拟环境**
