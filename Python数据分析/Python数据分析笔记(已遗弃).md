@@ -34,5 +34,8 @@ conda remove -n env_name --all
 ![[Pasted image 20260905100756.png|691]]
 打开 Anaconda Prompt ，先激活你想要用的虚拟环境，通过 cd 切换到项目位置，输入 jupyter notebook 
 
-二、一些小模版
-2.12.
+# 二、一些小模版
+## 2.1 项目初始化完整模板
+```
+
+```
