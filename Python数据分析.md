@@ -17,5 +17,13 @@ conda --version
 conda env list
 
 # 基础创建（指定环境名 + Python 版本）
+conda create -n env_name python=3.11
 
+# 激活虚拟环境
+conda activate env_name
+
+# 退出虚拟环境
+conda deactivate
+
+#
 ```
