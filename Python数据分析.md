@@ -1,5 +1,4 @@
 # 一、前置基础和环境搭建
-## 1.1 anaconda 安装
 下载安装包后，双击安装包，可以按默认设置一步步按 Next 按钮就可以。
 在 "Advanced Installation Options" 中
 ![[Pasted image 20260905094717.png]]Add installation to my PATH environment variable 建议不要勾选。
@@ -10,7 +9,6 @@
 ```
 conda --version
 ```
-## 1.2 anaconda 虚拟环境
 在 Anaconda 中，我们可以使用 conda 命令来创建和管理不同的 Python 环境。每个环境可以有不同的 Python 版本和安装的包。
 创建虚拟环境方式有两种，一种是在 Anaconda Prompt 中操作
 ```   
@@ -35,4 +33,5 @@ conda remove -n env_name --all
 另一种是在图形界面 Anaconda Navigator 中操作
 ![[Pasted image 20260905100756.png|691]]
 打开 Anaconda Prompt ，先激活你想要用的虚拟环境，通过 cd 切换到项目位置，输入 jupyter notebook 
-## 1.3 其它
+
+二、numpy
