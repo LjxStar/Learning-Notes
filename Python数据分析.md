@@ -6,7 +6,7 @@
 如果勾选会直接把 Anaconda 加到系统环境变量，可能会与电脑其他 Python 版本冲突。
 
 安装完后可打开 **Windows开始菜单**，在程序列表找到文件夹：**anaconda 3**，点开，选择：
-**Anaconda Prompt (anaconda 3)**
+**Anaconda Prompt**，输入
 ```
 
 ```
