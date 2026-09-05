@@ -10,3 +10,4 @@
 ```
 conda --version
 ```
+## 1.2 anaconda 虚拟环境
