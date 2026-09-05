@@ -33,3 +33,4 @@ conda install numpy
 conda remove -n env_name --all
 ```
 另一种是在图形界面 Anaconda Navigator 中操作
+![[Pasted image 20260905100756.png|691]]
