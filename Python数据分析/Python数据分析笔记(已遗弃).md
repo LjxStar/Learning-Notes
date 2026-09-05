@@ -6,12 +6,12 @@
 
 安装完后可打开 **Windows开始菜单**，在程序列表找到文件夹：**anaconda 3**，点开，选择：
 **Anaconda Prompt**，执行命令测试安装配置是否成功
-```
+```bash
 conda --version
 ```
 在 Anaconda 中，我们可以使用 conda 命令来创建和管理不同的 Python 环境。每个环境可以有不同的 Python 版本和安装的包。
 创建虚拟环境方式有两种，一种是在 Anaconda Prompt 中操作
-```   
+```bash
 # 查看环境（或者：conda info --envs）
 conda env list
 
@@ -36,7 +36,7 @@ conda remove -n env_name --all
 
 # 二、一些小模版
 ## 2.1 项目初始化完整模板
-```
+```python
 # 导包
 import numpy as np
 import pandas as pd
@@ -51,6 +51,7 @@ warnings.filterwarnings("ignore")
 plt.rcParams["font.family"] = ["SimHei"]
 plt.rcParams["axes.unicode_minus"] = False
 
-# 绑定项目全局路径
-os.chdir("文件夹路径")
+# 绑定项目全局路径（可忽略）
+# os.chdir("文件夹路径")
 ```
+## 2.2
