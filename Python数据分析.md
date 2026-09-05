@@ -11,3 +11,8 @@
 conda --version
 ```
 ## 1.2 anaconda 虚拟环境
+在 Anaconda 中，我们可以使用 conda 命令来创建和管理不同的 Python 环境。每个环境可以有不同的 Python 版本和安装的包。
+```   
+# 查看环境（或者：conda info --envs）
+conda env list
+```
