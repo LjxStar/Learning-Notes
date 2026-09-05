@@ -37,7 +37,7 @@ conda remove -n env_name --all
 # 二、一些小模版
 ## 2.1 项目初始化完整模板
 ```
-
+# 导包
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -47,9 +47,9 @@ import random
 import warnings
 warnings.filterwarnings("ignore")
 
-# ====================== 6. Matplotlib 中文 & 负号显示修复======================
-plt.rcParams["font.family"] = ["SimHei", "WenQuanYi Micro Hei", "Heiti TC"]  # 兼容Windows/Linux/Mac
-plt.rcParams["axes.unicode_minus"] = False  # 解决负号 "-" 显示方块问题
+# Matplotlib 中文和负号显示修复
+plt.rcParams["font.family"] = ["SimHei"]
+plt.rcParams["axes.unicode_minus"] = False
 
 # ====================== 7. Seaborn / 绘图全局风格 ======================
 sns.set_style("whitegrid")   # 白色网格背景
