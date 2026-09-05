@@ -17,7 +17,7 @@ conda --version
 conda env list
 
 # 基础创建（指定环境名 + Python 版本）
-conda create -n env_name python=3.11
+conda create -n env_name python=3.12
 
 # 激活虚拟环境
 conda activate env_name
@@ -25,5 +25,6 @@ conda activate env_name
 # 退出虚拟环境
 conda deactivate
 
-#
+# 在环境里安装第三方包（conda找不到的包用pip）
+conda install numpy
 ```
