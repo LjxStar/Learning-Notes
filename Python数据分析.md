@@ -4,3 +4,5 @@
 在 "Advanced Installation Options" 中
 ![[Pasted image 20260905094717.png]]Add installation to my PATH environment variable 建议不要勾选。
 如果勾选会直接把 Anaconda 加到系统环境变量，可能会与电脑其他 Python 版本冲突。
+
+安装完后
