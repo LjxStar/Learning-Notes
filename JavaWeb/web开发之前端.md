@@ -203,7 +203,7 @@ ul li {
 	        }
 	        /*元素[属性="值"]*/
 	        input[type="password"] {
-	            background:#f5f5f5;
+	            background:#f5f5f5; /* 背景颜色 */
 	        }
 	        /*后代选择器 元素1 元素2*/
 	        #main p {
