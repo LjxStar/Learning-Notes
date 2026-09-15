@@ -455,7 +455,7 @@ align-items: baseline; /* 按文字基线对齐 */
 
 ## 1.7.3 label 标签
 
-作用：点击文字，自动选中对应输入框，扩大点击区域，提升用户体验。
+点击文字，自动选中对应输入框，扩大点击区域，提升用户体验。
 
 **两种标准写法**
 
@@ -478,7 +478,7 @@ align-items: baseline; /* 按文字基线对齐 */
 <select name="city">
   <option value="gz">广州</option>
   <option value="sz">深圳</option>
-  <option value="fs" selected>佛山</option>
+  <option value="sh" selected>上海</option>
 </select>
 ```
 `selected`：默认选中当前下拉选项
