@@ -302,7 +302,7 @@ box-sizing: border-box;
   </body>
 </html>
 ```
-![[Pasted image 20260915180003.png]] 
+![[前端-盒子模型.png]] 
 ## 1.4 Flex 布局
 Flex 布局（又称弹性布局）是网页主流布局方案，**可以轻松实现居中、等分、自适应排列**，完美替代传统浮动、margin 布局，解决传统布局高度塌陷、对齐困难等问题。给父元素设置 `display: flex`，即可开启弹性布局，子元素自动成为弹性项。
 
@@ -767,7 +767,7 @@ HTML 文档是浏览器解析。封装的对象分为
 - Text：文本对象
 - Comment：注释对象
 
-### 1.9.1 操作
+### 1.9.1 操作节点
 **（1）获取元素**
 ```html
 <div id="box">我是盒子</div>
@@ -855,7 +855,7 @@ div.setAttribute("data-id",10);
 div.removeAttribute("data-id");
 ```
 
-（4）操作元素样式
+**（4）操作元素样式**
 ```html
 <div class="box"></div>
 ```
@@ -876,4 +876,55 @@ let box = document.querySelector(".box");
 box.className = "active";
 ```
 
-1.9.2 时间监听
+### 1.9.2 事件监听
+事件就是用户的动作，例如点击，鼠标移入。
+事件三要素：事件源，事件类型，事件处理函数。
+	事件源：哪个元素触发事件。
+	事件类型：什么动作，比如 click 点击。
+	事件处理函数：触发之后执行的代码。
+
+JavaScript 一共有三种事件绑定方式。
+1. addEventListener 事件监听
+使用 addEventListener 绑定事件，可以给同一个元素的同一个事件绑定多个处理函数，不会覆盖。addEventListener('click', 函数)
+```html
+<body>
+  <input type="button" id="btn1" value="点我一下试试1">
+  <script>
+    let btn = document.querySelector('#btn1');
+    btn.addEventListener('click',function(){
+      alert("使用addEventListener绑定点击事件");
+    })
+    // 同一个click事件可以绑定多个函数，全部都会执行
+    btn.addEventListener('click',function(){
+      console.log("第二个点击事件");
+    })
+  </script>
+</body>
+```
+
+2. onclick属性
+html 标签事件属性绑定直接在 HTML 标签上写 onclick 属性，属性值调用函数。
+```html
+<input type="button" id="btn1" value="点我一下试试1" onclick="on()">
+<script>
+  function on(){
+    alert('试试就试试')
+  }
+</script>
+```
+
+3. DOM 元素对象事件属性绑定 
+先获取 DOM 元素，给元素的 onclick 属性赋值函数。
+```html
+<body>
+  <input type="button" id="btn1" value="点我一下试试1">
+  <script>
+    document.querySelector('#btn1').onclick = function(){
+      alert("按钮2被点击了...");
+    }
+  </script>
+</body>
+```
+
+
+
