@@ -226,4 +226,53 @@ ul li {
 </html>
 ```
 
-## 1.5
+## 1.5 CSS 盒子模型
+
+### 1.什么是盒子模型
+
+网页中所有元素都可以看作一个**矩形盒子**，由 4 部分组成：`内容区(content)`、`内边距(padding)`、`边框(border)`、`外边距(margin)`。
+
+> 盒子总宽度 / 高度 = content + padding + border + margin
+
+### 2.四大组成
+
+1. **content 内容区** 元素实际存放文字、图片的区域，由 `width / height` 控制大小。
+2. **padding 内边距** 内容和边框之间的距离，**背景会延伸到 padding 区域**。
+
+```css
+padding: 上 右 下 左;
+padding: 10px; /* 四个方向统一 */
+padding: 10px 20px; /* 上下、左右 */
+```
+
+3. **border 边框** 盒子的边线，包裹 padding。
+
+```css
+border: 宽度 样式 颜色;
+border: 1px solid #000;
+```
+
+4. **margin 外边距** 盒子与其他盒子之间的距离，**背景不会显示在 margin**。
+
+> **margin 塌陷（合并）**：垂直方向相邻块元素 margin 会取最大值，不是相加。
+
+### 3.两种盒子模式 box-sizing
+
+1. **content-box**
+
+`width/height` 只代表**content**大小盒子实际宽 = width + padding + border
+
+2. **border-box**
+
+`width/height` 包含 content + padding + border 盒子实际宽 = width（padding 和 border 向内压缩内容，不会撑大盒子）
+
+```css
+box-sizing: border-box;
+```
+
+内容在内，padding 垫里面，边框围一圈，margin 隔外面。 content-box 向外撑，border-box 向内挤。
+
+### 4 .布局标签
+
+- 行内元素（span/a）：**设置 width、height 无效**；padding 左右生效，上下视觉生效但不占空间；margin 左右有效。
+- 块级元素（div/p）：宽高、padding、margin 都正常生效。
