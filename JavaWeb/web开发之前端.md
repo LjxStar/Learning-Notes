@@ -6,7 +6,7 @@ Web 标准也称为网页标准，由一系列的标准组成，大部分由 W3C
 
 # 一、前端三件套
 ## 1.1基本骨架
-```HTML
+```html
 <html>
      <head>
           <title>我是标题</title>
@@ -29,3 +29,29 @@ Web 标准也称为网页标准，由一系列的标准组成，大部分由 W3C
      `_blank`: 在空白页面打开
 
 ## 1.3 css 引入
+1. 行内样式
+写在标签 `style` 属性上，**只作用当前标签**，优先级最高
+```html
+<div style="color:red; font-size:16px;">行内样式</div>
+```
+2. 内部样式
+写在 `<head>` 的 `<style>` 标签内，**当前页面生效**
+```html
+<head>
+  <style>
+    div {
+      color: blue;
+    }
+  </style>
+</head>
+```
+3. 外部样式
+单独 `.css` 文件，用 `<link>` 标签引入，**多页面共用**
+```html
+<head>
+  <!-- rel="stylesheet" 固定写法，href写css文件路径 -->
+  <link rel="stylesheet" href="style.css">
+</head>
+```
+
+## 1 .4 
