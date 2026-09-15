@@ -274,5 +274,5 @@ box-sizing: border-box;
 
 ### 4 .布局标签
 
-- 行内元素（span/a）：**设置 width、height 无效**；padding 左右生效，上下视觉生效但不占空间；margin 左右有效。
+- div 会独占一行，默认宽度为父元素 body 的宽度。可以设置宽高（width、height）
 - 块级元素（div/p）：宽高、padding、margin 都正常生效。
