@@ -604,7 +604,7 @@ alert('内部js')
 ```
 
 ## 1.8 JS核心语法
-### 1.8.1变量
+### 1.8.1 变量
 
 变量用来存储数据，使用关键字 var let const 声明变量。
 	var 旧版本变量，可以重复声明，存在变量提升，开发不推荐。 
@@ -628,23 +628,33 @@ const PI = 3.14;
 5. null 空值，表示一个空对象
 
 复杂数据类型 object 对象，用来存放一组相关的数据。
+```js
+// 对象示例，存放一个人的信息
+let person = {
+  name:"李四",
+  age:20,
+  gender:"男"
+  hello: function(){ console.log("你好啊！");
+  } // 此处为函数，后面会提及
+}
+// 获取对象里面的数据
+console.log(person.name)
+console.log(person.age)
+```
 
 ### 1.8.3 输出方式
 
 1. console.log () 在浏览器控制台打印内容，调试代码最常用
-
 ```js
 console.log("测试");
 ```
 
 2. alert () 弹出提示框
-
 ```js
 alert("弹出消息");
 ```
 
 3. document.write () 在页面输出内容
-
 ```js
 document.write("页面文字");
 ```
@@ -652,7 +662,6 @@ document.write("页面文字");
 ### 1.8.4 流程控制
 
 1. if 判断语句
-
 ```js
 if(条件){
   条件成立执行代码
@@ -662,7 +671,6 @@ if(条件){
 ```
 
 2. for 循环
-
 ```js
 for(let i=0;i<10;i++){
   //循环执行代码
@@ -674,7 +682,6 @@ for(let i=0;i<10;i++){
 函数是封装好的一段代码，可以重复调用，实现代码复用。
 
 函数声明语法
-
 ```js
 function 函数名(参数){
   // 函数体代码
