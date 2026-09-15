@@ -275,4 +275,4 @@ box-sizing: border-box;
 ### 4 .布局标签
 
 - div 会独占一行，默认宽度为父元素 body 的宽度。可以设置宽高（width、height）
-- 块级元素（div/p）：宽高、padding、margin 都正常生效。
+- span 一行会显示多个，用来组合行内元素，默认宽度为内容撑开的宽度。不可以设置宽高（width、height）
