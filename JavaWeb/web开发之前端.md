@@ -77,74 +77,151 @@ Web 标准也称为网页标准，由一系列的标准组成，大部分由 W3C
 	②lt → 左尖括号（小于号 Less Than）
 	③gt → 右尖括号（大于号 Greater Than）
 
-## 1.3 css 引入
-1. 行内样式
-写在标签 `style` 属性上，**只作用当前标签**，优先级最高
+CSS 引入方式 + 指定 CSS 选择器（Markdown 笔记）
+
+## 1.3 CSS 三种引入方式
+
+1. **行内样式**：写在标签 `style` 属性，优先级最高
+
 ```html
-<div style="color:red; font-size:16px;">行内样式</div>
+<div style="color:red;">行内样式</div>
 ```
-2. 内部样式
-写在 `<head>` 的 `<style>` 标签内，**当前页面生效**
+
+2. **内部样式**：`head` 内 `<style>` 标签，当前页面生效
+
 ```html
 <head>
   <style>
-    div {
-      color: blue;
-    }
+    /* css写在这里 */
   </style>
-</head>
-```
-3. 外部样式
-单独 `.css` 文件，用 `<link>` 标签引入，**多页面共用**
-```html
-<head>
-  <!-- rel="stylesheet" 固定写法，href写css文件路径 -->
-  <link rel="stylesheet" href="style.css">
 </head>
 ```
 
-设置颜色样式
-```HTML
+3. **外部样式**：独立 `.css` 文件，link 标签引入，多页面复用
+
+```html
+<link rel="stylesheet" href="style.css">
+```
+
+## 1.4 CSS 选择器
+
+1. **元素名称选择器**   格式：`元素名称 { 样式 }` 作用：选中页面所有该标签元素
+
+```css
+div {
+  width:100px;
+}
+```
+
+2. **class 类选择器** 格式：`.class属性值 { 样式 }` 作用：选中 class 等于该值的元素，`.` 开头
+
+```css
+.box {
+  color: blue;
+}
+```
+
+```html
+<div class="box"></div>
+```
+
+3. **id 选择器** 格式：`#id属性值 { 样式 }` 作用：选中 id 等于该值的元素，`#`开头，id 页面唯一
+
+```css
+#wrap {
+  background: #000;
+}
+```
+
+```html
+<div id="wrap"></div>
+```
+
+4. **并集选择器** 格式：`选择器1,选择器2 { 样式 }` 作用：多个选择器，统一设置样式，逗号分隔
+
+```css
+div,.box {
+  font-size:16px;
+}
+```
+
+5. **属性选择器（有该属性）** 格式：`元素名称[属性] { 样式 }` 作用：选中**拥有这个属性**的对应元素
+
+```css
+input[placeholder] {
+  border:1px solid #ccc;
+}
+```
+
+6. **属性选择器（属性等于指定值）** 格式：`元素名称[属性名="值"] { 样式 }` 作用：选中属性值严格等于指定内容的元素
+
+```css
+input[type="text"] {
+  height:30px;
+}
+```
+
+7. **后代选择器** 格式：`元素1 元素2 {样式}` 作用：选中元素1内部所有后代元素2
+
+```css
+ul li {
+  list-style:none;
+}
+```
+
+```html
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>【新思想引领新征程】推进长江十年禁渔 谱写长江大保护新篇章</title>
-  <!-- 2. 内部样式 -->
-  <style>
-    .publish-date {
-      color: #b2b2b2;
-    }
-  </style>
-  <!-- 3. 外部样式 -->
-  <!-- <link rel="stylesheet" href="css/news.css"> -->
+    <meta charset="UTF-8">
+    <title>css选择器示例</title>
+    <!--外部样式引入-->
+    <link rel="stylesheet" href="style.css">
+    <!--内部样式-->
+    <style>
+        /*元素选择器*/
+        p {
+            font-size:14px;
+        }
+        /*类选择器*/
+        .title {
+            color:green;
+        }
+        /*id选择器*/
+        #main {
+            border: 1px solid #333;
+        }
+        /*并集选择器*/
+        h1,.title {
+            font-weight:bold;
+        }
+        /*元素[属性]*/
+        a[href] {
+            text-decoration: none;
+        }
+        /*元素[属性="值"]*/
+        input[type="password"] {
+            background:#f5f5f5;
+        }
+        /*后代选择器 元素1 元素2*/
+        #main p {
+            line-height:1.5;
+        }
+    </style>
 </head>
 <body>
+    <!--行内样式-->
+    <div style="margin:10px;">行内样式测试</div>
 
-  <!-- 定义网页标题, 标题内容： 【新思想引领新征程】推进长江十年禁渔 谱写长江大保护新篇章 -->
-  <h1 id="title">【新思想引领新征程】推进长江十年禁渔 谱写长江大保护新篇章</h1>
-  
-  <!-- 定义一个超链接, 链接地址：https://news.cctv.com/, 链接内容：央视网 -->
-  <a href="https://news.cctv.com/" target="_blank">央视网</a>
-
-  <!-- 1. 行内样式 -->
-  <!-- <span style="color: #b2b2b2;">2024年05月15日 20:07</span> -->
-
-  <span class="publish-date">2024年05月15日 20:07</span>
-
+    <h1>标题</h1>
+    <p class="title">类选择器文本</p>
+    <div id="main">
+        <p>后代选择器生效段落</p>
+    </div>
+    <a href="https://baidu.com">链接</a>
+    <input type="password" placeholder="请输入密码">
 </body>
 </html>
 ```
 
-## 1.4 元素选择器
-
-| 选择器                 | 写法                         | 示例                                 |
-| ------------------- | -------------------------- | ---------------------------------- |
-| 元素选择器               | 元素名称 {...}                 | `h1{...}`                          |
-| 类选择器                | .class 属性值 {...}           | `.cls{...}`                        |
-| id 选择器              | `#id属性值 {...}`             | `#hid{...}`                        |
-| 分组选择器               | 选择器1, 选择器2{...}            | `h1, h2{...}`                      |
-| 属性选择器               | 元素名称[属性] {...}             | `input[type]{...}`                 |
-| 元素名称[属性名="值"] {...} | `input[type="text"] {...}` | 选择页面上 type 属性为 text 的 `<input>` 标签 |
-| 后代选择器               | 元素1 元素2{...}               | form input {...}                   |
+## 1.5
