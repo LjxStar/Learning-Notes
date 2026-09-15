@@ -176,7 +176,8 @@ ul li {
 	    <meta charset="UTF-8">
 	    <title>css选择器示例</title>
 	    <!--外部样式引入-->
-	    <link rel="stylesheet" href="style.css">
+	    <link rel="stylesheet" href="css/style.css"> 
+	    	<!-- ./当前目录（可省略） ../上级目录 -->
 	    <!--内部样式-->
 	    <style>
 	        /*元素选择器*/
@@ -194,7 +195,7 @@ ul li {
 	        }
 	        /*并集选择器*/
 	        h1,.title {
-	            font-weight:bold;
+	            font-weight:bold; /* 设置文字字体粗细 */
 	        }
 	        /*元素[属性]*/
 	        a[href] {
