@@ -186,7 +186,7 @@ ul li {
 	        }
 	        /*类选择器*/
 	        .title {
-	            color:green;
+	            color:green; /* 常见有四种颜色表示方式：关键字、rgb、ragb、十六进制 */
 	        }
 	        /*id选择器*/
 	        #main {
@@ -198,7 +198,7 @@ ul li {
 	        }
 	        /*元素[属性]*/
 	        a[href] {
-	            text-decoration: none;
+	            text-decoration: none; /* 设置超链接取消下划线效果 */
 	        }
 	        /*元素[属性="值"]*/
 	        input[type="password"] {
