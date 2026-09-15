@@ -370,25 +370,25 @@ align-items: baseline; /* 按文字基线对齐 */
     - get：参数拼在 url 上，长度有限，适合查询，不安全
     - post：请求体携带数据，适合提交隐私、大量数据
 
-## 1.7.2 表单常用控件（input）
+### 1.7.2 表单常用控件（input）
 
 `<input>` 单标签，**type 属性决定控件类型**
 
 **重要核心规则**：表单提交，控件必须写 **name 属性**，后端才能拿到数据；id 仅用于 label 关联、JS 获取元素。
-### 1. 文本输入框
+#### 1. 文本输入框
 
 ```html
 <input type="text" name="username" placeholder="请输入用户名">
 ```
 `placeholder`：输入框提示文字，不属于输入值
 
-### 2. 密码框
+#### 2. 密码框
 
 ```html
 <input type="password" name="pwd" placeholder="请输入密码">
 ```
 
-### 3. 单选框 radio
+#### 3. 单选框 radio
 
 name 属性控制分组互斥
 - **name 相同为同一组**：同组单选框**互斥，只能选中一个**
@@ -407,7 +407,7 @@ name 属性控制分组互斥
 <label for="secret">保密</label>
 ```
 
-### 4. 复选框 checkbox
+#### 4. 复选框 checkbox
 
 可多选，同一组选项 `name` 可以相同，后端会拿到数组形式的数据。
 ```html
@@ -417,20 +417,20 @@ name 属性控制分组互斥
 <label for="read">阅读</label>
 ```
 
-### 5. 数字框 number
+#### 5. 数字框 number
 
 ```html
 <input type="number" name="age">
 ```
 
-### 6. 邮箱 email、手机号 tel
+#### 6. 邮箱 email、手机号 tel
 
 ```html
 <input type="email" name="email">
 <input type="tel" name="phone">
 ```
 
-### 7. 按钮系列
+#### 7. 按钮系列
 
 **提交按钮** submit：点击自动提交 form 表单
 ```html
@@ -453,7 +453,7 @@ name 属性控制分组互斥
 <button type="button">普通按钮</button>
 ```
 
-## 1.7.3 label 标签
+### 1.7.3 label 标签
 
 点击文字，自动选中对应输入框，扩大点击区域，提升用户体验。
 
@@ -472,7 +472,7 @@ name 属性控制分组互斥
 </label>
 ```
 
-## 1.7.3 下拉选择框 select + option
+### 1.7.3 下拉选择框 select + option
 
 ```html
 <select name="city">
@@ -483,9 +483,12 @@ name 属性控制分组互斥
 ```
 `selected`：默认选中当前下拉选项
 
-## 1.7.4 文本域 textarea
+### 1.7.4 文本域 textarea
 
 ```html
 <textarea name="msg" rows="4" cols="30" placeholder="请输入留言"></textarea>
 ```
 rows：显示行数；cols：显示字符宽度；默认支持拖动右下角缩放大小
+
+
+# 1.8
