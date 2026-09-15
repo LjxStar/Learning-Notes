@@ -602,3 +602,5 @@ alert('内部js')
 <!-- 引入外部js文件 -->
 <script src="test.js"></script>
 ```
+
+1.8 
