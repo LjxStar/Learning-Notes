@@ -352,3 +352,140 @@ align-items: flex-end; /* 侧轴终点对齐 */
 align-items: center; /* 侧轴居中对齐（垂直居中） */
 align-items: baseline; /* 按文字基线对齐 */
 ```
+
+## 1.7 表单
+### 1.7.1 表单作用
+
+表单用于**收集用户信息**，提交数据给后端服务器。
+核心标签：`<form>` 作为表单容器。
+
+```html
+<form action="提交地址" method="提交方式">
+  <!-- 表单控件：输入框、单选、复选、下拉、按钮等 -->
+</form>
+```
+
+- `action`：提交到后端接口地址（后端接收数据的 url）
+- `method`：提交方式，常用 `get` / `post`
+    - get：参数拼在 url 上，长度有限，适合查询，不安全
+    - post：请求体携带数据，适合提交隐私、大量数据
+
+## 1.7.2 表单常用控件（input）
+
+`<input>` 单标签，**type 属性决定控件类型**
+
+**重要核心规则**：表单提交，控件必须写 **name 属性**，后端才能拿到数据；id 仅用于 label 关联、JS 获取元素。
+### 1. 文本输入框
+
+```html
+<input type="text" name="username" placeholder="请输入用户名">
+```
+`placeholder`：输入框提示文字，不属于输入值
+
+### 2. 密码框
+
+```html
+<input type="password" name="pwd" placeholder="请输入密码">
+```
+
+### 3. 单选框 radio
+
+**核心机制：name 属性控制分组互斥**
+- **name 相同 = 同一组**：同组单选框**互斥，只能选中一个**（适用于单选题：性别、是否、状态等）
+- **name 不同 = 不同组**：多组单选相互独立，可以同时选中多个（实现页面多个单选模块共存）
+- `value`：提交传给后端的真实数值
+- `checked`：默认选中当前选项
+```html
+<!-- 性别单选：同name，只能二选一/三选一 -->
+<input type="radio" name="gender" value="man" id="man" checked>
+<label for="man">男</label>
+
+<input type="radio" name="gender" value="woman" id="woman">
+<label for="woman">女</label>
+
+<input type="radio" name="gender" value="secret" id="secret">
+<label for="secret">保密</label>
+```
+
+### 4. 复选框 checkbox
+
+可多选，同组 name 可一致，后端接收数组数据
+```html
+<input type="checkbox" name="hobby" value="game" id="game">
+<label for="game">游戏</label>
+<input type="checkbox" name="hobby" value="read" id="read" checked>
+<label for="read">阅读</label>
+```
+
+### 5. 数字框 number
+
+```html
+<input type="number" name="age">
+```
+
+### 6. 邮箱 email、手机号 tel
+
+```html
+<input type="email" name="email">
+<input type="tel" name="phone">
+```
+
+### 7. 按钮系列
+
+**提交按钮** submit：点击自动提交 form 表单
+```html
+<input type="submit" value="登录">
+```
+
+**重置按钮** reset：一键清空表单所有输入内容
+```html
+<input type="reset" value="重置">
+```
+
+**普通按钮** button：不会自动提交，配合 JS 使用
+```html
+<input type="button" value="点击" onclick="fn()">
+```
+
+补充：`<button>` 标签默认 type="submit"
+```html
+<button type="submit">提交</button>
+<button type="button">普通按钮</button>
+```
+
+## 1.7.3 label 标签
+
+作用：点击文字，自动选中对应输入框，扩大点击区域，提升用户体验。
+
+**两种标准写法**
+
+方式 1：for + id 绑定
+```html
+<input type="radio" name="gender" value="male" id="male">
+<label for="male">男生</label>
+```
+
+方式 2：嵌套写法
+```html
+<label>
+  <input type="checkbox" name="read"> 已阅读协议
+</label>
+```
+
+## 1.7.3 下拉选择框 select + option
+
+```html
+<select name="city">
+  <option value="gz">广州</option>
+  <option value="sz">深圳</option>
+  <option value="fs" selected>佛山</option>
+</select>
+```
+`selected`：默认选中当前下拉选项
+
+## 1.7.4 文本域 textarea（多行输入）
+
+```html
+<textarea name="msg" rows="4" cols="30" placeholder="请输入留言"></textarea>
+```
+rows：显示行数；cols：显示字符宽度；默认支持拖动右下角缩放大小
