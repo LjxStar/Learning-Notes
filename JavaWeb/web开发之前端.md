@@ -21,13 +21,61 @@ Web 标准也称为网页标准，由一系列的标准组成，大部分由 W3C
 - `<title>`中定义标题显示在浏览器的标题位置
 
 ##  1.2 html 标签
- 1. `<h1></h1>` `<h2></h2>` `<h3></h3>` 用来定义标题
- 2. `<a href="" target=""></a>` 超链接
-	 href: 指定资源访问的url
-	 target: 指定在何处打开资源链接
-     `_self`: 默认值，在当前页面打开
-     `_blank`: 在空白页面打开
+1. 标题标签 `<h1></h1> <h2></h2> <h3></h3>` 用来定义标题
+2. 段落标签 `<p></p>` 定义文本段落，自带上下间距
+3. 换行标签 `<br>` 强制文字换行，单标签
+4. 加粗标签 `<b></b>` / `<strong></strong>` 文字加粗
+5. 倾斜标签 `<i></i>` / `<em></em>` 文字倾斜
+6. 下划线标签 `<u></u>` / `<ins></ins>`  文字添加下划线
+7. 删除线标签 `<s></s>` / `<del></del>` 文字添加删除线
+8. 图片标签 `<img src="" alt="" width="" height="" title="">` 
+	插入图片 src：图片路径；alt：图片加载失败提示；width/height：宽高；title：鼠标悬浮提示
+9. 视频标签 `<video src="" controls autoplay muted loop width=""></video>` 
+	播放视频 src：视频地址；controls：播放控件；autoplay：自动播放；muted：静音；loop：循环播放
+10. 超链接标签 `<a href="" target="" title=""></a>` 
+	超链接 href: 指定资源访问的 url target: 打开方式 _self 当前页，_blank 新页面 title：鼠标悬浮提示
+11. 盒子标签 div `<div></div>` 块级容器，用来布局
+12. 行内容器 span `<span></span>` 行内容器，局部修饰文字
+13. 列表标签 `<ul><li></li></ul>` 无序列表；
+	type：列表符号 `<ol><li></li></ol>` 有序列表；type：序号类型，start：起始序号
+14. 输入框标签 `<input type="" name="" value="" placeholder="">`
+	type：输入框类型 (text/password/radio/checkbox)；name：名称；value：默认值；placeholder：提示文字
+15. 注释 `<!-- 注释内容 -->` 浏览器不显示
 
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    HTML标签示例
+</head>
+<body>
+    <h1>一级标题</h1>
+    <p>这是段落。<br>换行后文字</p>
+    <p><strong>加粗</strong> <em>倾斜</em> <u>下划线</u> <del>删除线</del></p>
+    <a href="https://www.baidu.com" target="_blank">新窗口打开链接</a>
+    <img src="test.jpg" alt="测试图片" width="200" title="鼠标悬浮文字">
+    <video src="test.mp4" controls width="300"></video>
+
+    <div>块容器div <span>行内span</span></div>
+    <ul>
+        <li>无序列表1</li>
+        <li>无序列表2</li>
+    </ul>
+    <ol>
+        <li>有序列表1</li>
+        <li>有序列表2</li>
+    </ol>
+    <input type="text" placeholder="请输入内容">
+    <!-- 这是注释 -->
+</body>
+</html>
+```
+
+在 HTML 页面中，我们在代码中录入空格、<、> 这些符号的时候，是没有对应的效果的，因为浏览器并不能准确的识别，此时，我们就需要通过字符实体来表示空格，<, > 。常见符号的字符实体如下：
+	①nbsp → 非换行空格（Non-Breaking Space）
+	②lt → 左尖括号（小于号 Less Than）
+	③gt → 右尖括号（大于号 Greater Than）
 ## 1.3 css 引入
 1. 行内样式
 写在标签 `style` 属性上，**只作用当前标签**，优先级最高
