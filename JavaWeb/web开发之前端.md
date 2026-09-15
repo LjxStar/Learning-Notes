@@ -207,7 +207,7 @@ ul li {
 	        }
 	        /*后代选择器 元素1 元素2*/
 	        #main p {
-	            line-height:1.5;
+	            margin: 0 auto; /* 横向居中 4个值表示上右下左 2个值表示上下、左右 */
 	        }
 	    </style>
 	</head>
