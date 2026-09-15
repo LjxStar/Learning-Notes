@@ -4,7 +4,7 @@ Web 标准也称为网页标准，由一系列的标准组成，大部分由 W3C
 - **行为层（JavaScript）**：负责网页的交互行为，实现动态效果、响应用户操作。
 
 # 一、前端三件套
-## 1.1 基本骨架
+## 1.1 html 基本骨架与标签
 ```html
 <html>
      <head>
@@ -19,8 +19,7 @@ Web 标准也称为网页标准，由一系列的标准组成，大部分由 W3C
 - `<body>` : 定义网页的主体，存放给用户看的信息，也是网页的主体内容，如：文字、图片、视频、音频、表格等。
 - `<title>`中定义标题显示在浏览器的标题位置
 
-##  1.2 html 标签
-
+**常见的 html 标签**
 1. 标题标签 `<h1></h1> <h2></h2> <h3></h3>` 用来定义标题
 2. 段落标签 `<p></p>` 定义文本段落，自带上下间距
 3. 换行标签 `<br>` 强制文字换行，单标签
@@ -77,7 +76,8 @@ Web 标准也称为网页标准，由一系列的标准组成，大部分由 W3C
 	②lt → 左尖括号（小于号 Less Than）
 	③gt → 右尖括号（大于号 Greater Than）
 
-## 1.3 CSS 三种引入方式
+## 1.2 CSS 的引入与选择器
+### 1.2.1 三种引入方式
 
 1. **行内样式**：写在标签 `style` 属性，优先级最高
 
@@ -101,7 +101,7 @@ Web 标准也称为网页标准，由一系列的标准组成，大部分由 W3C
 <link rel="stylesheet" href="style.css">
 ```
 
-## 1.4 CSS 选择器
+### 1.2.2 CSS 选择器
 
 1. **元素名称选择器**   格式：`元素名称 { 样式 }` 作用：选中页面所有该标签元素
 
@@ -224,15 +224,15 @@ ul li {
 </html>
 ```
 
-## 1.5 CSS 盒子模型
+## 1.3 CSS 盒子模型
 
-### 1.什么是盒子模型
+### 1.3.1 什么是盒子模型
 
 网页中所有元素都可以看作一个**矩形盒子**，由 4 部分组成：`内容区(content)`、`内边距(padding)`、`边框(border)`、`外边距(margin)`。
 
 > 盒子总宽度 / 高度 = content + padding + border + margin
 
-### 2.四大组成
+### 1.3.2 盒子模型的四大组成
 
 1. **content 内容区** 元素实际存放文字、图片的区域，由 `width / height` 控制大小。
 2. **padding 内边距** 内容和边框之间的距离，**背景会延伸到 padding 区域**。
@@ -254,7 +254,7 @@ border: 1px solid #000;
 
 > **margin 塌陷（合并）**：垂直方向相邻块元素 margin 会取最大值，不是相加。
 
-### 3.两种盒子模式 box-sizing
+### 1.3.3 两种盒子模式 box-sizing
 
 1. **content-box**
 
@@ -270,7 +270,7 @@ box-sizing: border-box;
 
 内容在内，padding 垫里面，边框围一圈，margin 隔外面。 content-box 向外撑，border-box 向内挤。
 
-### 4 .布局标签 div/span
+### 1.3.4 布局标签 div/span
 
 - div 会独占一行，默认宽度为父元素 body 的宽度。可以设置宽高（width、height）
 - span 一行会显示多个，用来组合行内元素，默认宽度为内容撑开的宽度。不可以设置宽高（width、height）
@@ -303,11 +303,11 @@ box-sizing: border-box;
 </html>
 ```
 ![[Pasted image 20260915180003.png]] 
-## 1.6 Flex 布局
+## 1.4 Flex 布局
 Flex 布局（又称弹性布局）是网页主流布局方案，**可以轻松实现居中、等分、自适应排列**，完美替代传统浮动、margin 布局，解决传统布局高度塌陷、对齐困难等问题。给父元素设置 `display: flex`，即可开启弹性布局，子元素自动成为弹性项。
 
 所有属性作用于开启 `display: flex` 的父盒子，控制子元素整体排列规则。
-### 1.布局方向 flex-direction
+### 1.4.1 布局方向 flex-direction
 
 设置主轴方向，决定子元素排列方向
 
@@ -318,7 +318,7 @@ flex-direction: row-reverse; /* 水平从右到左 */
 flex-direction: column-reverse; /* 垂直从下到上 */
 ```
 
-### 2.换行规则 flex-wrap
+### 1.4.2 换行规则 flex-wrap
 
 控制子元素溢出容器时是否换行，默认不换行挤压元素
 
@@ -328,7 +328,7 @@ flex-wrap: wrap; /* 自动换行，超出容器宽度自动换行 */
 flex-wrap: wrap-reverse; /* 反向换行 */
 ```
 
-### 3.主轴对齐 justify-content
+### 1.4.3 主轴对齐 justify-content
 
 控制子元素在**主轴方向**的对齐方式（最常用居中属性）
 
@@ -341,7 +341,7 @@ justify-content: space-around; /* 子元素两侧间距均分，左右有间距 
 justify-content: space-evenly; /* 所有间距完全均等 */
 ```
 
-### 4.侧轴对齐 align-items
+### 1.4.4 *侧轴对齐 align-items
 
 控制单行子元素在**侧轴方向**的对齐方式
 
@@ -353,8 +353,8 @@ align-items: center; /* 侧轴居中对齐（垂直居中） */
 align-items: baseline; /* 按文字基线对齐 */
 ```
 
-## 1.7 表单
-### 1.7.1 表单作用
+## 1.5 表单 form
+### 1.5.1 表单作用
 
 表单用于**收集用户信息**，提交数据给后端服务器。
 核心标签：`<form>` 作为表单容器。
@@ -370,25 +370,25 @@ align-items: baseline; /* 按文字基线对齐 */
     - get：参数拼在 url 上，长度有限，适合查询，不安全
     - post：请求体携带数据，适合提交隐私、大量数据
 
-### 1.7.2 表单常用控件（input）
+### 1.5.2 表单常用控件 input
 
 `<input>` 单标签，**type 属性决定控件类型**
 
 **重要核心规则**：表单提交，控件必须写 **name 属性**，后端才能拿到数据；id 仅用于 label 关联、JS 获取元素。
-#### 1. 文本输入框
+1. 文本输入框
 
 ```html
 <input type="text" name="username" placeholder="请输入用户名">
 ```
 `placeholder`：输入框提示文字，不属于输入值
 
-#### 2. 密码框
+2. 密码框
 
 ```html
 <input type="password" name="pwd" placeholder="请输入密码">
 ```
 
-#### 3. 单选框 radio
+3. 单选框 radio
 
 name 属性控制分组互斥
 - **name 相同为同一组**：同组单选框**互斥，只能选中一个**
@@ -407,7 +407,7 @@ name 属性控制分组互斥
 <label for="secret">保密</label>
 ```
 
-#### 4. 复选框 checkbox
+4. 复选框 checkbox
 
 可多选，同一组选项 `name` 可以相同，后端会拿到数组形式的数据。
 ```html
@@ -417,20 +417,20 @@ name 属性控制分组互斥
 <label for="read">阅读</label>
 ```
 
-#### 5. 数字框 number
+5. 数字框 number
 
 ```html
 <input type="number" name="age">
 ```
 
-#### 6. 邮箱 email、手机号 tel
+6. 邮箱 email、手机号 tel
 
 ```html
 <input type="email" name="email">
 <input type="tel" name="phone">
 ```
 
-#### 7. 按钮系列
+7. 按钮系列
 
 **提交按钮** submit：点击自动提交 form 表单
 ```html
@@ -453,7 +453,7 @@ name 属性控制分组互斥
 <button type="button">普通按钮</button>
 ```
 
-### 1.7.3 label 标签
+### 1.5.3 label 标签
 
 点击文字，自动选中对应输入框，扩大点击区域，提升用户体验。
 
@@ -472,7 +472,7 @@ name 属性控制分组互斥
 </label>
 ```
 
-### 1.7.3 下拉选择框 select + option
+### 1.5.3 下拉选择框 select + option
 
 ```html
 <select name="city">
@@ -483,7 +483,7 @@ name 属性控制分组互斥
 ```
 `selected`：默认选中当前下拉选项
 
-### 1.7.4 文本域 textarea
+### 1.5.4 文本域 textarea
 
 ```html
 <textarea name="msg" rows="4" cols="30" placeholder="请输入留言"></textarea>
@@ -491,4 +491,84 @@ name 属性控制分组互斥
 rows：显示行数；cols：显示字符宽度；默认支持拖动右下角缩放大小
 
 
-# 1.8
+## 1.6 表格 table
+### 1.6.1 基础标签
+
+table 是表格最外层容器。 tr 代表表格中的一行。 td 是普通单元格，用来存放数据内容。 th 是表头单元格，文字默认加粗并且居中。
+
+```html
+<table>
+  <tr>
+    <th>姓名</th>
+    <th>年龄</th>
+    <th>性别</th>
+  </tr>
+  <tr>
+    <td>小明</td>
+    <td>18</td>
+    <td>男</td>
+  </tr>
+  <tr>
+    <td>小红</td>
+    <td>19</td>
+    <td>女</td>
+  </tr>
+</table>
+```
+
+### 1.6.2 表格分区标签
+
+可以把表格分成表头主体底部三个区域，提升代码可读性，浏览器会优先加载表格主体 tbody。 thead 存放表头内容。 tbody 存放表格主要数据。 tfoot 存放表格底部汇总信息。
+
+```html
+<table border="1">
+  <thead>
+    <tr>
+      <th>科目</th>
+      <th>分数</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>java</td>
+      <td>90</td>
+    </tr>
+    <tr>
+      <td>Python</td>
+      <td>88</td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr>
+      <td>总分</td>
+      <td>178</td>
+    </tr>
+  </tfoot>
+</table>
+```
+
+### 1.6.3 合并单元格
+
+colspan 用于横向跨列合并单元格。 rowspan 用于纵向跨行合并单元格。合并单元格之后，需要手动删除被合并的 td 标签，只保留写合并属性的单元格。
+
+```html
+<table border="1">
+  <tr>
+    <td colspan="2">跨2列</td>
+  </tr>
+  <tr>
+    <td rowspan="2">跨2行</td>
+    <td>内容1</td>
+  </tr>
+  <tr>
+    <td>内容2</td>
+  </tr>
+</table>
+```
+
+## 1.7 JavaScript 的引入
+**JavaScript**（简称：**JS**） 是一门跨平台、面向对象的脚本语言，是用来控制网页行为的，实现人机交互效果。其包括如下：
+- ECMAScript: 规定了 JS 基础语法核心知识，包括变量、数据类型、流程控制、函数、对象等。
+- BOM：浏览器对象模型，用于操作浏览器本身，如：页面弹窗、地址栏操作、关闭窗口等。
+- DOM：文档对象模型，用于操作 HTML 文档，如：改变标签内的内容、字体样式等。
+
