@@ -391,8 +391,8 @@ align-items: baseline; /* 按文字基线对齐 */
 ### 3. 单选框 radio
 
 name 属性控制分组互斥
-- **name 相同 = 同一组**：同组单选框**互斥，只能选中一个**
-- **name 不同 = 不同组**：多组单选相互独立，可以同时选中多个
+- **name 相同为同一组**：同组单选框**互斥，只能选中一个**
+- **name 不同为不同组**：多组单选**相互独立**，可以同时选中多个
 - `value`：提交传给后端的真实数值
 - `checked`：默认选中当前选项
 ```html
@@ -409,7 +409,7 @@ name 属性控制分组互斥
 
 ### 4. 复选框 checkbox
 
-可多选，同组 name 可一致，后端接收数组数据
+可多选，同一组选项 `name` 可以相同，后端会拿到数组形式的数据。
 ```html
 <input type="checkbox" name="hobby" value="game" id="game">
 <label for="game">游戏</label>
