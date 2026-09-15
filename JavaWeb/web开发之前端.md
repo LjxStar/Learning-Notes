@@ -172,55 +172,56 @@ ul li {
 ```html
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <title>css选择器示例</title>
-    <!--外部样式引入-->
-    <link rel="stylesheet" href="style.css">
-    <!--内部样式-->
-    <style>
-        /*元素选择器*/
-        p {
-            font-size:14px;
-        }
-        /*类选择器*/
-        .title {
-            color:green;
-        }
-        /*id选择器*/
-        #main {
-            border: 1px solid #333;
-        }
-        /*并集选择器*/
-        h1,.title {
-            font-weight:bold;
-        }
-        /*元素[属性]*/
-        a[href] {
-            text-decoration: none;
-        }
-        /*元素[属性="值"]*/
-        input[type="password"] {
-            background:#f5f5f5;
-        }
-        /*后代选择器 元素1 元素2*/
-        #main p {
-            line-height:1.5;
-        }
-    </style>
-</head>
-<body>
-    <!--行内样式-->
-    <div style="margin:10px;">行内样式测试</div>
-
-    <h1>标题</h1>
-    <p class="title">类选择器文本</p>
-    <div id="main">
-        <p>后代选择器生效段落</p>
-    </div>
-    <a href="https://baidu.com">链接</a>
-    <input type="password" placeholder="请输入密码">
-</body>
+	<head>
+	    <meta charset="UTF-8">
+	    <title>css选择器示例</title>
+	    <!--外部样式引入-->
+	    <link rel="stylesheet" href="style.css">
+	    <!--内部样式-->
+	    <style>
+	        /*元素选择器*/
+	        p {
+	            text-indent: 2em; /* 首行缩进2em */
+				line-height: 2; /* 行高2倍 */
+	        }
+	        /*类选择器*/
+	        .title {
+	            color:green;
+	        }
+	        /*id选择器*/
+	        #main {
+	            border: 1px solid #333;
+	        }
+	        /*并集选择器*/
+	        h1,.title {
+	            font-weight:bold;
+	        }
+	        /*元素[属性]*/
+	        a[href] {
+	            text-decoration: none;
+	        }
+	        /*元素[属性="值"]*/
+	        input[type="password"] {
+	            background:#f5f5f5;
+	        }
+	        /*后代选择器 元素1 元素2*/
+	        #main p {
+	            line-height:1.5;
+	        }
+	    </style>
+	</head>
+	<body>
+	    <!--行内样式-->
+	    <div style="margin:10px;">行内样式测试</div>
+	
+	    <h1>标题</h1>
+	    <p class="title">类选择器文本</p>
+	    <div id="main">
+	        <p>后代选择器生效段落</p>
+	    </div>
+	    <a href="https://baidu.com">链接</a>
+	    <input type="password" placeholder="请输入密码">
+	</body>
 </html>
 ```
 
