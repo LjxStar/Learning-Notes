@@ -483,7 +483,7 @@ name 属性控制分组互斥
 ```
 `selected`：默认选中当前下拉选项
 
-## 1.7.4 文本域 textarea（多行输入）
+## 1.7.4 文本域 textarea
 
 ```html
 <textarea name="msg" rows="4" cols="30" placeholder="请输入留言"></textarea>
