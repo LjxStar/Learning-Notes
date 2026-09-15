@@ -757,4 +757,123 @@ let 对象名 = {
 对象名.方法名()
 ```
 
-## 1.9 JS 时间监听
+## 1.9 JS DOM与时间监听
+浏览器加载 HTML 页面后，会把页面所有标签转换成对象，DOM 就是用来操作这些页面元素。通过 DOM 可以修改页面内容，修改标签属性，修改样式，还可以绑定事件。
+
+HTML 文档是浏览器解析。封装的对象分为
+- Document：整个文档对象
+- Element：元素对象
+- Attribute：属性对象
+- Text：文本对象
+- Comment：注释对象
+
+### 1.9.1 操作
+**（1）获取元素**
+```html
+<div id="box">我是盒子</div>
+<ul>
+  <li>列表1</li>
+  <li>列表2</li>
+</ul>
+<div class="item">项目</div>
+<div class="box">第一个盒子</div>
+```
+
+1. 根据 id 获取元素
+```js
+// 获取页面上 id="box" 的div
+let box = document.getElementById("box");
+```
+
+2. 根据标签名获取元素
+```js
+// 获取页面上所有li标签，得到集合
+let lis = document.getElementsByTagName("li");
+```
+
+3. 根据类名获取元素
+```js
+// 获取页面上class为item的元素集合
+let items = document.getElementsByClassName("item");
+```
+
+4. querySelector 选择器获取
+```js
+// 获取页面上class为box的第一个元素
+let one = document.querySelector(".box");
+```
+
+5. querySelectorAll
+```js
+// 获取页面上全部li元素，返回集合
+let all = document.querySelectorAll("li");
+```
+
+**（2）操作元素内容**
+innerText 获取或者设置元素里面的纯文本，不识别 html 标签。 innerHTML 获取或者设置内容，可以识别 html 标签。
+```js
+// 获取页面中的div
+let div = document.querySelector("div");
+// 获取文本
+console.log(div.innerText);
+// 修改文本
+div.innerText = "新文字";
+
+// 修改内容，可解析标签
+div.innerHTML = "<b>加粗文字</b>";
+```
+
+**（3）操作元素属性**
+1. 普通属性
+```html
+<input type="text" value="初始内容">
+```
+
+```js
+// 获取页面上的input标签
+let input = document.querySelector("input");
+// 获取value属性
+console.log(input.value);
+// 修改value属性
+input.value = "新内容";
+```
+
+2. 自定义属性
+```html
+<div data-id="5"></div>
+```
+
+getAttribute 获取自定义属性。 setAttribute 设置自定义属性。 removeAttribute 删除属性。
+```js
+// 获取页面中的div
+let div = document.querySelector("div");
+// 获取自定义属性data-id
+let val = div.getAttribute("data-id");
+// 设置自定义属性data-id
+div.setAttribute("data-id",10);
+// 删除data-id属性
+div.removeAttribute("data-id");
+```
+
+（4）操作元素样式
+```html
+<div class="box"></div>
+```
+
+1. 通过 style 修改行内样式
+```js
+// 获取class为box的div
+let box = document.querySelector(".box");
+box.style.width = "200px";
+box.style.backgroundColor = "red";
+```
+css 里面的短横线样式，js 改为驼峰命名，background-color 写成 backgroundColor。
+
+2. 操作类名 className，修改多个样式
+```js
+// 获取class为box的div
+let box = document.querySelector(".box");
+box.className = "active";
+```
+
+1.9.2 时间监听
