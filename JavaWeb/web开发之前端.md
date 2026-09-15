@@ -276,3 +276,35 @@ box-sizing: border-box;
 
 - div 会独占一行，默认宽度为父元素 body 的宽度。可以设置宽高（width、height）
 - span 一行会显示多个，用来组合行内元素，默认宽度为内容撑开的宽度。不可以设置宽高（width、height）
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>盒子模型</title>
+    <style>
+        div {
+            width: 200px;  /* 宽度 */
+            height: 200px;  /* 高度 */
+            box-sizing: border-box; /* 指定width height为盒子的高宽 */
+            background-color: aquamarine; /* 背景色 */
+            
+            padding: 20px 20px 20px 20px; /* 内边距, 上 右 下 左 , 边距都一行, 可以简写: padding: 20px;*/ 
+            border: 10px solid red; /* 边框, 宽度 线条类型 颜色 */
+            margin: 30px 30px 30px 30px; /* 外边距, 上 右 下 左 , 边距都一行, 可以简写: margin: 30px; */
+        }
+    </style>
+</head>
+
+<body>
+        
+    <div>
+        A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A
+    </div>
+    
+</body>
+</html>
+```
