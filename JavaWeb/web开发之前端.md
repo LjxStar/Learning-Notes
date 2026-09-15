@@ -95,7 +95,7 @@ Web 标准也称为网页标准，由一系列的标准组成，大部分由 W3C
 </head>
 ```
 
-3. **外部样式**：独立 `.css` 文件，link 标签引入，多页面复用
+3. **外部样式**：新建`.css` 文件，link 标签引入，多页面复用
 
 ```html
 <link rel="stylesheet" href="style.css">
@@ -594,7 +594,7 @@ alert('内部js')
 
 3. 外部引入
 
-新建单独的 js 文件，后缀名为.js，在 html 中通过 script 的 src 属性引入文件。 script 标签写了 src 属性后，标签内部不能再写 js 代码，写了也不会执行。
+新建单独的 js 文件，在 html 中通过 script 的 src 属性引入文件。 script 标签写了 src 属性后，标签内部不能再写 js 代码，写了也不会执行。
 	在外部 JS 文件中，只包含 JS 代码，不包含 `<script>` 标签
     引入外部 js 的 `<script>` 标签，必须是双标签
 
