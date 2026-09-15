@@ -3,7 +3,6 @@ Web 标准也称为网页标准，由一系列的标准组成，大部分由 W3C
 - **表现层（CSS）**：负责网页的样式展示，控制外观（颜色、字体、布局、间距等）。
 - **行为层（JavaScript）**：负责网页的交互行为，实现动态效果、响应用户操作。
 
-
 # 一、前端三件套
 ## 1.1 基本骨架
 ```html
@@ -21,6 +20,7 @@ Web 标准也称为网页标准，由一系列的标准组成，大部分由 W3C
 - `<title>`中定义标题显示在浏览器的标题位置
 
 ##  1.2 html 标签
+
 1. 标题标签 `<h1></h1> <h2></h2> <h3></h3>` 用来定义标题
 2. 段落标签 `<p></p>` 定义文本段落，自带上下间距
 3. 换行标签 `<br>` 强制文字换行，单标签
@@ -76,8 +76,6 @@ Web 标准也称为网页标准，由一系列的标准组成，大部分由 W3C
 	①nbsp → 非换行空格（Non-Breaking Space）
 	②lt → 左尖括号（小于号 Less Than）
 	③gt → 右尖括号（大于号 Greater Than）
-
-CSS 引入方式 + 指定 CSS 选择器（Markdown 笔记）
 
 ## 1.3 CSS 三种引入方式
 
@@ -272,7 +270,7 @@ box-sizing: border-box;
 
 内容在内，padding 垫里面，边框围一圈，margin 隔外面。 content-box 向外撑，border-box 向内挤。
 
-### 4 .布局标签
+### 4 .布局标签 div/span
 
 - div 会独占一行，默认宽度为父元素 body 的宽度。可以设置宽高（width、height）
 - span 一行会显示多个，用来组合行内元素，默认宽度为内容撑开的宽度。不可以设置宽高（width、height）
@@ -307,3 +305,50 @@ box-sizing: border-box;
 ![[Pasted image 20260915180003.png]] 
 ## 1.6 Flex 布局
 Flex 布局（又称弹性布局）是网页主流布局方案，**可以轻松实现居中、等分、自适应排列**，完美替代传统浮动、margin 布局，解决传统布局高度塌陷、对齐困难等问题。给父元素设置 `display: flex`，即可开启弹性布局，子元素自动成为弹性项。
+
+所有属性作用于开启 `display: flex` 的父盒子，控制子元素整体排列规则。
+### 1.布局方向 flex-direction
+
+设置主轴方向，决定子元素排列方向
+
+```css
+flex-direction: row; /* 默认值，水平从左到右 */
+flex-direction: column; /* 垂直从上到下 */
+flex-direction: row-reverse; /* 水平从右到左 */
+flex-direction: column-reverse; /* 垂直从下到上 */
+```
+
+### 2.换行规则 flex-wrap
+
+控制子元素溢出容器时是否换行，默认不换行挤压元素
+
+```css
+flex-wrap: nowrap; /* 默认，不换行，子元素自动压缩 */
+flex-wrap: wrap; /* 自动换行，超出容器宽度自动换行 */
+flex-wrap: wrap-reverse; /* 反向换行 */
+```
+
+### 3.主轴对齐 justify-content
+
+控制子元素在**主轴方向**的对齐方式（最常用居中属性）
+
+```css
+justify-content: flex-start; /* 默认，主轴起点对齐 */
+justify-content: flex-end; /* 主轴终点对齐 */
+justify-content: center; /* 主轴居中对齐（水平居中） */
+justify-content: space-between; /* 两端对齐，子元素间距均分，左右无间距 */
+justify-content: space-around; /* 子元素两侧间距均分，左右有间距 */
+justify-content: space-evenly; /* 所有间距完全均等 */
+```
+
+### 4.侧轴对齐 align-items
+
+控制单行子元素在**侧轴方向**的对齐方式
+
+```css
+align-items: stretch; /* 默认，子元素拉伸铺满容器高度 */
+align-items: flex-start; /* 侧轴起点对齐 */
+align-items: flex-end; /* 侧轴终点对齐 */
+align-items: center; /* 侧轴居中对齐（垂直居中） */
+align-items: baseline; /* 按文字基线对齐 */
+```
