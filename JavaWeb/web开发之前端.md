@@ -603,7 +603,7 @@ alert('内部js')
 <script src="test.js"></script>
 ```
 
-## 1.8 JS核心语法
+## 1.8 JS 核心语法
 ### 1.8.1 变量
 
 变量用来存储数据，使用关键字 var let const 声明变量。
@@ -678,36 +678,83 @@ for(let i=0;i<10;i++){
 ```
 
 ### 1.8.5 函数
+函数作用：封装一段代码，实现代码复用，需要调用才会执行。
 
-函数是封装好的一段代码，可以重复调用，实现代码复用。
-
-函数声明语法
+1. 普通函数
 ```js
-function 函数名(参数){
-  // 函数体代码
+function 函数名(参数列表){
+  //函数体代码
   return 返回值
 }
 ```
 
-调用方式：函数名 ()，不调用函数不会执行里面代码。
-
-参数：调用函数时传入的数据，多个参数用逗号隔开。 return 作用：将结果返回给调用位置，同时终止函数。没有写 return，函数默认返回 undefined。
-
-无参函数示例
-
+参数：调用函数时传入的数据，多个参数用逗号隔开。 
+return：把结果返回给调用位置，同时结束函数。没有 return，函数默认返回 undefined。
 ```js
 function sayHi(){
   console.log("你好");
 }
-sayHi()
-```
+//调用函数
+sayHi();
 
-带参数函数示例
-
-```js
 function sum(a,b){
-  return a + b
+  return a + b;
 }
-let result = sum(10,20)
-console.log(result)
+//调用函数
+let result = sum(10,20);
+console.log(result);
 ```
+
+2. 匿名函数
+没有函数名的函数，一般赋值给变量使用。且有两种定义方式
+**通过关键字：**
+```js
+let 变量名 = function(参数列表){
+  //函数体代码
+  return 返回值
+}
+```
+**通过箭头：**
+```JavaScript
+var add = (a,b) => {
+    return a + b;
+}
+```
+
+定义函数后，可通过变量名来调用函数
+```js
+let sayHello = function(){
+  console.log("匿名函数执行");
+}
+//调用匿名函数
+sayHello();
+
+let calc = function(a,b){
+  return a - b;
+}
+let res = calc(50,20);
+console.log(res);
+```
+
+3. 对象方法
+在 JavaScript 中对象语法格式如下：
+```JavaScript
+let 对象名 = {
+    属性名1: 属性值1,
+    属性名2: 属性值2,
+    属性名3: 属性值3,
+    方法名称: function(形参列表){}
+};
+```
+
+我们可以通过如下语法调用属性：
+```JavaScript
+对象名.属性名
+```
+
+通过如下语法调用函数：
+```JavaScript
+对象名.方法名()
+```
+
+## 1.9 JS 时间监听
