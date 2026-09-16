@@ -1386,8 +1386,9 @@ vue 的生命周期包含 8 个阶段：每触发一个生命周期事件，会�
 | destroyed     | 销毁后  |
 
 ![[Vue-生命周期.png]]
-对于 JavaWeb，只需要关注 mounted，其他的了解即可
-**mounted**：挂载完成，Vue 初始化成功，HTML 页面渲染成功。**用于页面初始化自动的 ajax 请求后台数据**
+对于 JavaWeb，只重点掌握 `mounted`，其余生命周期了解即可。
+**mounted**：挂载完成，Vue 实例初始化完毕，HTML 页面渲染成功。
+>  **页面初始化时自动发送 ajax 请求，从后台加载数据**
 
 ```js
     methods: {
