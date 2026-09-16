@@ -1240,4 +1240,4 @@ createApp({
 <MyComponent :prop="someThing" />
 ```
 
-#### 2.2.3 v-if
+#### 2.2.3 v-if & v-show
