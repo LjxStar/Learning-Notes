@@ -123,64 +123,72 @@ Web 标准也称为网页标准，由一系列的标准组成，大部分由 W3C
 1. **元素名称选择器**   格式：`元素名称 { 样式 }` 作用：选中页面所有该标签元素
 
 ```css
-div {
-  width:100px;
-}
+     /*元素选择器*/
+ p {
+	text-indent: 2em; /* 首行缩进2em */
+	line-height: 2; /* 行高2倍 */
+ }
 ```
 
 2. **class 类选择器** 格式：`.class属性值 { 样式 }` 作用：选中 class 等于该值的元素，`.` 开头
 
 ```css
-.box {
-  color: blue;
+/*类选择器*/
+.title {
+    color:green; /* 常见有四种颜色表示方式：关键字、rgb、ragb、十六进制 */
 }
 ```
 
 ```html
-<div class="box"></div>
+<p class="title">类选择器文本</p>
 ```
 
 3. **id 选择器** 格式：`#id属性值 { 样式 }` 作用：选中 id 等于该值的元素，`#`开头，id 页面唯一
 
 ```css
-#wrap {
-  background: #000;
+/*id选择器*/
+#main {
+    border: 1px solid #333;
 }
 ```
 
 ```html
-<div id="wrap"></div>
+<div id="main"></div>
 ```
 
 4. **并集选择器** 格式：`选择器1,选择器2 { 样式 }` 作用：多个选择器，统一设置样式，逗号分隔
 
 ```css
-div,.box {
-  font-size:16px;
+/*并集选择器*/
+h1,.title {
+    font-weight:bold; /* 设置文字字体粗细 */
 }
 ```
 
 5. **属性选择器（有该属性）** 格式：`元素名称[属性] { 样式 }` 作用：选中**拥有这个属性**的对应元素
 
 ```css
-input[placeholder] {
-  border:1px solid #ccc;
+/*元素[属性]*/
+a[href] {
+    text-decoration: none; /* 设置超链接取消下划线效果 */
 }
 ```
 
 6. **属性选择器（属性等于指定值）** 格式：`元素名称[属性名="值"] { 样式 }` 作用：选中属性值严格等于指定内容的元素
 
 ```css
-input[type="text"] {
-  height:30px;
+/*元素[属性="值"]*/
+input[type="password"] {
+    background:#f5f5f5; /* 背景颜色 */
 }
 ```
 
 7. **后代选择器** 格式：`元素1 元素2 {样式}` 作用：选中元素1内部所有后代元素2
 
 ```css
-ul li {
-  list-style:none;
+/*后代选择器 元素1 元素2*/
+#main p {
+    margin: 0 auto; /* 横向居中 4个值表示上右下左 2个值表示上下、左右 */
 }
 ```
 
@@ -253,7 +261,6 @@ ul li {
 
 1. **content 内容区** 元素实际存放文字、图片的区域，由 `width / height` 控制大小。
 2. **padding 内边距** 内容与边框之间的距离，背景色会延伸到此区域。
-
 ```css
 padding: 上 右 下 左;
 padding: 10px; /* 四个方向统一 */
@@ -261,16 +268,14 @@ padding: 10px 20px; /* 上下、左右 */
 ```
 
 3. **border 边框** 盒子的边线，包裹 padding。
-
 ```css
 border: 宽度 样式 颜色;
 border: 1px solid #000;
 ```
 
 4. **margin 外边距** 盒子与其他盒子之间的距离，**背景不会显示在 margin**。
-
-> **margin 塌陷（合并）**：垂直方向相邻块元素 margin 会取最大值，不是相加。
-
+	**margin 塌陷（合并）**：垂直方向相邻的块级元素，外边距会合并（取最大值，而非相加）。
+	
 ### 1.3.3 两种盒子模式 box-sizing
 
 1. **content-box**
