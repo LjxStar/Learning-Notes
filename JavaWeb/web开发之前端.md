@@ -1369,3 +1369,7 @@ export default {
 }
 </script>
 ```
+
+## 三、Ajax
+
+**Ajax:** 全称 Asynchronous JavaScript And XML，异步的 JavaScript 和 XML
