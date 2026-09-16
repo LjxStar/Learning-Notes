@@ -1249,6 +1249,47 @@ createApp({
 
 > 运行时条件很少改变，使用 `v-if`，需要频繁切换显示隐藏，使用 `v-show`
 
+```html
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>v-if 示例</title>
+  <style>
+    [v-cloak] { display: none; }
+  </style>
+</head>
+<body>
+  <div id="app" v-cloak>
+    <h3>基础 v-if</h3>
+    <div v-if="flag">条件成立</div>
+
+    <h3>v-if / v-else 分支</h3>
+    <div v-if="isLogin">欢迎回来！</div>
+    <div v-else>请登录</div>
+
+    <h3>v-if / v-else-if / v-else 多分支</h3>
+    <div v-if="score >= 90">优秀</div>
+    <div v-else-if="score >= 60">及格</div>
+    <div v-else>不及格</div>
+  </div>
+
+  <script type="module">
+    import { createApp } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
+    createApp({
+      data() {
+        return {
+          flag: true,
+          isLogin: false,
+          score: 85
+        }
+      }
+    }).mount("#app")
+  </script>
+</body>
+</html>
+```
 
 #### 2.2.4 v-model
 
