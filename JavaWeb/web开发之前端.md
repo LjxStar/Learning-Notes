@@ -1294,7 +1294,14 @@ createApp({
 #### 2.2.4 v-model
 
 在表单输入元素或组件上创建双向绑定，可以方便的 **获取** 或 **设置** 表单项数据。
+	本质语法糖：v-model = :value + @input
 
+```
+<!-- 原生输入框 -->
+<input v-model="msg" />
+<!-- 等价写法 -->
+<input :value="msg" @input="msg = $event.target.value" />
+```
 #### 2.2.5 v-on
 
 **绑定事件监听**，给元素绑定 DOM 事件，触发后执行 JS 代码，可使用 @ 简写。
