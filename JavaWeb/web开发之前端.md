@@ -1111,4 +1111,15 @@ createApp({
 }).mount("#app");
 ```
 - `createApp(选项对象)`，接收组件配置对象
-- `data` 是组件配置项里的一个函数，Vue 在组件初始化时调用这个函数，拿到返回普通对象，然后把这个对象变成响应式对象，挂载到实例上供模板使用。
+- `data` 只是配置对象里的属性名；Vue 会读取 options 对象上名叫 `data` 的属性，拿到里面存的函数，然后 Vue 自己调用这个函数。
+```js
+createApp({
+	data: function () {
+	  return {
+	   message: "Hello,Vue!" 
+	   };
+	},
+}).mount("#app");
+// 这是 ES5 完整写法，`data() {}` 只是 ES6 对象方法简写语法糖，两者完全等价。
+```
+`.mount(选择器/DOM元素)`：挂载，把 Vue 应用关联到页面 DOM
