@@ -54,4 +54,3 @@ plt.rcParams["axes.unicode_minus"] = False
 # 绑定项目全局路径（可忽略）
 # os.chdir("文件夹路径")
 ```
-## 2.2

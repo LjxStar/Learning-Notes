@@ -650,6 +650,28 @@ alert('内部js')
 <script src="test.js"></script>
 ```
 
+4. **ES6 Module 模块化**
+`type="module"`，默认延迟执行，支持 `import`
+
+```js
+// 此处以Vue3 引入为例
+<div id="app">{{ message }}</div>
+
+// 引入模块化的js时，需要设置 `type="module"
+<script type="module">
+  import { createApp, ref } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+
+  createApp({
+    setup() {
+      const message = ref('Hello Vue!')
+      return {
+        message
+      }
+    }
+  }).mount('#app')
+</script>
+```
+
 ### 1.8 JS 核心语法
 
 #### 1.8.1 变量
@@ -1025,4 +1047,9 @@ JavaScript 一共有三种事件绑定方式。
 </body>
 ```
 
-## 二、
+## 二、Vue 3 基础
+
+Vue 是一款用于构建用户界面的渐进式 JavaScript 框架。它基于标准 HTML、CSS 和 JavaScript 构建，并提供了一套声明式的、组件化的编程模型，帮助你高效地开发用户界面。无论是简单还是复杂的界面，Vue 都可以胜任。
+
+![[Vue-渐进式.png]]
+

@@ -1,2 +1,14 @@
-.obsidian/workspace.json
+# Obsidian 相关
+.obsidian/
+
+# Copilot、本地工具缓存
+.copilot/
+.opencode/
+copilot/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 指定忽略的文件
 ignore/
