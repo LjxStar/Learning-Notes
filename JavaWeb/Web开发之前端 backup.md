@@ -278,24 +278,16 @@ border: 1px solid #000;
 	
 ### 1.3.3 两种盒子模式 box-sizing
 
-1. **content-box**
-
-`width/height` 只代表**content**大小盒子实际宽 = width + padding + border
-
-2. **border-box**
-
-`width/height` 包含 content + padding + border 盒子实际宽 = width（padding 和 border 向内压缩内容，不会撑大盒子）
-
-```css
-box-sizing: border-box;
-```
-
-内容在内，padding 垫里面，边框围一圈，margin 隔外面。 content-box 向外撑，border-box 向内挤。
+| 模式                | 说明                                           | 实际宽度计算                         |
+| ----------------- | -------------------------------------------- | ------------------------------ |
+| `content-box`（默认） | `width/height` 仅代表 content 大小                | 实际宽 = width + padding + border |
+| `border-box`      | `width/height` 包含 content + padding + border | 实际宽 = width（内边距和边框向内压缩）        |
+> 记忆口诀：content-box 向外撑，border-box 向内挤。开发中推荐全局设置 `box-sizing: border-box;`，便于布局计算。
 
 ### 1.3.4 布局标签 div/span
 
-- div 会独占一行，默认宽度为父元素 body 的宽度。可以设置宽高（width、height）
-- span 一行会显示多个，用来组合行内元素，默认宽度为内容撑开的宽度。不可以设置宽高（width、height）
+- `<div>`：块级元素，独占一行，默认宽度等于父元素宽度，可设置宽高
+- `<span>`：行内元素，一行可显示多个，宽度由内容撑开，不可设置宽高
 
 ```html
 <!doctype html>
