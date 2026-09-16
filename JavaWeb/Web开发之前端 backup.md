@@ -4,88 +4,105 @@ Web 标准也称为网页标准，由一系列的标准组成，大部分由 W3C
 - **行为层（JavaScript）**：负责网页的交互行为，实现动态效果、响应用户操作。
 
 # 一、前端三件套
-## 1.1 html 基本骨架与标签
-```html
-<html>
-     <head>
-          <title>我是标题</title>
-     </head>
-     <body>
-                
-     </body>
-</html>
-```
-- `<head>` : 定义网页的头部，存放给浏览器看的信息，如：CSS 样式、网页的标题。
-- `<body>` : 定义网页的主体，存放给用户看的信息，也是网页的主体内容，如：文字、图片、视频、音频、表格等。
-- `<title>`中定义标题显示在浏览器的标题位置
-
-**常见的 html 标签**
-1. 标题标签 `<h1></h1> <h2></h2> <h3></h3>` 用来定义标题
-2. 段落标签 `<p></p>` 定义文本段落，自带上下间距
-3. 换行标签 `<br>` 强制文字换行，单标签
-4. 加粗标签 `<b></b>` / `<strong></strong>` 文字加粗
-5. 倾斜标签 `<i></i>` / `<em></em>` 文字倾斜
-6. 下划线标签 `<u></u>` / `<ins></ins>`  文字添加下划线
-7. 删除线标签 `<s></s>` / `<del></del>` 文字添加删除线
-8. 图片标签 `<img src="" alt="" width="" height="" title="">` 
-	插入图片 src：图片路径；alt：图片加载失败提示；width/height：宽高；title：鼠标悬浮提示
-9. 视频标签 `<video src="" controls autoplay muted loop width=""></video>` 
-	播放视频 src：视频地址；controls：播放控件；autoplay：自动播放；muted：静音；loop：循环播放
-10. 超链接标签 `<a href="" target="" title=""></a>` 
-	超链接 href: 指定资源访问的 url target: 打开方式 _self 当前页，_blank 新页面 title：鼠标悬浮提示
-11. 盒子标签 div `<div></div>` 块级容器，用来布局
-12. 行内容器 span `<span></span>` 行内容器，局部修饰文字
-13. 列表标签 `<ul><li></li></ul>` 无序列表；
-	type：列表符号 `<ol><li></li></ol>` 有序列表；type：序号类型，start：起始序号
-14. 输入框标签 `<input type="" name="" value="" placeholder="">`
-	type：输入框类型 (text/password/radio/checkbox)；name：名称；value：默认值；placeholder：提示文字
-15. 注释 `<!-- 注释内容 -->` 浏览器不显示
+## 1.1 HTML 页面结构与常用标签
+### 1.1.1 HTML 标准骨架
 
 ```html
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    HTML标签示例
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>页面标题</title>
 </head>
 <body>
-    <h1>一级标题</h1>
-    <p>这是段落。<br>换行后文字</p>
-    <p><strong>加粗</strong> <em>倾斜</em> <u>下划线</u> <del>删除线</del></p>
-    <a href="https://www.baidu.com" target="_blank">新窗口打开链接</a>
-    <img src="test.jpg" alt="测试图片" width="200" title="鼠标悬浮文字">
-    <video src="test.mp4" controls width="300"></video>
-
-    <div>块容器div <span>行内span</span></div>
-    <ul>
-        <li>无序列表1</li>
-        <li>无序列表2</li>
-    </ul>
-    <ol>
-        <li>有序列表1</li>
-        <li>有序列表2</li>
-    </ol>
-    <input type="text" placeholder="请输入内容">
-    <!-- 这是注释 -->
+    <!-- 页面主体内容 -->
 </body>
 </html>
 ```
+- `<head>`：网页头部，存放浏览器解析所需的元信息（CSS 样式、页面标题、编码等），不对用户可见
+- `<body>`：网页主体，存放展示给用户的所有内容（文字、图片、视频、表单等）
+- `<title>`：定义浏览器标签栏显示的页面标题
 
-在 HTML 页面中，我们在代码中输入空格、<、> 这些符号的时候，是没有对应的效果的，因为浏览器并不能准确的识别，此时，我们就需要通过字符实体来表示空格，<, > 。常见符号的字符实体如下：
-	①nbsp → 非换行空格（Non-Breaking Space）
-	②lt → 左尖括号（小于号 Less Than）
-	③gt → 右尖括号（大于号 Greater Than）
+### 1.1.2 常用核心标签
+
+#### 1.文本类标签
+
+| 标签                 | 作用   | 说明                     |
+| ------------------ | ---- | ---------------------- |
+| `<h1>~<h6>`        | 标题标签 | 一级到六级，权重依次降低           |
+| `<p>`              | 段落标签 | 自带上下外边距                |
+| `<br>`             | 换行标签 | 单标签，强制文本换行             |
+| `<strong>` / `<b>` | 文本加粗 | `<strong>` 语义权重更高，推荐使用 |
+| `<em>` / `<i>`     | 文本倾斜 | `<em>` 语义权重更高，推荐使用     |
+| `<ins>` / `<u>`    | 下划线  | `<ins>` 语义权重更高         |
+| `<del>` / `<s>`    | 删除线  | `<del>` 语义权重更高         |
+
+#### 2.媒体与链接标签
+
+- **图片标签** **`<img>`**
+```HTML
+<img src="图片路径" alt="加载失败提示" width="宽度" height="高度" title="鼠标悬浮提示">
+```
+
+- **视频标签** **`<video>`**
+```HTML
+<video src="视频地址" controls autoplay muted loop width="宽度"></video>
+```
+- `controls` 显示播放控件；`autoplay` 自动播放；`muted` 静音；`loop` 循环播放
+
+- **超链接标签** **`<a>`**
+```HTML
+<a href="链接地址" target="_blank" title="悬浮提示">链接文本</a>
+```
+- `target="_blank"` 新窗口打开；`_self` 当前页打开（默认）
+
+#### 3.容器与列表标签
+- `<div>`：块级容器，独占一行，用于页面布局，可设置宽高
+- `<span>`：行内容器，一行可放置多个，用于局部文字修饰，不可设置宽高
+
+- **无序列表**
+```HTML
+<ul>
+    <li>列表项1</li>
+    <li>列表项2</li>
+</ul>
+```
+- **有序列表**
+```HTML
+<ol start="起始序号">
+    <li>列表项1</li>
+    <li>列表项2</li>
+</ol>
+```
+
+#### 4. 输入框与注释
+
+```HTML
+<!-- 这是注释，浏览器不渲染 -->
+<input type="text" name="名称" value="默认值" placeholder="提示文字">
+```
+
+### 1.1.3 HTML 字符实体
+
+特殊符号无法被浏览器直接解析，需用字符实体替代：
+
+| 符号  | 字符实体     | 说明         |
+| --- | -------- | ---------- |
+| 空格  | `&nbsp;` | 不换行空格      |
+| <   | `&lt;`   | 小于号 / 左尖括号 |
+| >   | `&gt;`   | 大于号 / 右尖括号 |
 
 ## 1.2 CSS 的引入与选择器
 ### 1.2.1 三种引入方式
 
-1. **行内样式**：写在标签 `style` 属性，优先级最高
+1. **行内样式**：写在标签 `style` 属性中，优先级最高
 
 ```html
 <div style="color:red;">行内样式</div>
 ```
 
-2. **内部样式**：`head` 内 `<style>` 标签，当前页面生效
+2. **内部样式**：写在 `<head>` 的 `<style>` 标签中，仅当前页面生效
 
 ```html
 <head>
@@ -95,7 +112,7 @@ Web 标准也称为网页标准，由一系列的标准组成，大部分由 W3C
 </head>
 ```
 
-3. **外部样式**：新建`.css` 文件，link 标签引入，多页面复用
+3. **外部样式**：独立 `.css` 文件，通过 `<link>` 引入，多页面复用，开发推荐
 
 ```html
 <link rel="stylesheet" href="style.css">
