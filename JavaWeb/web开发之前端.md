@@ -1369,3 +1369,5 @@ export default {
 }
 </script>
 ```
+
+### 2.3 生命周期
