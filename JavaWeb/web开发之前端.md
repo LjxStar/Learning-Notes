@@ -1391,23 +1391,27 @@ vue 的生命周期包含 8 个阶段：每触发一个生命周期事件，会�
 >  **页面初始化时自动发送 ajax 请求，从后台加载数据**
 
 ```js
-    methods: {
-      async search() {
-        //基于axios发送异步请求，请求https://web-server.itheima.net/emps/list，根据条件查询员工列表
-        const result = await axios.get(`https://web-server.itheima.net/emps/list?name=${this.searchForm.name}&gender=${this.searchForm.gender}&job=${this.searchForm.job}`);
-        this.empList = result.data.data;
-      },
-      clear() {
-        this.searchForm= {
-          name: '',
-          gender: '',
-          job: ''
-        }
-        this.search();
-      }
-    },
-    mounted() {
-      this.search();
+methods: {
+  // 查询员工列表
+  async search() {
+    // 基于axios发送GET异步请求，带查询条件获取员工列表
+    const result = await axios.get(`https://web-server.itheima.net/emps/list?name=${this.searchForm.name}&gender=${this.searchForm.gender}&job=${this.searchForm.job}`);
+    // 将返回的数据赋值给响应式变量，渲染到页面
+    this.empList = result.data.data;
+  },
+  // 清空查询条件，并重新查询
+  clear() {
+    this.searchForm = {
+      name: '',
+      gender: '',
+      job: ''
     }
-  }).mount('#container')
+    this.search();
+  }
+},
+mounted() {
+  // 页面挂载完成，自动执行查询，页面一打开就加载员工数据
+  this.search();
+}
+}).mount('#container')
 ```
