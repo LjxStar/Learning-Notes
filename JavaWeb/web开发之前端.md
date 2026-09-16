@@ -1136,6 +1136,10 @@ createApp({
 | v-show                | 根据条件展示某元素，区别在于切换的是display属性的值  |
 | v-model               | 在表单元素上创建双向数据绑定                 |
 | v-on                  | 为HTML标签绑定事件                    |
+
+在这里你可以直观地看到完整的指令语法：
+![[Pasted image 20260916192558.png]]
+
 #### 2.2.1 v-for
 
 `v-for` **用于列表渲染，可以遍历数组元素或对象属性**。指令值必须遵循 `alias in expression` 语法，为迭代元素定义别名：
@@ -1296,12 +1300,18 @@ createApp({
 在表单输入元素或组件上创建双向绑定，可以方便的 **获取** 或 **设置** 表单项数据。
 	本质语法糖：v-model = :value + @input
 
-```
+```html
 <!-- 原生输入框 -->
 <input v-model="msg" />
 <!-- 等价写法 -->
 <input :value="msg" @input="msg = $event.target.value" />
 ```
+
+**修饰符**
+	.lazy：失去焦点后更新数据
+	.number：自动转为数字类型
+	.trim - 移除输入内容两端空格
+
 #### 2.2.5 v-on
 
 **绑定事件监听**，给元素绑定 DOM 事件，触发后执行 JS 代码，可使用 @ 简写。
