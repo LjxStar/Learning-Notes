@@ -1214,3 +1214,44 @@ createApp({
 
 #### 2.2.2 v-bind
 动态为 HTML 标签绑定属性值，如设置 href，src，style 样式等。
+
+```html
+<!-- 绑定 attribute -->
+<img v-bind:src="imageSrc" />
+
+<!-- 动态 attribute 名 -->
+<button v-bind:[key]="value"></button>
+
+<!-- 缩写 -->
+<img :src="imageSrc" />
+
+<!-- 缩写形式的动态 attribute 名 (3.4+)，扩展为 :src="src" -->
+<img :src />
+
+<!-- 动态 attribute 名的缩写 -->
+<button :[key]="value"></button>
+
+<!-- 内联字符串拼接 -->
+<img :src="'/path/to/images/' + fileName" />
+
+<!-- class 绑定 -->
+<div :class="{ red: isRed }"></div>
+<div :class="[classA, classB]"></div>
+<div :class="[classA, { classB: isB, classC: isC }]"></div>
+
+<!-- style 绑定 -->
+<div :style="{ fontSize: size + 'px' }"></div>
+<div :style="[styleObjectA, styleObjectB]"></div>
+
+<!-- 绑定对象形式的 attribute -->
+<div v-bind="{ id: someProp, 'other-attr': otherProp }"></div>
+
+<!-- prop 绑定。“prop” 必须在子组件中已声明。 -->
+<MyComponent :prop="someThing" />
+
+<!-- 传递子父组件共有的 prop -->
+<MyComponent v-bind="$props" />
+
+<!-- XLink -->
+<svg><a :xlink:special="foo"></a></svg>
+```
