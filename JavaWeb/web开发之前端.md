@@ -1315,3 +1315,50 @@ createApp({
 #### 2.2.5 v-on
 
 **绑定事件监听**，给元素绑定 DOM 事件，触发后执行 JS 代码，可使用 @ 简写。
+
+```html
+<template>
+  <div id="app">
+    <h3>登录表单</h3>
+    <!-- v-on绑定表单提交事件 -->
+    <form @submit.prevent="onLogin">
+      <div>
+        账号：<input v-model="account" placeholder="请输入账号">
+      </div>
+      <div>
+        密码：<input v-model="password" type="password">
+      </div>
+      <div>
+        <input type="checkbox" v-model="remember">记住密码
+      </div>
+      <button type="submit">登录</button>
+    </form>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      // v-model绑定的响应式数据
+      account: '',
+      password: '',
+      remember: false
+    }
+  },
+  methods: {
+    // v-on触发的登录方法
+    onLogin() {
+      console.log('账号', this.account)
+      console.log('密码', this.password)
+      console.log('记住密码', this.remember)
+      if (!this.account || !this.password) {
+        alert('账号密码不能为空')
+        return
+      }
+      alert('登录成功！')
+    }
+  }
+}
+</script>
+```
