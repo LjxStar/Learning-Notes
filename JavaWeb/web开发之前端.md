@@ -1088,7 +1088,7 @@ Vue 是一款用于构建用户界面的渐进式 JavaScript 框架。它基于�
 </div>
 ```
 - **挂载根容器**：Vue 应用会接管这个 DOM 节点，容器外的内容 Vue 不会处理。
-- `{{ message }}`：**插值语法**，把 Vue 实例里 `data` 中的 `message` 变量渲染到页面
+- `{{ message }}`：**插值表达式**，把 Vue 实例里 `data` 中的 `message` 变量渲染到页面
 
 **2.Vue 引入部分**
 ```html
@@ -1125,6 +1125,7 @@ createApp({
 `.mount(选择器/DOM元素)`：挂载，把 Vue 应用关联到页面 DOM
 
 ### 2.2 常见指令
+
 指令是带有 `v-` 前缀的特殊 attribute。Vue 提供了许多[内置指令](https://cn.vuejs.org/api/built-in-directives.html)，不同指令具有不同含义，可以实现不同的功能。
 
 | 常见指令                  | 作用                             |
