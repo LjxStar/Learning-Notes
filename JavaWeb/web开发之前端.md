@@ -1137,20 +1137,17 @@ createApp({
 | v-on                  | 为HTML标签绑定事件                    |
 #### 2.2.1 v-for
 
-**列表渲染，遍历容器的元素或者对象的属性**
-指令值必须使用特殊语法 `alias in expression` 为正在迭代的元素提供一个别名：
+`v-for` 用于列表渲染，可以遍历数组元素或对象属性。指令值必须遵循 `alias in expression` 语法，为迭代元素定义别名：
 
-```js
-<div v-for="item in items">
-  {{ item.text }}
-</div>
+```html
+<tr v-for="item in items" :key="item.id">{{item}}</tr>
 ```
 
-或者，你也可以为索引指定别名 (如果用在对象，则是键值)：
+也可以额外指定索引别名（遍历对象时，第二个参数为属性键名）：
 
-```js
-<div v-for="(item, index) in items"></div>
-<div v-for="(value, key) in object"></div>
-<div v-for="(value, name, index) in object"></div>
+```html
+<tr v-for="(item,index) in items" :key="item.id">{{item}}</tr>
 ```
 
+`:key`：给每一项元素绑定唯一标识，帮助 Vue 正确复用、排序 DOM 节点，提升列表渲染性能。
+> 推荐使用 id 作为 key（唯一），不推荐使用 index 作为 key（会变化，不对应）
