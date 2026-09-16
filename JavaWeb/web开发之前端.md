@@ -1298,7 +1298,7 @@ createApp({
 #### 2.2.4 v-model
 
 在表单输入元素或组件上创建双向绑定，可以方便的 **获取** 或 **设置** 表单项数据。
-	本质语法糖：v-model = :value + @input
+>  本质语法糖：v-model = :value + @input
 
 ```html
 <!-- 原生输入框 -->
