@@ -1151,3 +1151,62 @@ createApp({
 
 `:key`：给每一项元素绑定唯一标识，帮助 Vue 正确复用、排序 DOM 节点，提升列表渲染性能。
 > 推荐使用 id 作为 key（唯一），不推荐使用 index 作为 key（会变化，不对应）
+
+```html
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>v-for 示例</title>
+  </head>
+  <body>
+    <div id="app">
+      <h3>遍历数组，获取每一项 item</h3>
+      <table>
+        <tr>
+          <th>名称</th>
+        </tr>
+        <tr v-for="item in list">
+          <td>{{ item.name }}</td>
+        </tr>
+      </table>
+      
+      <h3>遍历数组，同时获取item与索引index</h3>
+      <table>
+        <tr>
+          <th>索引</th>
+          <th>名称</th>
+        </tr>
+        <tr v-for="(item, index) in list">
+          <td>{{ index }}</td>
+          <td>{{ item.name }}</td>
+        </tr>
+      </table>
+      
+      <h3>遍历对象，(值,键)</h3>
+      <div v-for="(value, key) in userInfo">{{ key }}：{{ value }}</div>
+    </div>
+
+    <script type="module">
+      import { createApp } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
+      createApp({
+        data() {
+          return {
+            list: [
+              { id: 1, name: "Vue学习" },
+              { id: 2, name: "HTML" },
+              { id: 3, name: "JavaScript" },
+            ],
+            userInfo: {
+              name: "小明",
+              age: 18,
+              gender: "男",
+            },
+          };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>
+```
