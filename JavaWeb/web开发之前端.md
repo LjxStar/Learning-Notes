@@ -1138,7 +1138,7 @@ createApp({
 | v-on                  | 为HTML标签绑定事件                    |
 #### 2.2.1 v-for
 
-`v-for` 用于列表渲染，可以遍历数组元素或对象属性。指令值必须遵循 `alias in expression` 语法，为迭代元素定义别名：
+`v-for` **用于列表渲染，可以遍历数组元素或对象属性**。指令值必须遵循 `alias in expression` 语法，为迭代元素定义别名：
 
 ```html
 <tr v-for="item in items" :key="item.id">{{item}}</tr>
@@ -1239,3 +1239,5 @@ createApp({
 <!-- 组件传参，向子组件传递prop数据 -->
 <MyComponent :prop="someThing" />
 ```
+
+#### 2.2.3 v-if
