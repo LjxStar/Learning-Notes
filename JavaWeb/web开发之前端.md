@@ -1371,4 +1371,42 @@ export default {
 ```
 
 ### 2.3 生命周期
+
+vue 的生命周期包含 8 个阶段：每触发一个生命周期事件，会自动执行一个生命周期方法，这些生命周期方法也被称为钩子方法。其完整的生命周期如下图所示：
+
+| 状态            | 阶段周期 |
+| ------------- | ---- |
+| beforeCreate  | 创建前  |
+| created       | 创建后  |
+| beforeMount   | 挂载前  |
+| mounted       | 挂载完成 |
+| beforeUpdate  | 更新前  |
+| updated       | 更新后  |
+| beforeDestroy | 销毁前  |
+| destroyed     | 销毁后  |
+
 ![[Vue-生命周期.png]]
+对于 JavaWeb，只需要关注 mounted，其他的了解即可
+**mounted**：挂载完成，Vue 初始化成功，HTML 页面渲染成功。**用于页面初始化自动的 ajax 请求后台数据**
+
+```js
+    methods: {
+      async search() {
+        //基于axios发送异步请求，请求https://web-server.itheima.net/emps/list，根据条件查询员工列表
+        const result = await axios.get(`https://web-server.itheima.net/emps/list?name=${this.searchForm.name}&gender=${this.searchForm.gender}&job=${this.searchForm.job}`);
+        this.empList = result.data.data;
+      },
+      clear() {
+        this.searchForm= {
+          name: '',
+          gender: '',
+          job: ''
+        }
+        this.search();
+      }
+    },
+    mounted() {
+      this.search();
+    }
+  }).mount('#container')
+```
