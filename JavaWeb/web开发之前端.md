@@ -1213,45 +1213,29 @@ createApp({
 ```
 
 #### 2.2.2 v-bind
-动态为 HTML 标签绑定属性值，如设置 href，src，style 样式等。
+
+`v-bind` 用于**动态绑定 HTML 标签属性**，将 Vue 中的响应式数据关联到标签属性上，常用于 `src`、`href`、class、style 等属性。`v-bind:属性名 ` 可简写为 `:属性名 `。
 
 ```html
-<!-- 绑定 attribute -->
+<!-- 基础属性绑定 -->
 <img v-bind:src="imageSrc" />
-
-<!-- 动态 attribute 名 -->
-<button v-bind:[key]="value"></button>
-
-<!-- 缩写 -->
+<!-- 简写（最常用） -->
 <img :src="imageSrc" />
 
-<!-- 缩写形式的动态 attribute 名 (3.4+)，扩展为 :src="src" -->
-<img :src />
-
-<!-- 动态 attribute 名的缩写 -->
+<!-- 动态属性名（属性名本身是变量） -->
 <button :[key]="value"></button>
 
-<!-- 内联字符串拼接 -->
-<img :src="'/path/to/images/' + fileName" />
-
-<!-- class 绑定 -->
+<!-- class绑定：对象语法，控制类名是否生效 -->
 <div :class="{ red: isRed }"></div>
+<!-- class绑定：数组语法，应用多个类名 -->
 <div :class="[classA, classB]"></div>
-<div :class="[classA, { classB: isB, classC: isC }]"></div>
 
-<!-- style 绑定 -->
+<!-- style绑定，动态设置行内样式 -->
 <div :style="{ fontSize: size + 'px' }"></div>
-<div :style="[styleObjectA, styleObjectB]"></div>
 
-<!-- 绑定对象形式的 attribute -->
-<div v-bind="{ id: someProp, 'other-attr': otherProp }"></div>
+<!-- 一次性绑定多个属性 -->
+<div v-bind="{ id: someProp }"></div>
 
-<!-- prop 绑定。“prop” 必须在子组件中已声明。 -->
+<!-- 组件传参，向子组件传递prop数据 -->
 <MyComponent :prop="someThing" />
-
-<!-- 传递子父组件共有的 prop -->
-<MyComponent v-bind="$props" />
-
-<!-- XLink -->
-<svg><a :xlink:special="foo"></a></svg>
 ```
