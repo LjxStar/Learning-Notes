@@ -1211,3 +1211,6 @@ createApp({
   </body>
 </html>
 ```
+
+#### 2.2.2 v-bind
+动态为 HTML 标签绑定属性值，如设置 href，src，style 样式等。
