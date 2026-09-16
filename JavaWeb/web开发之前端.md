@@ -1113,6 +1113,7 @@ createApp({
 - `createApp(选项对象)`，接收组件配置对象
 - `data` 只是配置对象里的属性名；Vue 会读取 options 对象上名叫 `data` 的属性，拿到里面存的函数，然后 Vue 自己调用这个函数。
 ```js
+// 这是 ES5 完整写法，`data() {}` 只是 ES6 对象方法简写语法糖，两者完全等价。
 createApp({
 	data: function () {
 	  return {
@@ -1120,6 +1121,7 @@ createApp({
 	   };
 	},
 }).mount("#app");
-// 这是 ES5 完整写法，`data() {}` 只是 ES6 对象方法简写语法糖，两者完全等价。
 ```
 `.mount(选择器/DOM元素)`：挂载，把 Vue 应用关联到页面 DOM
+
+### 2 .2
