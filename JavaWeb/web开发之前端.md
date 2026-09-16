@@ -1371,3 +1371,4 @@ export default {
 ```
 
 ### 2.3 生命周期
+![[Pasted image 20260916202202.png]]
