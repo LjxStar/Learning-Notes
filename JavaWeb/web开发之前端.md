@@ -1136,3 +1136,21 @@ createApp({
 | v-model               | 在表单元素上创建双向数据绑定                 |
 | v-on                  | 为HTML标签绑定事件                    |
 #### 2.2.1 v-for
+
+**列表渲染，遍历容器的元素或者对象的属性**
+指令值必须使用特殊语法 `alias in expression` 为正在迭代的元素提供一个别名：
+
+```js
+<div v-for="item in items">
+  {{ item.text }}
+</div>
+```
+
+或者，你也可以为索引指定别名 (如果用在对象，则是键值)：
+
+```js
+<div v-for="(item, index) in items"></div>
+<div v-for="(value, key) in object"></div>
+<div v-for="(value, name, index) in object"></div>
+```
+
