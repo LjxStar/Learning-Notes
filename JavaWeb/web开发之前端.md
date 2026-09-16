@@ -1053,3 +1053,61 @@ Vue 是一款用于构建用户界面的渐进式 JavaScript 框架。它基于�
 
 ![[Vue-渐进式.png]]
 
+### 2.1 快速入门
+```html
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue-快速入门</title>
+  </head>
+  <body>
+    <div id="app">
+      <h1>{{ message }}</h1>
+    </div>
+   
+    <script type="module">
+      import { createApp } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
+      
+      createApp({
+        data() {
+          return {
+            message: "Hello,Vue!",
+          };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>
+```
+**1.html 部分
+```html
+<div id="app">
+  <h1>{{ message }}</h1>
+</div>
+```
+- **挂载根容器**：Vue 应用会接管这个 DOM 节点，容器外的内容 Vue 不会处理。
+- `{{ message }}`：**插值语法**，把 Vue 实例里 `data` 中的 `message` 变量渲染到页面
+
+**2.Vue 引入部分**
+```html
+<script type="module">
+      import { createApp } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
+    </script>
+```
+-  `type="module"`：开启浏览器原生 ESModule 能力。
+-  `https://unpkg.com/vue@3/dist/vue.esm-browser.js`：CDN 地址，直接从网络加载 Vue 3 的ESM 浏览器版。
+-  `import { createApp }`：解构导入 Vue 提供的 `createApp` 函数，用来创建 Vue 应用实例。
+
+**3.createApp 创建应用**
+```js
+createApp({
+	data() {
+	  return {
+		message: "Hello,Vue!",
+	  };
+	},
+}).mount("#app");
+```
+- `createApp(选项对象)`，接收组件配置对象
