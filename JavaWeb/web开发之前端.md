@@ -1111,3 +1111,4 @@ createApp({
 }).mount("#app");
 ```
 - `createApp(选项对象)`，接收组件配置对象
+- `data`：存放响应式数据。
