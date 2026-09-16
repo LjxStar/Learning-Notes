@@ -1125,4 +1125,14 @@ createApp({
 `.mount(选择器/DOM元素)`：挂载，把 Vue 应用关联到页面 DOM
 
 ### 2.2 常见指令
-指令是带有 `v-` 前缀的特殊 attribute。Vue 提供了许多[内置指令](https://cn.vuejs.org/api/built-in-directives.html)
+指令是带有 `v-` 前缀的特殊 attribute。Vue 提供了许多[内置指令](https://cn.vuejs.org/api/built-in-directives.html)，不同指令具有不同含义，可以实现不同的功能。
+
+| 常见指令                  | 作用                             |
+| --------------------- | ------------------------------ |
+| v-for                 | 列表渲染，遍历容器的元素或者对象的属性            |
+| v-bind                | 为HTML标签绑定属性值，如设置 href , css样式等 |
+| v-if/v-else-if/v-else | 条件性的渲染某元素，判定为true时渲染,否则不渲染     |
+| v-show                | 根据条件展示某元素，区别在于切换的是display属性的值  |
+| v-model               | 在表单元素上创建双向数据绑定                 |
+| v-on                  | 为HTML标签绑定事件                    |
+#### 2.2.1 v-for
