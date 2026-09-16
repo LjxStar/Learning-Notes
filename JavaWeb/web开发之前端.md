@@ -1124,4 +1124,5 @@ createApp({
 ```
 `.mount(选择器/DOM元素)`：挂载，把 Vue 应用关联到页面 DOM
 
-### 2 .2
+### 2.2 常见指令
+指令是带有 `v-` 前缀的特殊 attribute。Vue 提供了许多[内置指令](https://cn.vuejs.org/api/built-in-directives.html)
