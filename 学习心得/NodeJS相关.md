@@ -10,7 +10,6 @@ npm list -g --depth=0
 ```bash
 # 删除单个包示例
 npm uninstall -g @anthropic-ai/claude-code
-npm uninstall -g @musistudio/claude-code-router
 ```
 
 3. D 盘新建文件夹：
@@ -34,3 +33,11 @@ npm config get cache
 ```
 
 6. 修改系统环境变量
+	删除旧 C 盘条目：`C:\Users\userName\AppData\Roaming\npm`
+	新增条目：`D:\node\node_global`
+
+7. 重装全局包到 D 盘
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
