@@ -8,7 +8,7 @@ Web 标准（也称网页标准）是由一系列标准组成的规范体系，�
 
 ![[前端三件套的关系.png|598]]
 
-三者之间形成「结构、样式、行为」分工体系：HTML 提供基础内容，CSS 美化页面外观，JavaScript控制逻辑与互动。浏览器先解析 HTML，再套用 CSS，最后执行 JavaScript。这样的分工设计，有助于提升网页的维护性与扩展性，是现代网页开发的基础架构。
+三者之间形成「结构、样式、行为」分工体系：HTML 提供基础内容，CSS 美化页面外观，JavaScript 控制逻辑与互动。浏览器先解析 HTML，再套用 CSS，最后执行 JavaScript。这样的分工设计，有助于提升网页的维护性与扩展性，是现代网页开发的基础架构。
 
 ## 一、前端三件套
 
@@ -31,7 +31,7 @@ Web 标准（也称网页标准）是由一系列标准组成的规范体系，�
 ```
 
 - `<!DOCTYPE html>` 声明文档类型，告诉浏览器该文件是 HTML 5 文档，这有助于浏览器解析和渲染网页内容。
-- `<html>` 定义整个HTML文档的根元素，所有的HTML元素必须包含在 `<html>` 标签内。
+- `<html>` 定义整个 HTML 文档的根元素，所有的 HTML 元素必须包含在 `<html>` 标签内。
 - `<head>`：网页头部，存放浏览器解析所需的元信息（CSS 样式、页面标题、字符编码等），对用户不可见。
 - `<body>`：网页主体，存放展示给用户的所有内容（文字、图片、视频、表单等）。
 - `<title>`：定义浏览器标签栏显示的页面标题。
@@ -363,13 +363,13 @@ color: #333;       /* 简写形式，等同于 #333333 */
 
 #### 1.3.3 背景属性
 
-| 属性 | 作用 | 示例 |
-| --- | --- | --- |
-| `background-color` | 背景颜色 | `background-color: #f5f5f5;` |
-| `background-image` | 背景图片 | `background-image: url('bg.png');` |
-| `background-repeat` | 背景平铺方式 | `background-repeat: no-repeat;` |
-| `background-size` | 背景大小 | `background-size: cover;` |
-| `background-position` | 背景定位 | `background-position: center top;` |
+| 属性                    | 作用     | 示例                                 |
+| --------------------- | ------ | ---------------------------------- |
+| `background-color`    | 背景颜色   | `background-color: #f5f5f5;`       |
+| `background-image`    | 背景图片   | `background-image: url('bg.png');` |
+| `background-repeat`   | 背景平铺方式 | `background-repeat: no-repeat;`    |
+| `background-size`     | 背景大小   | `background-size: cover;`          |
+| `background-position` | 背景定位   | `background-position: center top;` |
 
 ```css
 .hero {
@@ -836,7 +836,45 @@ console.log(person.name);
 console.log(person.age);
 ```
 
-#### 1.9.3 输出方式
+#### 1.9.3 JSON 数据格式
+
+**JSON（JavaScript Object Notation，JavaScript 对象表示法）** 是一种轻量级的数据交换格式，用于在网络中传输数据。目前前后端数据交互几乎都使用 JSON 格式。
+
+JSON 的写法与 JS 对象非常相似，但有两点区别：
+
+- JSON 中的**属性名（键）必须加双引号**。
+- JSON 中**不能写函数、注释、尾逗号**。
+
+```json
+{
+  "name": "李四",
+  "age": 20,
+  "gender": "男"
+}
+```
+
+**对象与字符串之间的转换**：前后端传输数据时，数据总是以字符串形式在网络上传递，因此需要用到以下两个方法：
+
+1. **`JSON.stringify(对象)`**：把 JS 对象转换成 JSON 字符串，用于发送数据给后端。
+
+```js
+let person = { name: "李四", age: 20 };
+let jsonStr = JSON.stringify(person);
+console.log(jsonStr); // {"name":"李四","age":20}
+```
+
+2. **`JSON.parse(字符串)`**：把 JSON 字符串解析成 JS 对象，用于接收后端返回的数据。
+
+```js
+let jsonStr = '{"name":"李四","age":20}';
+let person = JSON.parse(jsonStr);
+console.log(person.name); // 李四
+console.log(person.age);  // 20
+```
+
+> 记忆：`stringify` 把对象"变"成字符串（string），`parse` 把字符串"解析"成对象，二者互为逆操作。
+
+#### 1.9.4 输出方式
 
 1. `console.log()`：在浏览器控制台打印内容，调试代码最常用。
 
@@ -856,7 +894,7 @@ alert("弹出消息");
 document.write("页面文字");
 ```
 
-#### 1.9.4 流程控制
+#### 1.9.5 流程控制
 
 1. `if` 判断语句
 
@@ -1207,7 +1245,7 @@ Vue 是一款用于构建用户界面的渐进式 JavaScript 框架。它基于�
 </div>
 ```
 - **挂载根容器**：Vue 应用会接管这个 DOM 节点，容器外的内容 Vue 不会处理。
-- `{{ message }}`：**插值表达式**，把 Vue 实例里 `data` 中的 `message` 变量渲染到页面
+- `{{ message }}`：**插值表达式**，把 Vue 实例里 `data` 中的 `message` 变量渲染到页面。
 
 **2.Vue 引入部分**
 ```html
@@ -1216,7 +1254,7 @@ Vue 是一款用于构建用户界面的渐进式 JavaScript 框架。它基于�
     </script>
 ```
 -  `type="module"`：开启浏览器原生 ESModule 能力。
--  `https://unpkg.com/vue@3/dist/vue.esm-browser.js`：CDN 地址，直接从网络加载 Vue 3 的ESM 浏览器版。
+-  `https://unpkg.com/vue@3/dist/vue.esm-browser.js`：CDN 地址，直接从网络加载 Vue 3 的 ESM 浏览器版。
 -  `import { createApp }`：解构导入 Vue 提供的 `createApp` 函数，用来创建 Vue 应用实例。
 
 **3.createApp 创建应用**
@@ -1241,7 +1279,7 @@ createApp({
 	},
 }).mount("#app");
 ```
-`.mount(选择器/DOM元素)`：挂载，把 Vue 应用关联到页面 DOM
+`.mount(选择器/DOM元素)`：挂载，把 Vue 应用关联到页面 DOM。
 
 ### 2.2 常见指令
 
@@ -1366,11 +1404,11 @@ createApp({
 #### 2.2.3 v-if & v-show
 
 `v-if` 和 `v-show` 都可以控制元素**显示 / 隐藏**，但底层实现原理不同。
-	**v-if** 基于表达式值的真假性，直接对 DOM 节点进行创建或销毁。可以配合 v-else-if / v-else 进行链式调用条件判断
-	**v-else-if**必须出现在v-if之后，可以出现多个； **v-else** 必须出现在v-if/v-else-if之后
+	**v-if** 基于表达式值的真假性，直接对 DOM 节点进行创建或销毁。可以配合 v-else-if / v-else 进行链式条件判断。
+	**v-else-if** 必须出现在 v-if 之后，可以出现多个；**v-else** 必须出现在 v-if / v-else-if 之后。
 	**v-show** 基于表达式值的真假性，切换 CSS 的 display 属性，DOM 始终存在页面中。
 
-> 运行时条件很少改变，使用 `v-if`，需要频繁切换显示隐藏，使用 `v-show`
+> 运行时条件很少改变，使用 `v-if`；需要频繁切换显示隐藏，使用 `v-show`。
 
 ```html
 <!doctype html>
@@ -1416,7 +1454,7 @@ createApp({
 
 #### 2.2.4 v-model
 
-在表单输入元素或组件上创建双向绑定，可以方便的 **获取** 或 **设置** 表单项数据。
+在表单输入元素或组件上创建双向绑定，可以方便地 **获取** 或 **设置** 表单项数据。
 >  本质语法糖：v-model = :value + @input
 
 ```html
@@ -1429,7 +1467,7 @@ createApp({
 **修饰符**
 	.lazy：失去焦点后更新数据
 	.number：自动转为数字类型
-	.trim - 移除输入内容两端空格
+	.trim：移除输入内容两端空格
 
 #### 2.2.5 v-on
 
@@ -1491,7 +1529,7 @@ export default {
 
 ### 2.3 生命周期
 
-vue 的生命周期包含 8 个阶段：每触发一个生命周期事件，会自动执行一个生命周期方法，这些生命周期方法也被称为钩子方法。其完整的生命周期如下图所示：
+Vue 的生命周期包含 8 个阶段：每触发一个生命周期事件，会自动执行一个生命周期方法，这些生命周期方法也被称为钩子方法。其完整的生命周期如下图所示：
 
 | 状态            | 阶段周期 |
 | ------------- | ---- |
