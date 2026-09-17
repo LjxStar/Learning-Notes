@@ -33,4 +33,4 @@ npm config get prefix
 npm config get cache
 ```
 
-6.
+6. 修改系统环境变量
