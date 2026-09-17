@@ -320,27 +320,17 @@ tr:nth-child(even) {
 
 #### 1.3.1 文本相关属性
 
-| 属性 | 作用 | 示例 |
-| --- | --- | --- |
-| `color` | 文字颜色 | `color: #333;` |
-| `font-size` | 字体大小 | `font-size: 16px;` |
-| `font-weight` | 字体粗细 | `font-weight: bold;` |
-| `font-family` | 字体类型 | `font-family: "微软雅黑", sans-serif;` |
-| `text-align` | 水平对齐方式 | `text-align: center;` |
-| `text-decoration` | 文本装饰 | `text-decoration: none;`（常用于去除超链接下划线） |
-| `text-indent` | 首行缩进 | `text-indent: 2em;` |
-| `line-height` | 行高（控制行间距） | `line-height: 1.5;` |
-| `letter-spacing` | 字符间距 | `letter-spacing: 2px;` |
-
-```css
-p {
-    color: #333;
-    font-size: 16px;
-    line-height: 1.8;
-    text-indent: 2em;
-    text-align: left;
-}
-```
+| 属性                | 作用        | 示例                                 |
+| ----------------- | --------- | ---------------------------------- |
+| `color`           | 文字颜色      | `color: #333;`                     |
+| `font-size`       | 字体大小      | `font-size: 16px;`                 |
+| `font-weight`     | 字体粗细      | `font-weight: bold;`               |
+| `font-family`     | 字体类型      | `font-family: "微软雅黑", sans-serif;` |
+| `text-align`      | 水平对齐方式    | `text-align: center;`              |
+| `text-decoration` | 文本装饰      | `text-decoration: none;`（去除超链接下划线） |
+| `text-indent`     | 首行缩进      | `text-indent: 2em;`                |
+| `line-height`     | 行高（控制行间距） | `line-height: 1.5;`                |
+| `letter-spacing`  | 字符间距      | `letter-spacing: 2px;`             |
 
 #### 1.3.2 颜色表示方式
 
