@@ -494,10 +494,8 @@ align-items: baseline;   /* 按文字基线对齐 */
 3. **单选框 radio**
 
 name 属性控制分组互斥：
-- **name 相同为同一组**：同组单选框**互斥，只能选中一个**。
-- **name 不同为不同组**：多组单选**相互独立**，可以同时选中多个。
-- `value`：提交给后端的真实数值。
-- `checked`：默认选中当前选项。
+- name 相同为同一组：同组单选框**互斥，只能选中一个**。
+- name 不同为不同组：多组单选**相互独立**，可以同时选中多个。
 
 ```html
 <!-- 性别单选：同 name，只能三选一 -->
@@ -510,6 +508,9 @@ name 属性控制分组互斥：
 <input type="radio" name="gender" value="secret" id="secret">
 <label for="secret">保密</label>
 ```
+
+`value`：提交给后端的真实数值。
+`checked`：默认选中当前选项。
 
 4. **复选框 checkbox**
 
@@ -783,7 +784,7 @@ console.log(person.name);
 console.log(person.age);
 ```
 
-### 1.8.3 JSON 数据格式
+### 1.8.3 JSON
 
 **JSON（JavaScript Object Notation，JavaScript 对象表示法）** 是一种轻量级的数据交换格式，用于在网络中传输数据。目前前后端数据交互几乎都使用 JSON 格式。
 
