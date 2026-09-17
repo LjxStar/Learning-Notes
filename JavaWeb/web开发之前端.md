@@ -786,7 +786,45 @@ console.log(person.name);
 console.log(person.age);
 ```
 
-#### 1.8.3 输出方式
+#### 1.8.3 JSON 数据格式
+
+**JSON（JavaScript Object Notation，JavaScript 对象表示法）** 是一种轻量级的数据交换格式，用于在网络中传输数据。目前前后端数据交互几乎都使用 JSON 格式。
+
+JSON 的写法与 JS 对象非常相似，但有两点区别：
+
+- JSON 中的**属性名（键）必须加双引号**。
+- JSON 中**不能写函数、注释、尾逗号**。
+
+```json
+{
+  "name": "李四",
+  "age": 20,
+  "gender": "男"
+}
+```
+
+**对象与字符串之间的转换**：前后端传输数据时，数据总是以字符串形式在网络上传递，因此需要用到以下两个方法：
+
+1. **`JSON.stringify(对象)`**：把 JS 对象转换成 JSON 字符串，用于发送数据给后端。
+
+```js
+let person = { name: "李四", age: 20 };
+let jsonStr = JSON.stringify(person);
+console.log(jsonStr); // {"name":"李四","age":20}
+```
+
+2. **`JSON.parse(字符串)`**：把 JSON 字符串解析成 JS 对象，用于接收后端返回的数据。
+
+```js
+let jsonStr = '{"name":"李四","age":20}';
+let person = JSON.parse(jsonStr);
+console.log(person.name); // 李四
+console.log(person.age);  // 20
+```
+
+> 记忆：`stringify` 把对象转化成字符串（string），`parse` 把字符串解析成对象，二者互为逆操作。
+
+#### 1.8.4 输出方式
 
 1. `console.log()`：在浏览器控制台打印内容，调试代码最常用。
 
@@ -806,7 +844,7 @@ alert("弹出消息");
 document.write("页面文字");
 ```
 
-#### 1.8.4 流程控制
+#### 1.8.5 流程控制
 
 1. `if` 判断语句
 
@@ -826,7 +864,7 @@ for (let i = 0; i < 10; i++) {
 }
 ```
 
-#### 1.8.5 函数
+#### 1.8.6 函数
 
 函数的作用：封装一段代码，实现代码复用，需要调用才会执行。
 
@@ -1150,7 +1188,7 @@ Vue 是一款用于构建用户界面的渐进式 JavaScript 框架。它基于�
 </html>
 ```
 
-**1.html 部分**
+**（1）HTML 部分**
 ```html
 <div id="app">
   <h1>{{ message }}</h1>
@@ -1159,7 +1197,10 @@ Vue 是一款用于构建用户界面的渐进式 JavaScript 框架。它基于�
 - **挂载根容器**：Vue 应用会接管这个 DOM 节点，容器外的内容 Vue 不会处理。
 - `{{ message }}`：**插值表达式**，把 Vue 实例里 `data` 中的 `message` 变量渲染到页面
 
-**2.Vue 引入部分**
+**（2）Vue 引入部分**
+
+通过 CDN 引入 Vue 3 的完整写法：
+
 ```html
 <script type="module">
       import { createApp } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
@@ -1179,8 +1220,9 @@ createApp({
 	},
 }).mount("#app");
 ```
-- `createApp(选项对象)`，接收组件配置对象
-- `data` 只是配置对象里的属性名；Vue 会读取 options 对象上名叫 `data` 的属性，拿到里面存的函数，然后 Vue 自己调用这个函数。
+- `createApp(选项对象)`：接收一个组件配置对象，并返回应用实例。
+- `data` 只是配置对象里的属性名：Vue 会读取选项对象上名为 `data` 的属性，拿到里面存的函数并调用它，函数的返回值就是页面渲染时使用的数据。
+
 ```js
 // 这是 ES5 完整写法，`data() {}` 只是 ES6 对象方法简写语法糖，两者完全等价。
 createApp({
@@ -1191,7 +1233,7 @@ createApp({
 	},
 }).mount("#app");
 ```
-`.mount(选择器/DOM元素)`：挂载，把 Vue 应用关联到页面 DOM
+`.mount(选择器/DOM元素)`：挂载，把 Vue 应用关联到页面上的 DOM 节点，挂载后 Vue 才开始接管该容器内部的内容。
 
 ### 2.2 常见指令
 
