@@ -316,8 +316,6 @@ tr:nth-child(even) {
 
 ### 1.3 CSS 常用基础样式
 
-在正式布局之前，掌握常用的文本、颜色与背景样式是写好 CSS 的基础。
-
 #### 1.3.1 文本相关属性
 
 | 属性                | 作用        | 示例                                 |
@@ -349,26 +347,6 @@ color: rgba(255, 0, 0, 0.5);
 /* 4. 十六进制（最常用） */
 color: #ff0000;   /* 红色 */
 color: #333;       /* 简写形式，等同于 #333333 */
-```
-
-#### 1.3.3 背景属性
-
-| 属性                    | 作用     | 示例                                 |
-| --------------------- | ------ | ---------------------------------- |
-| `background-color`    | 背景颜色   | `background-color: #f5f5f5;`       |
-| `background-image`    | 背景图片   | `background-image: url('bg.png');` |
-| `background-repeat`   | 背景平铺方式 | `background-repeat: no-repeat;`    |
-| `background-size`     | 背景大小   | `background-size: cover;`          |
-| `background-position` | 背景定位   | `background-position: center top;` |
-
-```css
-.hero {
-    background-color: #eef;
-    background-image: url('banner.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-}
 ```
 
 ### 1.4 CSS 盒子模型
