@@ -808,11 +808,6 @@ console.log(person.age);
 
 **JSON（JavaScript Object Notation，JavaScript 对象表示法）** 是一种轻量级的数据交换格式，用于在网络中传输数据。目前前后端数据交互几乎都使用 JSON 格式。
 
-JSON 的写法与 JS 对象非常相似，但有两点区别：
-
-- JSON 中的**属性名（键）必须加双引号**。
-- JSON 中**不能写函数、注释、尾逗号**。
-
 ```json
 {
   "name": "李四",
@@ -840,7 +835,7 @@ console.log(person.name); // 李四
 console.log(person.age);  // 20
 ```
 
-> 记忆：`stringify` 把对象"变"成字符串（string），`parse` 把字符串"解析"成对象，二者互为逆操作。
+> 记忆：`stringify` 把对象转化成字符串（string），`parse` 把字符串解析成对象，二者互为逆操作。
 
 #### 1.9.4 输出方式
 
