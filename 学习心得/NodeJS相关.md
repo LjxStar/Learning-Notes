@@ -1,4 +1,4 @@
-# 1.把 `npm install -g` 全局安装的包，从默认 C 盘用户目录，迁移到 D 盘自定义目录。
+# 1.把 `npm install` 全局安装的包，从默认 C 盘用户目录，迁移到 D 盘自定义目录。
 > 默认全局路径：`C:\Users\81518\AppData\Roaming\npm`
 
 1. 查看全局已安装包：
@@ -49,3 +49,13 @@ npm config get cache
 npm install -g @anthropic-ai/claude-code
 ```
 
+
+# 2.关于更改 npm 镜像源
+
+```bash
+# 1. 配置阿里云源为默认源（核心命令）
+npm config set registry https://npm.aliyun.com/
+# 2. 验证配置是否生效（查看当前源）
+npm config get registry
+# 预期输出：https://registry.npmmirror.com
+```
