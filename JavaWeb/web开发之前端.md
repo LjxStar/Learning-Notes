@@ -1081,7 +1081,8 @@ Vue 是一款用于构建用户界面的渐进式 JavaScript 框架。它基于�
   </body>
 </html>
 ```
-**1.html 部分
+
+**1.html 部分**
 ```html
 <div id="app">
   <h1>{{ message }}</h1>
