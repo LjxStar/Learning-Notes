@@ -67,6 +67,14 @@ Web 标准（也称网页标准）是由一系列标准组成的规范体系，�
 
 `controls`：显示播放控件；`autoplay`：自动播放；`muted`：静音；`loop`：循环播放。
 
+- **音频标签 `<audio>`**
+
+```html
+<audio src="音频地址" controls autoplay muted loop></audio>
+```
+
+`controls`：显示播放控件；`autoplay`：自动播放；`muted`：静音；`loop`：循环播放。用法与 `<video>` 基本一致。
+
 - **超链接标签 `<a>`**
 
 ```html
@@ -185,28 +193,57 @@ h1, .title {
 }
 ```
 
-5. **属性选择器（有该属性）**：格式 `元素名称[属性] { 样式 }`，选中拥有该属性的对应元素。
+5. **属性选择器**：根据元素是否拥有某属性或属性值是否等于指定值来选中元素。
 
 ```css
-/* 元素[属性] */
+/* 选中拥有 href 属性的 a 标签 */
 a[href] {
     text-decoration: none; /* 取消超链接下划线 */
 }
-```
 
-6. **属性选择器（属性等于指定值）**：格式 `元素名称[属性名="值"] { 样式 }`，选中属性值严格等于指定内容的元素。
-
-```css
-/* 元素[属性="值"] */
+/* 选中 type 严格等于 password 的 input */
 input[type="password"] {
     background: #f5f5f5; /* 背景颜色 */
 }
 ```
 
-7. **后代选择器**：格式 `元素1 元素2 { 样式 }`，选中元素 1 内部所有的元素 2 后代。
+6. **子元素选择器**：格式 `元素1 > 元素2 { 样式 }`，只选中元素 1 的**直接子元素**中的元素 2（不包含更深层后代）。
 
 ```css
-/* 后代选择器 元素1 元素2 */
+/* 子元素选择器：只选中 #nav 的直接子 li，不选中嵌套更深层的 li */
+#nav > li {
+    display: inline-block;
+}
+```
+
+7. **伪类选择器**：格式 `选择器:伪类 { 样式 }`，选中元素的特定状态或位置，无需添加额外 class。
+
+```css
+/* 鼠标悬浮时变色 */
+a:hover {
+    color: red;
+}
+
+/* 输入框获得焦点时高亮 */
+input:focus {
+    border-color: #409eff;
+}
+
+/* 选中无序列表中的第一个 li */
+ul li:first-child {
+    font-weight: bold;
+}
+
+/* 选中偶数行（斑马纹效果） */
+tr:nth-child(even) {
+    background-color: #f5f5f5;
+}
+```
+
+8. **后代选择器**：格式 `元素1 元素2 { 样式 }`，选中元素 1 内部所有的元素 2 后代（不限层级）。
+
+```css
+/* 后代选择器：选中 #main 内所有 p，无论嵌套多深 */
 #main p {
     margin: 0 auto; /* 横向居中；4 个值表示上右下左，2 个值表示上下、左右 */
 }
@@ -241,15 +278,22 @@ input[type="password"] {
         h1, .title {
             font-weight: bold; /* 设置文字字体粗细 */
         }
-        /* 元素[属性] */
+        /* 属性选择器 */
         a[href] {
             text-decoration: none; /* 取消超链接下划线 */
         }
-        /* 元素[属性="值"] */
         input[type="password"] {
             background: #f5f5f5; /* 背景颜色 */
         }
-        /* 后代选择器 元素1 元素2 */
+        /* 子元素选择器：只选中直接子元素 */
+        #nav > li {
+            display: inline-block;
+        }
+        /* 伪类选择器 */
+        a:hover {
+            color: red;
+        }
+        /* 后代选择器：选中所有后代 */
         #main p {
             margin: 0 auto; /* 横向居中；4 个值表示上右下左，2 个值表示上下、左右 */
         }
@@ -270,15 +314,82 @@ input[type="password"] {
 </html>
 ```
 
-### 1.3 CSS 盒子模型
+### 1.3 CSS 常用基础样式
 
-#### 1.3.1 什么是盒子模型
+在正式布局之前，掌握常用的文本、颜色与背景样式是写好 CSS 的基础。
+
+#### 1.3.1 文本相关属性
+
+| 属性 | 作用 | 示例 |
+| --- | --- | --- |
+| `color` | 文字颜色 | `color: #333;` |
+| `font-size` | 字体大小 | `font-size: 16px;` |
+| `font-weight` | 字体粗细 | `font-weight: bold;` |
+| `font-family` | 字体类型 | `font-family: "微软雅黑", sans-serif;` |
+| `text-align` | 水平对齐方式 | `text-align: center;` |
+| `text-decoration` | 文本装饰 | `text-decoration: none;`（常用于去除超链接下划线） |
+| `text-indent` | 首行缩进 | `text-indent: 2em;` |
+| `line-height` | 行高（控制行间距） | `line-height: 1.5;` |
+| `letter-spacing` | 字符间距 | `letter-spacing: 2px;` |
+
+```css
+p {
+    color: #333;
+    font-size: 16px;
+    line-height: 1.8;
+    text-indent: 2em;
+    text-align: left;
+}
+```
+
+#### 1.3.2 颜色表示方式
+
+CSS 中常用四种颜色表示方式：
+
+```css
+/* 1. 关键字 */
+color: red;
+
+/* 2. RGB（红绿蓝，0~255） */
+color: rgb(255, 0, 0);
+
+/* 3. RGBA（带透明度，0~1） */
+color: rgba(255, 0, 0, 0.5);
+
+/* 4. 十六进制（最常用） */
+color: #ff0000;   /* 红色 */
+color: #333;       /* 简写形式，等同于 #333333 */
+```
+
+#### 1.3.3 背景属性
+
+| 属性 | 作用 | 示例 |
+| --- | --- | --- |
+| `background-color` | 背景颜色 | `background-color: #f5f5f5;` |
+| `background-image` | 背景图片 | `background-image: url('bg.png');` |
+| `background-repeat` | 背景平铺方式 | `background-repeat: no-repeat;` |
+| `background-size` | 背景大小 | `background-size: cover;` |
+| `background-position` | 背景定位 | `background-position: center top;` |
+
+```css
+.hero {
+    background-color: #eef;
+    background-image: url('banner.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+```
+
+### 1.4 CSS 盒子模型
+
+#### 1.4.1 什么是盒子模型
 
 网页中所有元素都可以看作一个**矩形盒子**，由 4 部分组成：`内容区（content）`、`内边距（padding）`、`边框（border）`、`外边距（margin）`。
 
 > 盒子总宽度 / 高度 = content + padding + border + margin
 
-#### 1.3.2 盒子模型的四大组成
+#### 1.4.2 盒子模型的四大组成
 
 1. **content 内容区**：元素实际存放文字、图片的区域，大小由 `width / height` 控制。
 2. **padding 内边距**：内容与边框之间的距离，背景色会延伸到此区域。
@@ -300,7 +411,7 @@ border: 1px solid #000;
 
 > **margin 塌陷（合并）**：垂直方向相邻的块级元素，外边距会合并（取最大值，而非相加）。
 
-#### 1.3.3 两种盒子模式 box-sizing
+#### 1.4.3 两种盒子模式 box-sizing
 
 | 模式 | 说明 | 实际宽度计算 |
 | --- | --- | --- |
@@ -309,7 +420,7 @@ border: 1px solid #000;
 
 > 记忆口诀：content-box 向外撑，border-box 向内挤。开发中推荐全局设置 `box-sizing: border-box;`，便于布局计算。
 
-#### 1.3.4 布局标签 div / span
+#### 1.4.4 布局标签 div / span
 
 - `<div>`：块级元素，独占一行，默认宽度等于父元素宽度，可设置宽高。
 - `<span>`：行内元素，一行可显示多个，宽度由内容撑开，不可设置宽高。
@@ -343,13 +454,13 @@ border: 1px solid #000;
 
 ![[前端-盒子模型.png]]
 
-### 1.4 Flex 布局
+### 1.5 Flex 布局
 
 Flex 布局（又称弹性布局）是网页的主流布局方案，**可以轻松实现居中、等分、自适应排列**，完美替代传统的浮动与 margin 布局，解决了传统布局高度塌陷、对齐困难等问题。只需给父元素设置 `display: flex;` 即可开启弹性布局，子元素会自动成为弹性项。
 
 Flex 的所有属性都作用于开启 `display: flex` 的父盒子，用来控制子元素的整体排列规则。
 
-#### 1.4.1 布局方向 flex-direction
+#### 1.5.1 布局方向 flex-direction
 
 设置主轴方向，决定子元素的排列方向：
 
@@ -360,7 +471,7 @@ flex-direction: row-reverse;    /* 水平方向从右到左 */
 flex-direction: column-reverse; /* 垂直方向从下到上 */
 ```
 
-#### 1.4.2 换行规则 flex-wrap
+#### 1.5.2 换行规则 flex-wrap
 
 控制子元素溢出容器时是否换行，默认不换行、压缩元素：
 
@@ -370,7 +481,7 @@ flex-wrap: wrap;          /* 自动换行，超出容器宽度自动换行 */
 flex-wrap: wrap-reverse;  /* 反向换行 */
 ```
 
-#### 1.4.3 主轴对齐 justify-content
+#### 1.5.3 主轴对齐 justify-content
 
 控制子元素在**主轴方向**的对齐方式（最常用的居中属性）：
 
@@ -383,7 +494,7 @@ justify-content: space-around;  /* 子元素两侧间距均分，左右有间距
 justify-content: space-evenly;  /* 所有间距完全均等 */
 ```
 
-#### 1.4.4 侧轴对齐 align-items
+#### 1.5.4 侧轴对齐 align-items
 
 控制单行子元素在**侧轴方向**的对齐方式：
 
@@ -395,9 +506,9 @@ align-items: center;     /* 侧轴居中对齐（垂直居中） */
 align-items: baseline;   /* 按文字基线对齐 */
 ```
 
-### 1.5 表单 form
+### 1.6 表单 form
 
-#### 1.5.1 表单作用
+#### 1.6.1 表单作用
 
 表单用于**收集用户信息**，并将数据提交给后端服务器，核心标签是作为表单容器的 `<form>`。
 
@@ -412,7 +523,7 @@ align-items: baseline;   /* 按文字基线对齐 */
   - `get`：参数拼在 url 上，长度有限，适合查询，但不安全。
   - `post`：数据放在请求体中携带，适合提交隐私、大量数据。
 
-#### 1.5.2 表单常用控件 input
+#### 1.6.2 表单常用控件 input
 
 `<input>` 是单标签，**type 属性决定控件类型**。
 
@@ -504,7 +615,7 @@ name 属性控制分组互斥：
 <button type="button">普通按钮</button>
 ```
 
-#### 1.5.3 label 标签
+#### 1.6.3 label 标签
 
 点击文字即可自动选中对应的输入框，扩大点击区域，提升用户体验。
 
@@ -525,7 +636,7 @@ name 属性控制分组互斥：
 </label>
 ```
 
-#### 1.5.4 下拉选择框 select + option
+#### 1.6.4 下拉选择框 select + option
 
 ```html
 <select name="city">
@@ -537,7 +648,7 @@ name 属性控制分组互斥：
 
 `selected`：默认选中当前下拉选项。
 
-#### 1.5.5 文本域 textarea
+#### 1.6.5 文本域 textarea
 
 ```html
 <textarea name="msg" rows="4" cols="30" placeholder="请输入留言"></textarea>
@@ -545,9 +656,9 @@ name 属性控制分组互斥：
 
 `rows`：显示行数；`cols`：显示字符宽度；默认支持拖动右下角缩放大小。
 
-### 1.6 表格 table
+### 1.7 表格 table
 
-#### 1.6.1 基础标签
+#### 1.7.1 基础标签
 
 `table` 是表格最外层的容器；`tr` 代表表格中的一行；`td` 是普通单元格，用来存放数据内容；`th` 是表头单元格，文字默认加粗并居中。
 
@@ -571,7 +682,7 @@ name 属性控制分组互斥：
 </table>
 ```
 
-#### 1.6.2 表格分区标签
+#### 1.7.2 表格分区标签
 
 可以把表格分成表头、主体、底部三个区域，提升代码可读性，且浏览器会优先加载表格主体 `tbody`：
 - `thead`：存放表头内容。
@@ -605,7 +716,7 @@ name 属性控制分组互斥：
 </table>
 ```
 
-#### 1.6.3 合并单元格
+#### 1.7.3 合并单元格
 
 `colspan` 用于横向跨列合并单元格；`rowspan` 用于纵向跨行合并单元格。合并单元格后，需要手动删除被合并的 `td` 标签，只保留写了合并属性的单元格。
 
@@ -624,7 +735,7 @@ name 属性控制分组互斥：
 </table>
 ```
 
-### 1.7 JavaScript 的引入
+### 1.8 JavaScript 的引入
 
 **JavaScript** 是一门跨平台、面向对象的脚本语言，用来控制网页行为、实现人机交互效果，主要包括以下三部分：
 - **ECMAScript**：规定 JS 基础语法核心知识，包括变量、数据类型、流程控制、函数、对象等。
@@ -679,9 +790,9 @@ alert('内部js')
 </script>
 ```
 
-### 1.8 JS 核心语法
+### 1.9 JS 核心语法
 
-#### 1.8.1 变量
+#### 1.9.1 变量
 
 变量用来存储数据，使用关键字 `var`、`let`、`const` 声明变量：
 - `var`：旧版本变量，可以重复声明，存在变量提升，开发中不推荐。
@@ -694,7 +805,7 @@ let age = 18;
 const PI = 3.14;
 ```
 
-#### 1.8.2 数据类型
+#### 1.9.2 数据类型
 
 分为简单数据类型和复杂数据类型。
 
@@ -725,7 +836,7 @@ console.log(person.name);
 console.log(person.age);
 ```
 
-#### 1.8.3 输出方式
+#### 1.9.3 输出方式
 
 1. `console.log()`：在浏览器控制台打印内容，调试代码最常用。
 
@@ -745,7 +856,7 @@ alert("弹出消息");
 document.write("页面文字");
 ```
 
-#### 1.8.4 流程控制
+#### 1.9.4 流程控制
 
 1. `if` 判断语句
 
@@ -765,7 +876,7 @@ for (let i = 0; i < 10; i++) {
 }
 ```
 
-#### 1.8.5 函数
+#### 1.9.6 函数
 
 函数的作用：封装一段代码，实现代码复用，需要调用才会执行。
 
@@ -858,7 +969,7 @@ let 对象名 = {
 对象名.方法名();
 ```
 
-### 1.9 JS DOM 与事件监听
+### 1.10 JS DOM 与事件监听
 
 浏览器加载 HTML 页面后，会把页面上的所有标签转换成对象，DOM 就是用来操作这些页面元素的。通过 DOM 可以修改页面内容、修改标签属性、修改样式，还可以绑定事件。
 
@@ -869,7 +980,7 @@ HTML 文档被浏览器解析后，封装成的对象分为：
 - **Text**：文本对象
 - **Comment**：注释对象
 
-#### 1.9.1 操作节点
+#### 1.10.1 操作节点
 
 **(1) 获取元素**
 
@@ -995,7 +1106,7 @@ let box = document.querySelector(".box");
 box.className = "active";
 ```
 
-#### 1.9.2 事件监听
+#### 1.10.2 事件监听
 
 事件就是用户的操作动作，例如点击、鼠标移入。
 
