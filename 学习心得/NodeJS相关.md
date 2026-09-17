@@ -15,16 +15,16 @@ npm uninstall -g @musistudio/claude-code-router
 
 3. D 盘新建文件夹：
 
-在 `D:\nodeJS` 下面新建 2 个文件夹（基于安装位置）
+在 `D:\nodejs` 下面新建 2 个文件夹（基于安装位置）
 - `node_global`：全局包存放目录（prefix）
 - `node_cache`：npm 缓存目录
 
 4. 修改 npm 配置，指向 D 盘路径
 ```bash
 # 设置全局包目录
-npm config set prefix "D:\nodeJS\node_global"
+npm config set prefix "D:\nodejs\node_global"
 # 设置缓存目录
-npm config set cache "D:\nodeJS\node_cache"
+npm config set cache "D:\nodejs\node_cache"
 ```
 
 5. 校验是否设置成功
