@@ -283,6 +283,7 @@ tr:nth-child(even) {
         .title {
             color: green; /* 常见有四种颜色表示方式：关键字、rgb、rgba、十六进制 */
         }
+        
         /* id 选择器 */
         #main {
             border: 1px solid #333;
