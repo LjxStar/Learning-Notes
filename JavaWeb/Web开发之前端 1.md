@@ -8,13 +8,17 @@ Web 标准（也称网页标准）是由一系列标准组成的规范体系，�
 
 ![[前端三件套的关系.png|598]]
 
-三者之间形成「结构、样式、行为」分工体系：HTML 提供基础内容，CSS 美化页面外观，JavaScript 控制逻辑与互动。浏览器先解析 HTML，再套用 CSS，最后执行 JavaScript。这样的分工设计，有助于提升网页的维护性与扩展性，是现代网页开发的基础架构。
+三者之间形成「结构、样式、行为」的分工体系：HTML 提供基础内容，CSS 美化页面外观，JavaScript 控制逻辑与互动。浏览器先解析 HTML，再套用 CSS，最后执行 JavaScript。这样的分工设计，有助于提升网页的维护性与扩展性，是现代网页开发的基础架构。
 
 ## 一、前端三件套
+
+前端三件套是网页开发的三大核心技术，下面从 HTML 开始逐一介绍。
 
 ### 1.1 HTML 页面结构与常用标签
 
 #### 1.1.1 HTML 标准骨架
+
+任何 HTML 页面都遵循同一套标准骨架，先把骨架结构记熟，写页面就不会乱：
 
 ```html
 <!DOCTYPE html>
@@ -30,28 +34,34 @@ Web 标准（也称网页标准）是由一系列标准组成的规范体系，�
 </html>
 ```
 
-- `<!DOCTYPE html>` 声明文档类型，告诉浏览器该文件是 HTML 5 文档，这有助于浏览器解析和渲染网页内容。
-- `<html>` 定义整个 HTML 文档的根元素，所有的 HTML 元素必须包含在 `<html>` 标签内。
+- `<!DOCTYPE html>` 声明文档类型，告诉浏览器该文件是 HTML5 文档，有助于浏览器正确解析和渲染网页内容。
+- `<html>` 定义整个 HTML 文档的根元素，所有的 HTML 元素都必须包含在 `<html>` 标签内。
 - `<head>`：网页头部，存放浏览器解析所需的元信息（CSS 样式、页面标题、字符编码等），对用户不可见。
 - `<body>`：网页主体，存放展示给用户的所有内容（文字、图片、视频、表单等）。
-- `<title>`：定义浏览器标签栏显示的页面标题。
+- `<title>`：定义浏览器标签栏上显示的页面标题。
 
 #### 1.1.2 常用核心标签
 
-##### 1. 文本类标签
+HTML 的标签种类繁多，先掌握最常用的几类，其余用到时查阅即可。
+
+**（1）文本类标签**
+
+文本类标签用于调整文字的展示效果，常用标签如下：
 
 | 标签                 | 作用   | 说明                     |
 | ------------------ | ---- | ---------------------- |
 | `<h1>~<h6>`        | 标题标签 | 一级到六级，权重依次降低           |
 | `<p>`              | 段落标签 | 自带上下外边距                |
 | `<br>`             | 换行标签 | 单标签，强制文本换行             |
-| `<hr>`             | 水平分隔 | 单标签，表示主题的分隔。           |
+| `<hr>`             | 水平分隔 | 单标签，表示主题的分隔            |
 | `<strong>` / `<b>` | 文本加粗 | `<strong>` 语义权重更高，推荐使用 |
 | `<em>` / `<i>`     | 文本倾斜 | `<em>` 语义权重更高，推荐使用     |
-| `<ins>` / `<u>`    | 下划线  | `<ins>` 语义权重更高         |
-| `<del>` / `<s>`    | 删除线  | `<del>` 语义权重更高         |
+| `<ins>` / `<u>`    | 下划线  | `<ins>` 语义权重更高          |
+| `<del>` / `<s>`    | 删除线  | `<del>` 语义权重更高          |
 
-##### 2. 媒体与链接标签
+**（2）媒体与链接标签**
+
+下面的标签用于在页面中嵌入图片、视频、音频，或实现页面跳转：
 
 - **图片标签 `<img>`**
 
@@ -73,7 +83,7 @@ Web 标准（也称网页标准）是由一系列标准组成的规范体系，�
 <audio src="音频地址" controls autoplay muted loop></audio>
 ```
 
-`controls`：显示播放控件；`autoplay`：自动播放；`muted`：静音；`loop`：循环播放。用法与 `<video>` 基本一致。
+音频标签的属性含义与 `<video>` 完全一致，只是没有画面显示。
 
 - **超链接标签 `<a>`**
 
@@ -81,21 +91,26 @@ Web 标准（也称网页标准）是由一系列标准组成的规范体系，�
 <a href="链接地址" target="_blank" title="悬浮提示">链接文本</a>
 ```
 
-`target="_blank"`：在新窗口打开链接；`target="_self"`：在当前页面打开（默认）。
+`target="_blank"`：在新窗口打开链接；`target="_self"`：在当前页面打开（默认值）。
 
-##### 3. 容器与列表标签
+**（3）容器与列表标签**
+
+容器标签负责搭建页面结构，列表标签用于罗列条目：
 
 - `<div>`：块级容器，独占一行，常用于页面布局，可设置宽高。
 - `<span>`：行内容器，一行可放置多个，常用于局部文字修饰，不可设置宽高。
 
 - **无序列表**
+
 ```html
 <ul>
     <li>列表项1</li>
     <li>列表项2</li>
 </ul>
 ```
+
 - **有序列表**
+
 ```html
 <ol start="起始序号">
     <li>列表项1</li>
@@ -103,28 +118,34 @@ Web 标准（也称网页标准）是由一系列标准组成的规范体系，�
 </ol>
 ```
 
-##### 4. 表格与注释
+**（4）注释**
+
+注释是写给开发人员看的说明文字，浏览器不会渲染显示：
 
 ```html
 <!-- 这是注释，浏览器不渲染 -->
-<input type="text" name="名称" value="默认值" placeholder="提示文字">
 ```
+
+> 表格标签在 1.7 节单独介绍，这里不再重复。
 
 #### 1.1.3 HTML 字符实体
 
-特殊符号无法被浏览器直接解析，需要使用字符实体来替代：
+有些特殊符号无法被浏览器直接解析，需要使用对应的字符实体来替代：
 
 | 符号  | 字符实体     | 说明         |
 | --- | -------- | ---------- |
 | 空格  | `&nbsp;` | 不换行空格      |
 | <   | `&lt;`   | 小于号 / 左尖括号 |
 | >   | `&gt;`   | 大于号 / 右尖括号 |
+| &   | `&amp;`  | 与号 / 和     |
 
 ### 1.2 CSS 的引入与选择器
 
 #### 1.2.1 三种引入方式
 
-1. **行内样式**：写在标签的 `style` 属性中，优先级最高。
+CSS 样式要作用到页面上，主要有以下三种引入方式，实际开发中推荐使用外部样式：
+
+1. **行内样式**：写在标签的 `style` 属性中，优先级最高，但只对当前标签生效。
 
 ```html
 <div style="color:red;">行内样式</div>
@@ -147,6 +168,8 @@ Web 标准（也称网页标准）是由一系列标准组成的规范体系，�
 ```
 
 #### 1.2.2 CSS 选择器
+
+选择器用于精准地选中页面元素并应用样式，掌握以下几类常用的即可应对大多数场景：
 
 1. **元素名称选择器**：格式 `元素名称 { 样式 }`，选中页面中所有该标签元素。
 
@@ -171,7 +194,7 @@ p {
 <p class="title">类选择器文本</p>
 ```
 
-3. **id 选择器**：格式 `#id属性值 { 样式 }`，选中 id 等于该值的元素，以 `#` 开头，在页面中唯一。
+3. **id 选择器**：格式 `#id属性值 { 样式 }`，选中 id 等于该值的元素，以 `#` 开头，id 在页面中唯一。
 
 ```css
 /* id 选择器 */
@@ -193,7 +216,7 @@ h1, .title {
 }
 ```
 
-5. **属性选择器**：根据元素是否拥有某属性或属性值是否等于指定值来选中元素。
+5. **属性选择器**：根据元素是否拥有某属性、或属性值是否等于指定值来选中元素。
 
 ```css
 /* 选中拥有 href 属性的 a 标签 */
@@ -216,7 +239,7 @@ input[type="password"] {
 }
 ```
 
-7. **伪类选择器**：格式 `选择器:伪类 { 样式 }`，选中元素的特定状态或位置，无需添加额外 class。
+7. **伪类选择器**：格式 `选择器:伪类 { 样式 }`，选中元素的特定状态或位置，无需额外添加 class。
 
 ```css
 /* 鼠标悬浮时变色 */
@@ -316,7 +339,11 @@ tr:nth-child(even) {
 
 ### 1.3 CSS 常用基础样式
 
+在正式布局之前，掌握常用的文本、颜色与背景样式是写好 CSS 的基础。
+
 #### 1.3.1 文本相关属性
+
+文本是页面中出现频率最高的内容，掌握以下属性即可完成日常的文字排版：
 
 | 属性                | 作用        | 示例                                 |
 | ----------------- | --------- | ---------------------------------- |
@@ -325,28 +352,58 @@ tr:nth-child(even) {
 | `font-weight`     | 字体粗细      | `font-weight: bold;`               |
 | `font-family`     | 字体类型      | `font-family: "微软雅黑", sans-serif;` |
 | `text-align`      | 水平对齐方式    | `text-align: center;`              |
-| `text-decoration` | 文本装饰      | `text-decoration: none;`（去除超链接下划线） |
+| `text-decoration` | 文本装饰      | `text-decoration: none;`（常用于去除超链接下划线） |
 | `text-indent`     | 首行缩进      | `text-indent: 2em;`                |
 | `line-height`     | 行高（控制行间距） | `line-height: 1.5;`                |
 | `letter-spacing`  | 字符间距      | `letter-spacing: 2px;`             |
 
+```css
+p {
+    color: #333;
+    font-size: 16px;
+    line-height: 1.8;
+    text-indent: 2em;
+    text-align: left;
+}
+```
+
 #### 1.3.2 颜色表示方式
 
-CSS 中常用四种颜色表示方式：
+CSS 中常用的颜色有四种表示方式，效果完全相同：
 
 ```css
 /* 1. 关键字 */
 color: red;
 
-/* 2. RGB（红绿蓝，0~255） */
+/* 2. RGB（红绿蓝，取值 0~255） */
 color: rgb(255, 0, 0);
 
-/* 3. RGBA（带透明度，0~1） */
+/* 3. RGBA（比 RGB 多一个透明度参数，取值 0~1） */
 color: rgba(255, 0, 0, 0.5);
 
 /* 4. 十六进制（最常用） */
 color: #ff0000;   /* 红色 */
-color: #333;       /* 简写形式，等同于 #333333 */
+color: #333;      /* 简写形式，等同于 #333333 */
+```
+
+#### 1.3.3 背景属性
+
+| 属性 | 作用 | 示例 |
+| --- | --- | --- |
+| `background-color` | 背景颜色 | `background-color: #f5f5f5;` |
+| `background-image` | 背景图片 | `background-image: url('bg.png');` |
+| `background-repeat` | 背景平铺方式 | `background-repeat: no-repeat;` |
+| `background-size` | 背景大小 | `background-size: cover;` |
+| `background-position` | 背景定位 | `background-position: center top;` |
+
+```css
+.hero {
+    background-color: #eef;
+    background-image: url('banner.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
 ```
 
 ### 1.4 CSS 盒子模型
@@ -389,6 +446,8 @@ border: 1px solid #000;
 > 记忆口诀：content-box 向外撑，border-box 向内挤。开发中推荐全局设置 `box-sizing: border-box;`，便于布局计算。
 
 #### 1.4.4 布局标签 div / span
+
+想给页面划分区块、控制排版，最常用的两个标签就是 `<div>` 和 `<span>`：
 
 - `<div>`：块级元素，独占一行，默认宽度等于父元素宽度，可设置宽高。
 - `<span>`：行内元素，一行可显示多个，宽度由内容撑开，不可设置宽高。
@@ -489,7 +548,7 @@ align-items: baseline;   /* 按文字基线对齐 */
 - `action`：提交到后端接口的地址（后端接收数据的 url）。
 - `method`：提交方式，常用 `get` / `post`。
   - `get`：参数拼在 url 上，长度有限，适合查询，但不安全。
-  - `post`：数据放在请求体中携带，适合提交隐私、大量数据。
+  - `post`：数据放在请求体中携带，适合提交隐私数据或大量数据。
 
 #### 1.6.2 表单常用控件 input
 
@@ -626,6 +685,8 @@ name 属性控制分组互斥：
 
 ### 1.7 表格 table
 
+表格用于展示结构化的数据，例如员工列表、成绩单等，下面介绍其常用标签。
+
 #### 1.7.1 基础标签
 
 `table` 是表格最外层的容器；`tr` 代表表格中的一行；`td` 是普通单元格，用来存放数据内容；`th` 是表头单元格，文字默认加粗并居中。
@@ -736,14 +797,13 @@ alert('内部js')
 <script src="test.js"></script>
 ```
 
-4. **ES6 Module 模块化**
-`type="module"`，默认延迟执行，支持 `import`
+4. **ES6 Module 模块化**：给 `script` 标签加上 `type="module"`，浏览器就会按 ES 模块的方式加载 JS 文件，默认延迟执行，支持 `import` 导入。下面以引入 Vue 3 为例：
 
-```js
-// 此处以Vue3 引入为例
+```html
+<!-- 页面中需要 Vue 接管的位置 -->
 <div id="app">{{ message }}</div>
 
-// 引入模块化的js时，需要设置 `type="module"
+<!-- 引入模块化的 JS 时，script 标签需要设置 type="module" -->
 <script type="module">
   import { createApp, ref } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
 
@@ -775,7 +835,7 @@ const PI = 3.14;
 
 #### 1.9.2 数据类型
 
-分为简单数据类型和复杂数据类型。
+JS 中的数据类型分为简单数据类型和复杂数据类型。
 
 **简单数据类型**
 
@@ -808,6 +868,11 @@ console.log(person.age);
 
 **JSON（JavaScript Object Notation，JavaScript 对象表示法）** 是一种轻量级的数据交换格式，用于在网络中传输数据。目前前后端数据交互几乎都使用 JSON 格式。
 
+JSON 的写法与 JS 对象非常相似，但有两点区别：
+
+- JSON 中的**属性名（键）必须加双引号**。
+- JSON 中**不能写函数、注释、尾逗号**。
+
 ```json
 {
   "name": "李四",
@@ -839,6 +904,8 @@ console.log(person.age);  // 20
 
 #### 1.9.4 输出方式
 
+调试 JS 代码最常用的三种输出方式：
+
 1. `console.log()`：在浏览器控制台打印内容，调试代码最常用。
 
 ```js
@@ -858,6 +925,8 @@ document.write("页面文字");
 ```
 
 #### 1.9.5 流程控制
+
+程序默认自上而下逐行执行，流程控制语句可以改变代码的执行顺序，实现分支判断与循环。
 
 1. `if` 判断语句
 
@@ -983,7 +1052,7 @@ HTML 文档被浏览器解析后，封装成的对象分为：
 
 #### 1.10.1 操作节点
 
-**(1) 获取元素**
+DOM 操作的核心流程分为四步：获取元素、操作内容、操作属性、操作样式。下面先看示例中要用到的页面结构：
 
 ```html
 <div id="box">我是盒子</div>
@@ -994,6 +1063,10 @@ HTML 文档被浏览器解析后，封装成的对象分为：
 <div class="item">项目</div>
 <div class="box">第一个盒子</div>
 ```
+
+**（1）获取元素**
+
+操作元素前必须先拿到它，常见获取方式如下：
 
 1. 根据 id 获取元素
 
@@ -1030,7 +1103,7 @@ let one = document.querySelector(".box");
 let all = document.querySelectorAll("li");
 ```
 
-**(2) 操作元素内容**
+**（2）操作元素内容**
 
 `innerText` 获取或设置元素里面的纯文本，不识别 HTML 标签；`innerHTML` 获取或设置内容，可以识别 HTML 标签。
 
@@ -1046,7 +1119,7 @@ div.innerText = "新文字";
 div.innerHTML = "<b>加粗文字</b>";
 ```
 
-**(3) 操作元素属性**
+**（3）操作元素属性**
 
 1. **普通属性**
 
@@ -1082,7 +1155,7 @@ div.setAttribute("data-id", 10);
 div.removeAttribute("data-id");
 ```
 
-**(4) 操作元素样式**
+**（4）操作元素样式**
 
 ```html
 <div class="box"></div>
@@ -1173,89 +1246,104 @@ Vue 是一款用于构建用户界面的渐进式 JavaScript 框架。它基于�
 ![[Vue-渐进式.png]]
 
 ### 2.1 快速入门
+
+先用一个最简单的例子体验 Vue 3 的完整开发流程：
+
 ```html
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vue-快速入门</title>
-  </head>
-  <body>
-    <div id="app">
-      <h1>{{ message }}</h1>
-    </div>
-   
-    <script type="module">
-      import { createApp } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
-      
-      createApp({
-        data() {
-          return {
-            message: "Hello,Vue!",
-          };
-        },
-      }).mount("#app");
-    </script>
-  </body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue-快速入门</title>
+  </head>
+  <body>
+    <div id="app">
+      <h1>{{ message }}</h1>
+    </div>
+
+    <script type="module">
+      import { createApp } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
+
+      createApp({
+        data() {
+          return {
+            message: "Hello,Vue!",
+          };
+        },
+      }).mount("#app");
+    </script>
+  </body>
 </html>
 ```
 
-**1.html 部分**
+接下来把上面的示例拆解成三个关键部分来理解。
+
+**（1）HTML 部分**
+
 ```html
 <div id="app">
-  <h1>{{ message }}</h1>
+  <h1>{{ message }}</h1>
 </div>
 ```
+
 - **挂载根容器**：Vue 应用会接管这个 DOM 节点，容器外的内容 Vue 不会处理。
 - `{{ message }}`：**插值表达式**，把 Vue 实例里 `data` 中的 `message` 变量渲染到页面。
 
-**2.Vue 引入部分**
+**（2）Vue 引入部分**
+
+通过 CDN 引入 Vue 3 的完整写法：
+
 ```html
 <script type="module">
-      import { createApp } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
-    </script>
+  import { createApp } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
+</script>
 ```
--  `type="module"`：开启浏览器原生 ESModule 能力。
--  `https://unpkg.com/vue@3/dist/vue.esm-browser.js`：CDN 地址，直接从网络加载 Vue 3 的 ESM 浏览器版。
--  `import { createApp }`：解构导入 Vue 提供的 `createApp` 函数，用来创建 Vue 应用实例。
 
-**3.createApp 创建应用**
+- `type="module"`：开启浏览器原生 ESModule 能力。
+- CDN 地址 `https://unpkg.com/vue@3/dist/vue.esm-browser.js`：直接从网络加载 Vue 3 的 ESM 浏览器版，无需下载安装。
+- `import { createApp }`：解构导入 Vue 提供的 `createApp` 函数，用来创建 Vue 应用实例。
+
+**（3）createApp 创建应用**
+
 ```js
 createApp({
-	data() {
-	  return {
-		message: "Hello,Vue!",
-	  };
-	},
+  data() {
+    return {
+      message: "Hello,Vue!",
+    };
+  },
 }).mount("#app");
 ```
-- `createApp(选项对象)`，接收组件配置对象
-- `data` 只是配置对象里的属性名；Vue 会读取 options 对象上名叫 `data` 的属性，拿到里面存的函数，然后 Vue 自己调用这个函数。
+
+- `createApp(选项对象)`：接收一个组件配置对象，并返回应用实例。
+- `data` 只是配置对象里的属性名：Vue 会读取选项对象上名为 `data` 的属性，拿到里面存的函数并调用它，函数的返回值就是页面渲染时使用的数据。
+
 ```js
 // 这是 ES5 完整写法，`data() {}` 只是 ES6 对象方法简写语法糖，两者完全等价。
 createApp({
-	data: function () {
-	  return {
-	   message: "Hello,Vue!" 
-	   };
-	},
+  data: function () {
+    return {
+      message: "Hello,Vue!",
+    };
+  },
 }).mount("#app");
 ```
-`.mount(选择器/DOM元素)`：挂载，把 Vue 应用关联到页面 DOM。
+
+`.mount(选择器/DOM元素)`：挂载，把 Vue 应用关联到页面上的 DOM 节点，挂载后 Vue 才开始接管该容器内部的内容。
 
 ### 2.2 常见指令
 
-指令是带有 `v-` 前缀的特殊 attribute。Vue 提供了许多[内置指令](https://cn.vuejs.org/api/built-in-directives.html)，不同指令具有不同含义，可以实现不同的功能。
+指令是带有 `v-` 前缀的特殊属性。Vue 提供了许多[内置指令](https://cn.vuejs.org/api/built-in-directives.html)，不同的指令有不同的含义，能实现不同的功能。
 
 | 常见指令                  | 作用                             |
 | --------------------- | ------------------------------ |
-| v-for                 | 列表渲染，遍历容器的元素或者对象的属性            |
-| v-bind                | 为HTML标签绑定属性值，如设置 href , css样式等 |
-| v-if/v-else-if/v-else | 条件性的渲染某元素，判定为true时渲染,否则不渲染     |
-| v-show                | 根据条件展示某元素，区别在于切换的是display属性的值  |
-| v-model               | 在表单元素上创建双向数据绑定                 |
-| v-on                  | 为HTML标签绑定事件                    |
+| v-for                 | 列表渲染，遍历数组元素或对象属性            |
+| v-bind                | 为 HTML 标签动态绑定属性值，如 href、CSS 样式等 |
+| v-if/v-else-if/v-else | 按条件渲染元素，判定为 true 时渲染，否则不渲染  |
+| v-show                | 根据条件展示元素，区别在于切换的是 display 属性的值 |
+| v-model               | 在表单元素上创建双向数据绑定              |
+| v-on                  | 为 HTML 标签绑定事件                |
 
 在这里你可以直观地看到完整的指令语法：
 ![[Vue-语法格式.png]]
@@ -1275,70 +1363,70 @@ createApp({
 ```
 
 `:key`：给每一项元素绑定唯一标识，帮助 Vue 正确复用、排序 DOM 节点，提升列表渲染性能。
-> 推荐使用 id 作为 key（唯一），不推荐使用 index 作为 key（会变化，不对应）
+> 推荐使用 id 作为 key（唯一），不推荐使用 index 作为 key（会变化，不对应）。
 
 ```html
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>v-for 示例</title>
-  </head>
-  <body>
-    <div id="app">
-      <h3>遍历数组，获取每一项 item</h3>
-      <table>
-        <tr>
-          <th>名称</th>
-        </tr>
-        <tr v-for="item in list">
-          <td>{{ item.name }}</td>
-        </tr>
-      </table>
-      
-      <h3>遍历数组，同时获取item与索引index</h3>
-      <table>
-        <tr>
-          <th>索引</th>
-          <th>名称</th>
-        </tr>
-        <tr v-for="(item, index) in list">
-          <td>{{ index }}</td>
-          <td>{{ item.name }}</td>
-        </tr>
-      </table>
-      
-      <h3>遍历对象，(值,键)</h3>
-      <div v-for="(value, key) in userInfo">{{ key }}：{{ value }}</div>
-    </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>v-for 示例</title>
+  </head>
+  <body>
+    <div id="app">
+      <h3>遍历数组，获取每一项 item</h3>
+      <table>
+        <tr>
+          <th>名称</th>
+        </tr>
+        <tr v-for="item in list">
+          <td>{{ item.name }}</td>
+        </tr>
+      </table>
 
-    <script type="module">
-      import { createApp } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
-      createApp({
-        data() {
-          return {
-            list: [
-              { id: 1, name: "Vue学习" },
-              { id: 2, name: "HTML" },
-              { id: 3, name: "JavaScript" },
-            ],
-            userInfo: {
-              name: "小明",
-              age: 18,
-              gender: "男",
-            },
-          };
-        },
-      }).mount("#app");
-    </script>
-  </body>
+      <h3>遍历数组，同时获取 item 与索引 index</h3>
+      <table>
+        <tr>
+          <th>索引</th>
+          <th>名称</th>
+        </tr>
+        <tr v-for="(item, index) in list">
+          <td>{{ index }}</td>
+          <td>{{ item.name }}</td>
+        </tr>
+      </table>
+
+      <h3>遍历对象（值, 键）</h3>
+      <div v-for="(value, key) in userInfo">{{ key }}：{{ value }}</div>
+    </div>
+
+    <script type="module">
+      import { createApp } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
+      createApp({
+        data() {
+          return {
+            list: [
+              { id: 1, name: "Vue学习" },
+              { id: 2, name: "HTML" },
+              { id: 3, name: "JavaScript" },
+            ],
+            userInfo: {
+              name: "小明",
+              age: 18,
+              gender: "男",
+            },
+          };
+        },
+      }).mount("#app");
+    </script>
+  </body>
 </html>
 ```
 
 #### 2.2.2 v-bind
 
-`v-bind` 用于**动态绑定 HTML 标签属性**，将 Vue 中的响应式数据关联到标签属性上，常用于 `src`、`href`、class、style 等属性。`v-bind:属性名 ` 可简写为 `:属性名 `。
+`v-bind` 用于**动态绑定 HTML 标签属性**，将 Vue 中的响应式数据关联到标签属性上，常用于 `src`、`href`、class、style 等属性。`v-bind:属性名` 可简写为 `:属性名`。
 
 ```html
 <!-- 基础属性绑定 -->
@@ -1366,15 +1454,16 @@ createApp({
 
 #### 2.2.3 v-if & v-show
 
-`v-if` 和 `v-show` 都可以控制元素**显示 / 隐藏**，但底层实现原理不同。
-	**v-if** 基于表达式值的真假性，直接对 DOM 节点进行创建或销毁。可以配合 v-else-if / v-else 进行链式条件判断。
-	**v-else-if** 必须出现在 v-if 之后，可以出现多个；**v-else** 必须出现在 v-if / v-else-if 之后。
-	**v-show** 基于表达式值的真假性，切换 CSS 的 display 属性，DOM 始终存在页面中。
+`v-if` 和 `v-show` 都可以控制元素的**显示 / 隐藏**，但底层实现原理不同：
+
+- **v-if** 基于表达式值的真假性，直接对 DOM 节点进行创建或销毁。可以配合 v-else-if / v-else 进行链式条件判断。
+- **v-else-if** 必须出现在 v-if 之后，可以出现多个；**v-else** 必须出现在 v-if / v-else-if 之后。
+- **v-show** 基于表达式值的真假性，切换 CSS 的 display 属性，DOM 始终存在于页面中。
 
 > 运行时条件很少改变，使用 `v-if`；需要频繁切换显示隐藏，使用 `v-show`。
 
 ```html
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
@@ -1417,8 +1506,8 @@ createApp({
 
 #### 2.2.4 v-model
 
-在表单输入元素或组件上创建双向绑定，可以方便地 **获取** 或 **设置** 表单项数据。
->  本质语法糖：v-model = :value + @input
+v-model 在表单输入元素或组件上创建双向绑定，可以方便地**获取**或**设置**表单项数据。
+> 本质语法糖：v-model = :value + @input
 
 ```html
 <!-- 原生输入框 -->
@@ -1428,21 +1517,22 @@ createApp({
 ```
 
 **修饰符**
-	.lazy：失去焦点后更新数据
-	.number：自动转为数字类型
-	.trim：移除输入内容两端空格
+- `.lazy`：失去焦点后更新数据。
+- `.number`：自动转为数字类型。
+- `.trim`：移除输入内容两端空格。
 
 #### 2.2.5 v-on
 
-**绑定事件监听**，给元素绑定 DOM 事件，触发后执行 JS 代码，可使用 @ 简写。
+**绑定事件监听**，给元素绑定 DOM 事件，触发后执行 JS 代码，可使用 `@` 简写。
 
-**事件修饰词**
-- `.prevent`：阻止默认行为
-- `.stop`：阻止事件冒泡
-- `.once`：事件只触发一次
-- `.self`：仅点击元素自身才触发
+**事件修饰符**
+- `.prevent`：阻止默认行为。
+- `.stop`：阻止事件冒泡。
+- `.once`：事件只触发一次。
+- `.self`：仅点击元素自身才触发。
 
-以下为 `v-model` 拿表单数据，`v-on` 绑定提交事件的示例：
+以下为 `v-model` 获取表单数据、`v-on` 绑定提交事件的综合示例：
+
 ```html
 <template>
   <div id="app">
@@ -1494,7 +1584,7 @@ export default {
 
 Vue 的生命周期包含 8 个阶段：每触发一个生命周期事件，会自动执行一个生命周期方法，这些生命周期方法也被称为钩子方法。其完整的生命周期如下图所示：
 
-| 状态            | 阶段周期 |
+| 状态            | 阶段 |
 | ------------- | ---- |
 | beforeCreate  | 创建前  |
 | created       | 创建后  |
@@ -1507,9 +1597,13 @@ Vue 的生命周期包含 8 个阶段：每触发一个生命周期事件，会�
 
 ![[Vue-生命周期.png]]
 
-对于 JavaWeb，只重点掌握 `mounted`，其余生命周期了解即可。
-**mounted**：挂载完成，Vue 实例初始化完毕，HTML 页面渲染成功。
->  **页面初始化时自动发送 ajax 请求，从后台加载数据**
+对于 JavaWeb，只需重点掌握 `mounted`，其余生命周期了解即可。
+
+**mounted（挂载完成）**：Vue 实例初始化完毕，HTML 页面渲染成功。此时页面元素已经真实存在，可以安全地操作 DOM，也可以在页面一打开时就发送请求加载数据。
+
+> 页面初始化时自动发送 AJAX 请求，从后台加载数据。
+
+示例：在 `mounted` 中自动加载员工列表。
 
 ```js
 methods: {
