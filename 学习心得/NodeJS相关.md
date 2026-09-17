@@ -14,9 +14,12 @@ npm uninstall -g @anthropic-ai/claude-code
 
 3. D 盘新建文件夹：
 
-在 `D:\nodejs` 下面新建 2 个文件夹（基于安装位置）
-- `node_global`：全局包存放目录（prefix）
-- `node_cache`：npm 缓存目录
+可将
+```
+D:\npm
+├─ global   ← 全局包
+└─ cache    ← npm缓存
+```
 
 4. 修改 npm 配置，指向 D 盘路径
 ```bash
