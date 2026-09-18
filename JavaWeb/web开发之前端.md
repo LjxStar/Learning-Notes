@@ -1829,7 +1829,7 @@ app.mount('#app')
 `v-model` 绑定一个布尔值：为 `true` 时显示弹窗，`false` 时关闭。
 
 5. **分页 el-pagination**
-
+[Pagination 分页 | Element Plus](https://element-plus.org/zh-CN/component/pagination)
 
 ```html
 <el-pagination
@@ -1845,6 +1845,7 @@ app.mount('#app')
 - `@current-change`：页码变化时触发的事件，一般在这里重新发起查询。
 
 6. **消息提示 ElMessage**
+7. 
 
 ```js
 import { ElMessage } from 'element-plus'
