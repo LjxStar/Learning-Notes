@@ -54,7 +54,8 @@ npm install -g @anthropic-ai/claude-code
 
 ```bash
 # 1. 配置阿里云源为默认源（核心命令）
-npm config set registry https://npm.aliyun.com/
+npm config set registry https://npm.aliyun.com/ (有时会失效)
+npm config set registry https://registry.npmmirror.com
 # 2. 验证配置是否生效（查看当前源）
 npm config get registry
 # 预期输出：https://registry.npmmirror.com
