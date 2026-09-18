@@ -1770,6 +1770,7 @@ app.mount('#app')
 ### 3.3.3 常用组件
 
 1. **按钮 el-button**
+[Button 按钮 | Element Plus](https://element-plus.org/zh-CN/component/button)
 
 `type` 属性控制按钮的颜色风格：`primary`（主要）、`success`（成功）、`warning`（警告）、`danger`（危险）等。
 
