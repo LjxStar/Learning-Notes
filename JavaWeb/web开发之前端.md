@@ -1782,6 +1782,7 @@ app.mount('#app')
 ```
 
 2. **表单 el-form + el-input**
+[Form 表单 | Element Plus](https://element-plus.org/zh-CN/component/form)
 
 `el-form` 是表单容器，`el-form-item` 表示一行表单项，`el-input` 是输入框，配合 `v-model` 完成数据的收集：
 
@@ -1802,6 +1803,7 @@ app.mount('#app')
 表单数据用 `ref` 声明，提交时取 `loginForm.value` 即可。
 
 3. **表格 el-table**
+
 
 ```html
 <el-table :data="empList" border stripe>
