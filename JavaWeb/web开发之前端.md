@@ -1803,7 +1803,7 @@ app.mount('#app')
 表单数据用 `ref` 声明，提交时取 `loginForm.value` 即可。
 
 3. **表格 el-table**
-
+[Table 表格 | Element Plus](https://element-plus.org/zh-CN/component/table)
 
 ```html
 <el-table :data="empList" border stripe>
@@ -1818,6 +1818,7 @@ app.mount('#app')
 - `border` 显示边框线，`stripe` 开启斑马纹。
 
 4. **对话框 el-dialog**
+[Dialog 对话框 | Element Plus](https://element-plus.org/zh-CN/component/dialog)
 
 ```html
 <el-dialog v-model="dialogVisible" title="新增员工" width="500px">
@@ -1828,6 +1829,7 @@ app.mount('#app')
 `v-model` 绑定一个布尔值：为 `true` 时显示弹窗，`false` 时关闭。
 
 5. **分页 el-pagination**
+
 
 ```html
 <el-pagination
