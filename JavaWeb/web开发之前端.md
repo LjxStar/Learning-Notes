@@ -1625,6 +1625,14 @@ createApp(App).mount('#app')
 
 其中 `*.vue` 是 Vue 项目中的组件文件，也叫**单文件组件**（SFC，Single-File Components，详见 [sfc 官方文档](https://cn.vuejs.org/guide/scaling-up/sfc.html)）。SFC 会将一个组件的逻辑（JS）、模板（HTML）和样式（CSS）封装在同一个 `*.vue` 文件中：
 
+```vue
+<script setup></script>
+
+<template></template>
+
+<style scoped></style>
+```
+
 ![[Pasted image 20260918160832.png]]
 
 一个 SFC 文件通常由三个部分组成：
