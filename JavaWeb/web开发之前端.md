@@ -1589,7 +1589,7 @@ npm run dev
 
 **（2）VSCode 图形化启动**
 
-用 VSCode 打开项目文件夹，定位到根目录的 `package.json` 文件，在 **NPM 脚本**面板中找到 `dev` 脚本，点击其左侧的运行按钮（▶）即可启动项目。
+用 VSCode 打开项目文件夹，定位到根目录的 `package.json` 文件，在 **NPM 脚本**面板中找到 `dev` 脚本，运行脚本即可启动项目。
 
 > `npm run dev` 是开发环境启动命令，启动后默认访问地址为 `http://localhost:5173` ；项目上线前还需执行 ` npm run build ` 打包生产版本。
 
