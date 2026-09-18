@@ -1547,7 +1547,109 @@ mounted() {
 # 三、Vue 工程化
 ## 3.1 Vue 项目创建
 
-在前端开发中，当我们需要使用一些资源时，例如：`vue.js`，和 `axios.js` 文件，都是直接在工程中导入的，而在企业开发中更加讲究前端工程化方式的开发。主要包括如下 4 个特点：
+### 3.1.1介绍
+
+在之前的前端开发中，我们直接在项目内引入 `vue.js`、`axios.js` 这类资源文件进行使用。而企业实际开发中，更偏向采用前端工程化的开发方式，其主要包含以下四个特点：
+
 ![[Pasted image 20260918155600.png]]
 
-对于前端工程化，说白了，就是在企业级的前端项目开发中，把前端开发所需要的工具、技术、流程、经验进行规范化和标准化。
+- 模块化：将 js 和 css 等，做成一个个可复用模块
+- 组件化：我们将 ui 组件，css 样式，js 行为封装成一个个的组件，便于管理
+- 规范化：我们提供一套标准的规范的目录接口和编码规范，所有开发人员遵循这套规范
+- 自动化：项目的构建，测试，部署全部都是自动完成
+
+对于前端工程化，说白了，就是在企业级的前端项目开发中，把前端开发所需要的工具、技术、流程、经验进行规范化和标准化。因此，我们选择 vue 的官方提供的脚手架来构建项目
+
+### 3.1.2 项目构建过程
+
+确保 NodeJS 已安装，使用 npm 包管理工具来构建一个工程化的 Vue 项目。
+
+```bash
+npm create vue
+```
+
+构建好后有两种项目运行的方法
+**（1）命令行**
+
+启动项目，我们可以在命令行中执行命令：`npm run dev`，就可以启动 Vue 项目了。
+
+（2）Vscode 图形化界面
+在 Vscode 中，导入项目文件夹，让 vscode 定位到 package.json，点击 NPM 脚本中的 dev 后的运行按钮，就可以启动项目。
+
+
+启动起来之后，我们就可以访问前端 Vue 项目了，访问路径：http://localhost:5173
+
+
+### 3.1.3 项目开发流程
+![[Pasted image 20260918160749.png]]
+
+其中 `*.vue` 是 Vue 项目中的组件文件，在 Vue 项目中也称为单文件组件（[SFC](https://cn.vuejs.org/guide/scaling-up/sfc.html)，Single-File Components）。Vue 的单文件组件会将一个组件的逻辑 (JS)，模板 (HTML) 和样式 (CSS) 封装在同一个文件里（`*.vue`）
+
+![[Pasted image 20260918160832.png]]
+
+### 3.1.4 API 风格
+
+Vue 的组件有两种不同的风格：**组合式 API** 和 **选项式 API**
+
+（1）组合式 API
+是 Vue 3 提供的一种基于函数的组件编写方式，通过使用函数来组织和复用组件的逻辑。它提供了一种更灵活、更可组合的方式来编写组件。代码形式如下：
+
+```html
+<script setup>
+import { ref, onMounted } from 'vue';
+const count = ref(0); //声明响应式变量
+
+function increment(){ //声明函数
+   count.value++;
+}
+
+onMounted(() => { //声明钩子函数
+  console.log('Vue Mounted....'); 
+})
+</script>
+
+<template>
+   <input type="button" @click="increment"> Api Demo1 Count : {{ count }}
+</template>
+
+<style scoped>
+   
+</style>
+```
+
+- `setup`：是一个标识，告诉 Vue 需要进行一些处理，让我们可以更简洁的使用组合式 API。
+- `ref()`：接收一个内部值，返回一个响应式的 ref 对象，此对象只有一个指向内部值的属性 value。
+- `onMounted()`：在组合式 API 中的钩子方法，注册一个回调函数，在组件挂载完成后执行。
+
+（2）选项式 API
+可以用包含多个选项的对象来描述组件的逻辑，如：`data`，`methods`，`mounted` 等。选项定义的属性都会暴露在函数内部的 `this` 上，它会指向当前的组件实例。
+
+```html
+<script>
+export default{
+   data() {
+      return {
+         count: 0
+      }
+   },
+   methods: {
+      increment: function(){
+         this.count++
+      }
+   },
+   mounted() {
+      console.log('vue mounted.....');
+   }
+}
+</script>
+
+<template>
+  <input type="button" @click="increment">Api Demo1 Count :  {{ count }}
+</template>
+
+<style scoped>
+
+</style>
+```
+
+在 Vue 中的组合式 API 使用时，是没有 this 对象的，this 对象是 undefined。
