@@ -1547,52 +1547,117 @@ mounted() {
 # 三、Vue 工程化
 ## 3.1 Vue 项目创建
 
-### 3.1.1介绍
+### 3.1.1 工程化介绍
 
-在之前的前端开发中，我们直接在项目内引入 `vue.js`、`axios.js` 这类资源文件进行使用。而企业实际开发中，更偏向采用前端工程化的开发方式，其主要包含以下四个特点：
+在之前的学习中，我们直接在项目里引入 `vue.js`、`axios.js` 这类资源文件就能使用，一个 HTML 文件写完所有代码。这种方式上手快、无需配置，但到了企业级项目，规模大、参与人员多、交付周期短，如果还靠"一个文件写到底"，代码会迅速变得难以维护。因此，企业开发更偏向采用**前端工程化**的方式，它主要有以下四个特点：
 
 ![[Pasted image 20260918155600.png]]
 
-- 模块化：将 js 和 css 等，做成一个个可复用模块
-- 组件化：我们将 ui 组件，css 样式，js 行为封装成一个个的组件，便于管理
-- 规范化：我们提供一套标准的规范的目录接口和编码规范，所有开发人员遵循这套规范
-- 自动化：项目的构建，测试，部署全部都是自动完成
+- **模块化**：将 JS、CSS 等拆分成一个个职责单一、可复用的模块，模块之间互不干扰。
+- **组件化**：把 UI 组件、CSS 样式、JS 行为封装成一个个组件，方便复用与统一管理。
+- **规范化**：提供一套统一的项目目录结构、编码规范与开发流程，所有开发人员共同遵守。
+- **自动化**：项目的构建、测试、部署等环节全部自动完成，减少人工操作。
 
-对于前端工程化，说白了，就是在企业级的前端项目开发中，把前端开发所需要的工具、技术、流程、经验进行规范化和标准化。因此，我们选择 vue 的官方提供的脚手架来构建项目
+简单来说，前端工程化就是把企业级前端开发所需的工具、技术、流程、经验进行规范化和标准化：人人遵循同一套规范，项目才能持续演进、长期维护。
+
+要快速搭建一个工程化项目，最省事的方式是使用 Vue 官方提供的**脚手架（create-vue）**。脚手架会自动生成标准目录结构、配置文件，并预装开发服务器与构建工具（Vite），我们只需专注于业务代码的编写。
 
 ### 3.1.2 项目构建过程
 
-确保 NodeJS 已安装，使用 npm 包管理工具来构建一个工程化的 Vue 项目。
+创建工程化项目前，先确保电脑上安装了 **Node.js**（内置 npm 包管理工具，建议安装长期支持版 LTS）。使用 npm 命令即可构建一个 Vue 工程化项目：
 
 ```bash
-npm create vue
+npm create vue@latest
 ```
 
-构建好后有两种项目运行的方法
-**（1）命令行**
+执行过程中会出现一系列交互式提问，例如项目名称、是否安装 TypeScript / Router / Pinia 等，初学者全部选择默认值（No）即可。项目创建完成后，进入项目目录并安装依赖：
 
-启动项目，我们可以在命令行中执行命令：`npm run dev`，就可以启动 Vue 项目了。
+```bash
+cd 项目名称
+npm install
+```
 
-（2）Vscode 图形化界面
-在 Vscode 中，导入项目文件夹，让 vscode 定位到 package.json，点击 NPM 脚本中的 dev 后的运行按钮，就可以启动项目。
+依赖安装完成后，就可以启动项目了，启动方式有两种：
 
+**（1）命令行启动**
 
-启动起来之后，我们就可以访问前端 Vue 项目了，访问路径：http://localhost:5173
+在项目根目录执行命令：
 
+```bash
+npm run dev
+```
 
-### 3.1.3 项目开发流程
+**（2）VSCode 图形化启动**
+
+用 VSCode 打开项目文件夹，定位到根目录的 `package.json` 文件，在 **NPM 脚本**面板中找到 `dev` 脚本，点击其左侧的运行按钮（▶）即可启动项目。
+
+> `npm run dev` 是开发环境启动命令，启动后默认访问地址为 http://localhost:5173；项目上线前还需执行 `npm run build` 打包生产版本。
+
+### 3.1.3 项目目录结构
+
+创建好的项目目录结构如下（具体内容会因创建时的选项略有差异）：
+
+| 路径 / 文件 | 作用 |
+| --- | --- |
+| `index.html` | 项目入口页面，Vue 应用最终挂载到此页面上的节点 |
+| `package.json` | 项目配置文件，记录依赖包与脚本命令（dev / build） |
+| `vite.config.js` | Vite 构建工具的配置文件（开发服务器端口、代理等） |
+| `src/main.js` | 项目入口 JS，创建 Vue 应用实例并挂载到页面 |
+| `src/App.vue` | 根组件，相当于应用的整体骨架，内部组装其他组件 |
+| `src/components/` | 存放公共子组件（弹窗、表格、分页等） |
+| `src/assets/` | 存放静态资源（图片、图标、公共样式等） |
+| `src/router/` | 路由配置（创建项目时选择了 Router 才会生成） |
+
+日常开发主要工作在 `src` 目录下。以入口文件 `main.js` 为例：
+
+```js
+// src/main.js
+import { createApp } from 'vue'
+import App from './App.vue'
+
+createApp(App).mount('#app')
+```
+
+`createApp(App)` 以根组件 `App.vue` 创建应用实例，`.mount('#app')` 将其挂载到 `index.html` 中 `id="app"` 的节点上——整个过程与第二部分学习的 CDN 用法完全一致，只是引入方式从"线上加载"变成了"从本地文件导入"。
+
+### 3.1.4 项目开发流程
 ![[Pasted image 20260918160749.png]]
 
-其中 `*.vue` 是 Vue 项目中的组件文件，在 Vue 项目中也称为单文件组件（[SFC](https://cn.vuejs.org/guide/scaling-up/sfc.html)，Single-File Components）。Vue 的单文件组件会将一个组件的逻辑 (JS)，模板 (HTML) 和样式 (CSS) 封装在同一个文件里（`*.vue`）
+其中 `*.vue` 是 Vue 项目中的组件文件，也叫**单文件组件**（SFC，Single-File Components，详见[官方文档](https://cn.vuejs.org/guide/scaling-up/sfc.html)）。SFC 会将一个组件的逻辑（JS）、模板（HTML）和样式（CSS）封装在同一个 `*.vue` 文件中：
 
 ![[Pasted image 20260918160832.png]]
 
-### 3.1.4 API 风格
+一个 SFC 文件通常由三个部分组成：
 
-Vue 的组件有两种不同的风格：**组合式 API** 和 **选项式 API**
+- `<template>`：组件的模板（HTML 结构），决定页面长什么样。
+- `<script setup>`：组件的逻辑（JS），定义响应式数据与事件处理函数。
+- `<style scoped>`：组件的样式（CSS），`scoped` 表示样式只对当前组件生效，不会污染其他组件。
 
-（1）组合式 API
-是 Vue 3 提供的一种基于函数的组件编写方式，通过使用函数来组织和复用组件的逻辑。它提供了一种更灵活、更可组合的方式来编写组件。代码形式如下：
+组件定义好后，通过 `import` 引入即可像普通标签一样直接使用：
+
+```html
+<template>
+  <div>
+    <Header />
+    <EmployeeTable />
+  </div>
+</template>
+
+<script setup>
+import Header from './components/Header.vue'
+import EmployeeTable from './components/EmployeeTable.vue'
+</script>
+```
+
+整个项目的运行流程：浏览器加载 `index.html` → `main.js` 创建应用并挂载到页面 → 渲染根组件 `App.vue` → 逐层渲染嵌套的子组件。
+
+## 3.2 API 风格
+
+Vue 组件的编写有两种不同的风格：**组合式 API（Composition API）** 和 **选项式 API（Options API）**。两种风格实现的是同一套功能，选择哪种取决于个人偏好与项目场景。
+
+**（1）组合式 API**
+
+组合式 API 是 Vue 3 提供的一种基于函数的组件编写方式，通过使用函数来组织和复用组件的逻辑，代码更灵活、更易组合，是 Vue 3 新项目的推荐写法。与选项式 API 不同的是，组合式 API 中**没有 `this`**，数据与函数都是直接声明、直接使用：
 
 ```html
 <script setup>
@@ -1617,12 +1682,13 @@ onMounted(() => { //声明钩子函数
 </style>
 ```
 
-- `setup`：是一个标识，告诉 Vue 需要进行一些处理，让我们可以更简洁的使用组合式 API。
-- `ref()`：接收一个内部值，返回一个响应式的 ref 对象，此对象只有一个指向内部值的属性 value。
-- `onMounted()`：在组合式 API 中的钩子方法，注册一个回调函数，在组件挂载完成后执行。
+- `<script setup>`：`setup` 是一个编译标识，告诉 Vue 需要对这段代码做特殊处理，让我们可以在 `<script>` 中直接声明变量、函数并使用，这是组合式 API 的推荐写法。
+- `ref()`：接收一个内部值，返回一个响应式的 **ref 对象**，该对象只有一个指向内部值的属性 `value`。**在模板中使用时会自动解包，直接写 `count` 即可；在 JS 中操作时必须通过 `.value`**。
+- `onMounted()`：组合式 API 中的生命周期钩子，注册一个回调函数，在组件挂载完成后执行。
 
-（2）选项式 API
-可以用包含多个选项的对象来描述组件的逻辑，如：`data`，`methods`，`mounted` 等。选项定义的属性都会暴露在函数内部的 `this` 上，它会指向当前的组件实例。
+**（2）选项式 API**
+
+选项式 API 用一个包含多个选项的对象来描述组件的逻辑，如 `data`、`methods`、`mounted` 等。选项对象中定义的属性都会暴露在函数内部的 `this` 上，`this` 指向当前的组件实例，因此访问数据与方法都要通过 `this`：
 
 ```html
 <script>
@@ -1652,4 +1718,198 @@ export default{
 </style>
 ```
 
-在 Vue 中的组合式 API 使用时，是没有 this 对象的，this 对象是 undefined。
+> 记住：组合式 API 中没有 `this` 对象，数据与函数直接声明、直接使用；选项式 API 中 `this` 指向当前组件实例，通过 `this.xxx` 访问。新项目开发统一推荐使用**组合式 API**。
+
+**（3）两种风格对比**
+
+| 对比项 | 组合式 API | 选项式 API |
+| --- | --- | --- |
+| 代码组织 | 按逻辑功能组织，相关代码聚在一起 | 按 data / methods 等选项分类分区 |
+| this 对象 | 没有 `this`，直接使用变量和函数 | 依赖 `this` 访问数据与方法 |
+| 逻辑复用 | 容易，可封装为组合式函数 | 困难，只能借助 mixin |
+| 适用场景 | Vue 3 新项目推荐使用 | 旧项目迁移、简单组件 |
+
+## 3.3 Element Plus 组件库
+
+### 3.3.1 什么是 Element Plus
+
+实际开发中，页面上的表单、表格、弹窗、消息提示等 UI 组件如果全部手写，工作量巨大且风格难以统一。**Element Plus 是一套基于 Vue 3 的桌面端组件库**，将常用组件统一封装好，拿来即用，是 Vue 3 生态中最流行的组件库之一。
+
+官方文档：https://element-plus.org
+
+### 3.3.2 安装与引入
+
+在项目根目录安装 Element Plus：
+
+```bash
+npm install element-plus
+```
+
+安装完成后，在入口文件 `main.js` 中**完整引入**：
+
+```js
+// src/main.js
+import { createApp } from 'vue'
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+import App from './App.vue'
+
+const app = createApp(App)
+app.use(ElementPlus)   // 注册全部 Element Plus 组件
+app.mount('#app')
+```
+
+> 完整引入会把所有组件一次性注册，简单方便，适合学习阶段；企业项目为减小打包体积，常用 unplugin-vue-components 实现按需自动导入，这里暂不展开。
+
+引入完成后，就可以在任意组件中像使用普通标签一样使用 `el-` 开头的组件了。
+
+### 3.3.3 常用组件
+
+1. **按钮 el-button**
+
+`type` 属性控制按钮的颜色风格：`primary`（主要）、`success`（成功）、`warning`（警告）、`danger`（危险）等。
+
+```html
+<el-button type="primary">主要按钮</el-button>
+<el-button type="success">成功按钮</el-button>
+<el-button type="danger">删除</el-button>
+<el-button>默认按钮</el-button>
+```
+
+2. **表单 el-form + el-input**
+
+`el-form` 是表单容器，`el-form-item` 表示一行表单项，`el-input` 是输入框，配合 `v-model` 完成数据的收集：
+
+```html
+<el-form :model="loginForm" label-width="80px">
+  <el-form-item label="用户名">
+    <el-input v-model="loginForm.username" placeholder="请输入用户名" />
+  </el-form-item>
+  <el-form-item label="密码">
+    <el-input v-model="loginForm.password" type="password" show-password />
+  </el-form-item>
+  <el-form-item>
+    <el-button type="primary" @click="onLogin">登录</el-button>
+  </el-form-item>
+</el-form>
+```
+
+表单数据用 `ref` 声明，提交时取 `loginForm.value` 即可。
+
+3. **表格 el-table**
+
+```html
+<el-table :data="empList" border stripe>
+  <el-table-column prop="name" label="姓名" width="120" />
+  <el-table-column prop="age" label="年龄" width="120" />
+  <el-table-column prop="job" label="职位" />
+</el-table>
+```
+
+- `:data`：绑定表格数据源（数组）。
+- `prop`：对应数据对象中的属性名；`label`：表头显示的文字；`width`：列宽。
+- `border` 显示边框线，`stripe` 开启斑马纹。
+
+4. **对话框 el-dialog**
+
+```html
+<el-dialog v-model="dialogVisible" title="新增员工" width="500px">
+  <!-- 弹窗内部内容 -->
+</el-dialog>
+```
+
+`v-model` 绑定一个布尔值：为 `true` 时显示弹窗，`false` 时关闭。
+
+5. **分页 el-pagination**
+
+```html
+<el-pagination
+  v-model:current-page="page"
+  v-model:page-size="pageSize"
+  :total="total"
+  layout="prev, pager, next"
+  @current-change="search"
+/>
+```
+
+- `total`：总数据条数；`current-page`：当前页码；`page-size`：每页条数。
+- `@current-change`：页码变化时触发的事件，一般在这里重新发起查询。
+
+6. **消息提示 ElMessage**
+
+```js
+import { ElMessage } from 'element-plus'
+
+ElMessage.success('操作成功')
+ElMessage.error('操作失败，请重试')
+```
+
+> 注意：`ElMessage` 是函数调用方式（不是标签），需要先 `import` 再使用。
+
+## 3.4 axios 请求库
+
+### 3.4.1 什么是 axios
+
+工程化项目中，页面数据几乎都来自后端接口。**axios 是一个基于 Promise 的 HTTP 请求库**，用于在浏览器中发送异步请求，是 Vue 项目中最常用的请求方案。
+
+在项目根目录安装：
+
+```bash
+npm install axios
+```
+
+### 3.4.2 基本用法
+
+在组件中引入后即可发起请求：
+
+```js
+import axios from 'axios'
+
+// GET 请求：参数拼接在 URL 上
+const res = await axios.get('https://web-server.itheima.net/emps/list?name=张&gender=1')
+
+// POST 请求：数据放在请求体中
+const res2 = await axios.post('https://web-server.itheima.net/emps/save', {
+  name: '张三',
+  gender: 1
+})
+
+console.log(res.data)   // res.data 是后端返回的响应数据
+```
+
+> 工程项目的接口返回数据通常封装为 `{ code, message, data }` 结构，后端返回的业务数据在 `res.data.data` 中（与 2.3 生命周期章节里的写法一致）。
+
+> 前后端联调时，前端（5173 端口）与后端（如 8080 端口）端口不同会产生**跨域**问题，需要在 `vite.config.js` 中配置代理转发，等后面做完整项目案例时再展开。
+
+### 3.4.3 综合示例：员工列表查询
+
+把 axios 与 Element Plus 组合使用——页面加载后自动请求接口，将数据渲染到表格中：
+
+```html
+<script setup>
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+
+const empList = ref([])   // 员工列表数据
+
+// 查询员工列表
+async function search() {
+  const res = await axios.get('https://web-server.itheima.net/emps/list')
+  empList.value = res.data.data
+}
+
+onMounted(() => {
+  search()   // 页面挂载完成，自动加载数据
+})
+</script>
+
+<template>
+  <el-table :data="empList" border stripe>
+    <el-table-column prop="name" label="姓名" />
+    <el-table-column prop="gender" label="性别" />
+    <el-table-column prop="job" label="职位" />
+  </el-table>
+</template>
+```
+
+至此，Vue 工程化的完整开发流程就打通了：**脚手架创建项目 → 编写 SFC 组件 → 引入 Element Plus 搭建界面 → 用 axios 请求后端数据并渲染展示**。
