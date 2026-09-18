@@ -1653,7 +1653,7 @@ import EmployeeTable from './components/EmployeeTable.vue'
 
 ## 3.2 API 风格
 
-Vue 组件的编写有两种不同的风格：**组合式 API（Composition API）** 和 **选项式 API（Options API）**。两种风格实现的是同一套功能，选择哪种取决于个人偏好与项目场景。
+Vue 组件的编写有两种不同的风格：组合式 API（Composition API） 和 选项式 API（Options API）。两种风格实现的是同一套功能，选择哪种取决于个人偏好与项目场景。
 
 **（1）组合式 API**
 
@@ -1746,7 +1746,9 @@ export default{
 npm install element-plus --save
 ```
 
-安装完成后，在入口文件 `main.js` 中**完整引入**：
+`--save`：把安装的依赖写入 package.json 的 `dependencies`
+
+安装完成后，在入口文件 `main.js` 中完整引入：
 
 ```js
 // src/main.js
@@ -1756,11 +1758,12 @@ import 'element-plus/dist/index.css'
 import App from './App.vue'
 
 const app = createApp(App)
-app.use(ElementPlus)   // 注册全部 Element Plus 组件
+
+app.use(ElementPlus) // 注册全部 Element Plus 组件
 app.mount('#app')
 ```
 
-> 完整引入会把所有组件一次性注册，简单方便，适合学习阶段；企业项目为减小打包体积，常用 unplugin-vue-components 实现按需自动导入，这里暂不展开。
+> 完整引入会把所有组件一次性注册，适合学习阶段；企业项目为减小打包体积，常用 unplugin-vue-components 实现按需自动导入。
 
 引入完成后，就可以在任意组件中像使用普通标签一样使用 `el-` 开头的组件了。
 
