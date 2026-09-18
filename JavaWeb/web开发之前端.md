@@ -1743,7 +1743,7 @@ export default{
 在项目根目录安装 Element Plus：
 
 ```bash
-npm install element-plus
+npm install element-plus --save
 ```
 
 安装完成后，在入口文件 `main.js` 中**完整引入**：
