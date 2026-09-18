@@ -1845,7 +1845,7 @@ app.mount('#app')
 - `@current-change`：页码变化时触发的事件，一般在这里重新发起查询。
 
 6. **消息提示 ElMessage**
-7. 
+[Message 消息提示 | Element Plus](https://element-plus.org/zh-CN/component/message)
 
 ```js
 import { ElMessage } from 'element-plus'
