@@ -1618,7 +1618,7 @@ import App from './App.vue'
 createApp(App).mount('#app')
 ```
 
-`createApp(App)` 以根组件 `App.vue` 创建应用实例，`.mount('#app')` 将其挂载到 `index.html` 中 `id="app"` 的节点上——整个过程与第二部分学习的 CDN 用法完全一致，只是引入方式从"线上加载"变成了"从本地文件导入"。
+`createApp(App)` 以根组件 `App.vue` 创建应用实例，`.mount('#app')` 将其挂载到 `index.html` 中 `id="app"` 的节点上。整个过程与第二部分学习的 CDN 用法完全一致，只是引入方式从"线上加载"变成了"从本地文件导入"。
 
 ### 3.1.4 项目开发流程
 ![[Pasted image 20260918160749.png]]
