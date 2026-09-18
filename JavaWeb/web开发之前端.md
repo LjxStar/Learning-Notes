@@ -1623,7 +1623,7 @@ createApp(App).mount('#app')
 ### 3.1.4 项目开发流程
 ![[Pasted image 20260918160749.png]]
 
-其中 `*.vue` 是 Vue 项目中的组件文件，也叫**单文件组件**（SFC，Single-File Components，详见[官方文档](https://cn.vuejs.org/guide/scaling-up/sfc.html)）。SFC 会将一个组件的逻辑（JS）、模板（HTML）和样式（CSS）封装在同一个 `*.vue` 文件中：
+其中 `*.vue` 是 Vue 项目中的组件文件，也叫**单文件组件**（SFC，Single-File Components，详见 [sfc 官方文档](https://cn.vuejs.org/guide/scaling-up/sfc.html)）。SFC 会将一个组件的逻辑（JS）、模板（HTML）和样式（CSS）封装在同一个 `*.vue` 文件中：
 
 ![[Pasted image 20260918160832.png]]
 
@@ -1683,7 +1683,8 @@ onMounted(() => { //声明钩子函数
 ```
 
 - `<script setup>`：`setup` 是一个编译标识，告诉 Vue 需要对这段代码做特殊处理，让我们可以在 `<script>` 中直接声明变量、函数并使用，这是组合式 API 的推荐写法。
-- `ref()`：接收一个内部值，返回一个响应式的 **ref 对象**，该对象只有一个指向内部值的属性 `value`。在模板中使用时会**自动解包**，直接写 `count` 即可；在 JS 中操作时必须通过 `.value`**。
+- `ref()`：接收一个内部值，返回一个响应式的 **ref 对象**
+	该对象只有一个指向内部值的属性 `value`。在 template 中使用时会**自动解包**，直接写 `count` 即可；在 JS 中操作时必须通过 `.value` 来读取。
 - `onMounted()`：组合式 API 中的生命周期钩子，注册一个回调函数，在组件挂载完成后执行。
 
 **（2）选项式 API**
@@ -1722,12 +1723,12 @@ export default{
 
 **（3）两种风格对比**
 
-| 对比项 | 组合式 API | 选项式 API |
-| --- | --- | --- |
-| 代码组织 | 按逻辑功能组织，相关代码聚在一起 | 按 data / methods 等选项分类分区 |
-| this 对象 | 没有 `this`，直接使用变量和函数 | 依赖 `this` 访问数据与方法 |
-| 逻辑复用 | 容易，可封装为组合式函数 | 困难，只能借助 mixin |
-| 适用场景 | Vue 3 新项目推荐使用 | 旧项目迁移、简单组件 |
+| 对比项     | 组合式 API             | 选项式 API                  |
+| ------- | ------------------- | ------------------------ |
+| 代码组织    | 按逻辑功能组织，相关代码聚在一起    | 按 data / methods 等选项分类分区 |
+| this 对象 | 没有 `this`，直接使用变量和函数 | 依赖 `this` 访问数据与方法        |
+| 逻辑复用    | 容易，可封装为组合式函数        | 困难，只能借助 mixin            |
+| 适用场景    | Vue 3 新项目推荐使用       | 旧项目迁移、简单组件               |
 
 ## 3.3 Element Plus 组件库
 
@@ -1735,7 +1736,7 @@ export default{
 
 实际开发中，页面上的表单、表格、弹窗、消息提示等 UI 组件如果全部手写，工作量巨大且风格难以统一。**Element Plus 是一套基于 Vue 3 的桌面端组件库**，将常用组件统一封装好，拿来即用，是 Vue 3 生态中最流行的组件库之一。
 
-官方文档：https://element-plus.org
+[ElementPlus官方文档](https://element-plus.org/zh-CN/)
 
 ### 3.3.2 安装与引入
 
