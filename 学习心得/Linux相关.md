@@ -58,7 +58,7 @@ sudo ss -tulpn | grep 3306
 # 看到 0.0.0.0:3306 代表监听所有IP，可远程访问
 ```
 
-4. **MySQL 账号创建、密码、远程授权（MySQL8.0）**
+4. **MySQL 修改密码、远程授权（MySQL8.0）**
 
 登录虚拟机本地 mysql
 ```bash
@@ -66,16 +66,20 @@ sudo mysql
 # sudo mysql -uroot -p 没密码直接回车就能登录成功。
 ```
 
-执行 SQL，创建 root 远程账号，授权，修改加密方式
+修改密码
 ```mysql
 -- 创建允许任意IP访问的root用户，设置密码
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '1234';
+```
+这个 root 账号仅仅能够在本机localhost上访问，我们在 windows 上是无法访问的。如果需要在 window 上或其他服务器上也能远程访问，需要创建一个账号，用于远程访问的。
+
+```mysql
 CREATE USER 'root'@'%' IDENTIFIED BY '1234';
--- 授予全部权限
-GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
--- 修改认证插件，解决Navicat/客户端caching_sha2_password报错
-ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY '1234';
--- 刷新权限，立即生效
+
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%';
+
 FLUSH PRIVILEGES;
-exit;
 ```
 `%` = 允许任意 IP 远程访问；密码自行替换。
+
+5. **Ubuntu 防火墙 ufw**
