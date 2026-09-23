@@ -101,3 +101,17 @@ mysql -h 192.168.100.128 -P 3306 -u root -p
 - `-P`：大写 P，端口号
 - `-u`：用户名
 - `-p`：回车后输入密码（输入不回显）
+
+
+# 2.关于 Ubuntu 和 CentOS 的防火墙区别
+| 操作            | CentOS                                                          | Ubuntu                           |
+| ------------- | --------------------------------------------------------------- | -------------------------------- |
+| 查看防火墙状态       | `systemctl status firewalld`<br><br>`firewall‑cmd --state`      | `sudo ufw status`                |
+| 临时关闭防火墙       | `systemctl stop firewalld`                                      | `sudo ufw disable`               |
+| 永久关闭（开机不自启）   | `systemctl disable firewalld`                                   | `sudo ufw disable`               |
+| 临时开启防火墙       | `systemctl start firewalld`                                     | `sudo ufw enable`                |
+| 永久开启（开机自启）    | `systemctl enable firewalld`                                    | `sudo ufw enable`                |
+| 开放端口 3306/tcp | `firewall‑cmd --zone=public --add‑port=3306/tcp --permanent`    | `sudo ufw allow 3306/tcp`        |
+| 关闭端口 3306/tcp | `firewall‑cmd --zone=public --remove‑port=3306/tcp --permanent` | `sudo ufw delete allow 3306/tcp` |
+| 重载规则使其生效      | `firewall‑cmd --reload`                                         | `sudo ufw reload`                |
+| 查看已放行端口       | `firewall‑cmd --zone=public --list‑ports`                       | `sudo ufw status verbose`        |
