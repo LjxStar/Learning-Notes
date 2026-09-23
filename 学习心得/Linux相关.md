@@ -83,3 +83,21 @@ FLUSH PRIVILEGES;
 `%` = 允许任意 IP 远程访问；密码自行替换。
 
 5. **Ubuntu 防火墙 ufw**
+```bash
+# 放行3306端口
+sudo ufw allow 3306/tcp
+# 重载防火墙
+sudo ufw reload
+# 查看防火墙状态
+sudo ufw status
+```
+提示 `未启用防火墙` 代表 ufw 没有开启，端口默认放行，无需操作。
+
+6. **Windows 宿主机远程连接**
+```bash
+mysql -h 192.168.100.128 -P 3306 -u root -p
+```
+- `-h`：目标 MySQL 主机 IP
+- `-P`：大写 P，端口号
+- `-u`：用户名
+- `-p`：回车后输入密码（输入不回显）
