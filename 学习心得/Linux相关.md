@@ -1,11 +1,81 @@
 # 1.Ubuntu 虚拟机 MySQL 8.0 部署 + Windows 远程连接
 
-1. apt 安装 MySQL
+1. **apt 安装 MySQL**
 ```bash
 # 更新软件源
 sudo apt update
-# 安装mysql服务端
-sudo apt install mysql-server -y
+
+# 安装最新版本 
+sudo apt install -y mysql-server 
+# 安装指定版本 
+sudo apt install -y mysql-server-8.0
+```
+如果不加 `-y` 会在安装过程中，系统将提示你设置 MySQL 的 root 密码。确保密码足够强，且记住它，因为你将在以后需要用到它。
+
+
+2. **MySQL 服务启停 & 开机自启**
+```bash
+# 查看状态
+sudo systemctl status mysql
+# 启动
+sudo systemctl start mysql
+# 停止
+sudo systemctl stop mysql
+# 重启（修改配置后必须执行）
+sudo systemctl restart mysql
+
+# 设置开机自启
+sudo systemctl enable mysql
+# 取消开机自启
+sudo systemctl disable mysql
 ```
 
-2. 
+3. **修改配置，允许外部访问**
+
+配置文件路径：`/etc/mysql/mysql.conf.d/mysqld.cnf`
+```bash
+sudo vim /etc/mysql/mysql.conf.d/mysqld.cnf
+```
+
+找到：
+```ini
+bind-address = 127.0.0.1
+```
+
+修改：
+```ini
+bind-address = 0.0.0.0
+```
+
+保存退出后需要重启 mysql
+```bash
+sudo systemctl restart mysql
+```
+
+验证监听端口（可选）
+```bash
+sudo ss -tulpn | grep 3306
+# 看到 0.0.0.0:3306 代表监听所有IP，可远程访问
+```
+
+4. **MySQL 账号创建、密码、远程授权（MySQL8.0）**
+
+登录虚拟机本地 mysql
+```bash
+sudo mysql
+# sudo mysql -uroot -p 没密码直接回车就能登录成功。
+```
+
+执行 SQL，创建 root 远程账号，授权，修改加密方式
+```mysql
+-- 创建允许任意IP访问的root用户，设置密码
+CREATE USER 'root'@'%' IDENTIFIED BY '1234';
+-- 授予全部权限
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+-- 修改认证插件，解决Navicat/客户端caching_sha2_password报错
+ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY '1234';
+-- 刷新权限，立即生效
+FLUSH PRIVILEGES;
+exit;
+```
+`%` = 允许任意 IP 远程访问；密码自行替换。
