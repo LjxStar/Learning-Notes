@@ -1562,7 +1562,7 @@ mounted() {
 
 要快速搭建一个工程化项目，最省事的方式是使用 Vue 官方提供的**脚手架（create-vue）**。脚手架会自动生成标准目录结构、配置文件，并预装开发服务器与构建工具（Vite），我们只需专注于业务代码的编写。
 
-### 3.1.2 项目构建过程
+### 3.1.2 构建过程
 
 创建工程化项目前，先确保电脑上安装了 **Node.js**（内置 npm 包管理工具，建议安装长期支持版 LTS）。使用 npm 命令即可构建一个 Vue 工程化项目：
 
@@ -1620,7 +1620,8 @@ createApp(App).mount('#app')
 
 `createApp(App)` 以根组件 `App.vue` 创建应用实例，`.mount('#app')` 将其挂载到 `index.html` 中 `id="app"` 的节点上。整个过程与第二部分学习的 CDN 用法完全一致，只是引入方式从"线上加载"变成了"从本地文件导入"。
 
-### 3.1.4 项目开发流程
+### 3.1.4 单文件组件
+
 ![[Pasted image 20260918160749.png]]
 
 其中 `*.vue` 是 Vue 项目中的组件文件，也叫**单文件组件**（SFC，Single-File Components，详见 [sfc 官方文档](https://cn.vuejs.org/guide/scaling-up/sfc.html)）。SFC 会将一个组件的逻辑（JS）、模板（HTML）和样式（CSS）封装在同一个 `*.vue` 文件中：
