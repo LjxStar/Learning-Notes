@@ -736,11 +736,11 @@ iptables -F                               # 清空所有规则（危险）
 
 ### 4. 常见需求对照：开放 8080 端口
 
-| 发行版 | 执行命令 |
-| --- | --- |
-| `[Ubuntu]` | `sudo ufw allow 8080/tcp` |
+| 发行版           | 执行命令                                                                    |
+| ------------- | ----------------------------------------------------------------------- |
+| `[Ubuntu]`    | `sudo ufw allow 8080/tcp`                                               |
 | `[CentOS]` 7+ | `firewall-cmd --add-port=8080/tcp --permanent && firewall-cmd --reload` |
-| 通用底层 | `iptables -A INPUT -p tcp --dport 8080 -j ACCEPT` |
+| 通用底层          | `iptables -A INPUT -p tcp --dport 8080 -j ACCEPT`                       |
 
 ---
 
@@ -775,7 +775,7 @@ tar -czvf backup.tar.gz /data --exclude="/data/logs"   # 打包时排除日志
 
 > 后缀决定选项：`.tar` 仅打包（不加压缩选项）；`.tar.gz` 用 `-z`；`.tar.bz2` 用 `-j`；`.tar.xz` 用 `-J`。
 
-### 2. zip / unzip — 压缩包（补充）
+### 2. zip / unzip — 压缩包
 
 ```bash
 zip -r archive.zip dir/              # 递归压缩目录
@@ -786,7 +786,7 @@ unzip -o archive.zip                 # 覆盖已存在文件
 
 > 未预装时安装：`[Ubuntu] sudo apt install zip unzip`，`[CentOS] yum install zip unzip`。
 
-### 3. vi / vim — 文本编辑器（三种模式重点理顺）
+### 3. vi / vim — 文本编辑器
 
 ```bash
 vi a.txt        # 打开文件
@@ -797,12 +797,7 @@ vim a.txt       # 打开文件（增强版）
 
 **模式切换关系：**
 
-```text
-启动 vim ───────────────────▶ 命令模式（默认进入）
-命令模式 ---- i / a / o ---▶ 插入模式
-命令模式 -------- : -------▶ 末行模式
-插入模式 / 末行模式 -- Esc --▶ 命令模式
-```
+![[模式切换关系.png]]
 
 | 模式 | 进入方式 | 能做什么 |
 | --- | --- | --- |
