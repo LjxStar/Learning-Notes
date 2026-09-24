@@ -91,7 +91,7 @@ rm [-rf] [file/dir]
 | `rm -r dir`      | 递归删除目录                |
 | `rm -rf dir`     | **强制递归删除**（危险操作，谨慎使用） |
 
-> ⚠️ `rm -rf /` 会清空系统，切勿尝试。
+>  `rm -rf /` 会清空系统，切勿尝试。
 
 ### 2. cp — 复制
 
@@ -194,7 +194,7 @@ tail -f /var/log/syslog   # 实时滚动输出新增日志（Ctrl+C 退出）
 tail -100f app.log        # 显示最后 100 行并持续追踪
 ```
 
-> 🔥 `tail -f` 是排查线上问题的利器，配合 `grep` 使用更佳：`tail -f app.log | grep ERROR`
+>  `tail -f` 是排查线上问题的利器，配合 `grep` 使用更佳：`tail -f app.log | grep ERROR`
 
 ### 6. grep — 文本搜索
 
