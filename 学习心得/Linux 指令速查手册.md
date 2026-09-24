@@ -236,13 +236,12 @@ chown -R user:group /data/app     # 递归修改
 
 ### 3. 权限含义速查
 
-|   |   |   |
-|---|---|---|
-|数字|权限|含义|
-|7|rwx|读+写+执行|
-|6|rw-|读+写|
-|5|r-x|读+执行|
-|4|r--|只读|
+| 数字  | 权限  | 含义     |
+| --- | --- | ------ |
+| 7   | rwx | 读+写+执行 |
+| 6   | rw- | 读+写    |
+| 5   | r-x | 读+执行   |
+| 4   | r-- | 只读     |
 
 > 第一位代表类型：`d` 目录、`-` 普通文件、`l` 软链接。
 
@@ -252,17 +251,16 @@ chown -R user:group /data/app     # 递归修改
 
 ### 1. apt 系列（Debian / Ubuntu）
 
-|   |   |
-|---|---|
-|命令|作用|
-| `apt update` |更新软件源索引|
-| `apt upgrade` |升级已安装的软件包|
-| `apt install nginx` |安装软件包|
-| `apt remove nginx` |卸载软件包（保留配置）|
-| `apt purge nginx` |彻底卸载（含配置）|
-| `apt search keyword` |搜索软件包|
-| `apt list --installed` |列出已安装包|
-| `apt autoremove` |清理无用依赖|
+| 命令                     | 作用          |
+| ---------------------- | ----------- |
+| `apt update`           | 更新软件源索引     |
+| `apt upgrade`          | 升级已安装的软件包   |
+| `apt install nginx`    | 安装软件包       |
+| `apt remove nginx`     | 卸载软件包（保留配置） |
+| `apt purge nginx`      | 彻底卸载（含配置）   |
+| `apt search keyword`   | 搜索软件包       |
+| `apt list --installed` | 列出已安装包      |
+| `apt autoremove`       | 清理无用依赖      |
 
 ```bash
 apt install -y nginx        # 自动确认安装
@@ -307,12 +305,11 @@ export PATH=$PATH:/usr/local/jdk/bin
 
 ### 3. 永久设置
 
-|   |   |
-|---|---|
-|文件|生效范围|
-| `/etc/profile` |所有用户（登录时加载）|
-| `~/.bashrc` |当前用户（每次打开终端加载）|
-| `~/.bash_profile` |当前用户（登录时加载）|
+| 文件                | 生效范围           |
+| ----------------- | -------------- |
+| `/etc/profile`    | 所有用户（登录时加载）    |
+| `~/.bashrc`       | 当前用户（每次打开终端加载） |
+| `~/.bash_profile` | 当前用户（登录时加载）    |
 
 ```bash
 echo 'export PATH=$PATH:/data/bin' >> ~/.bashrc
@@ -325,19 +322,18 @@ source ~/.bashrc        # 使修改立即生效
 
 ## 七、进程管理类
 
-|   |   |
-|---|---|
-|命令|作用|
-| `ps -ef` |查看所有进程详细信息|
-| `ps aux` |查看所有进程（含 CPU/内存占用）|
-| `top` |实时监控进程与系统资源（`q` 退出）|
-| `htop` |更友好的交互式进程监控（需安装）|
-| `kill PID` |终止指定进程|
-| `kill -9 PID` |强制杀死进程|
-| `killall nginx` |按名称杀死进程|
-| `pkill -f keyword` |按关键字匹配杀死进程|
-| `jobs` |查看后台任务|
-| `nohup cmd &` |后台运行且不随终端关闭而退出|
+| 命令                 | 作用                  |
+| ------------------ | ------------------- |
+| `ps -ef`           | 查看所有进程详细信息          |
+| `ps aux`           | 查看所有进程（含 CPU/内存占用）  |
+| `top`              | 实时监控进程与系统资源（`q` 退出） |
+| `htop`             | 更友好的交互式进程监控（需安装）    |
+| `kill PID`         | 终止指定进程              |
+| `kill -9 PID`      | 强制杀死进程              |
+| `killall nginx`    | 按名称杀死进程             |
+| `pkill -f keyword` | 按关键字匹配杀死进程          |
+| `jobs`             | 查看后台任务              |
+| `nohup cmd &`      | 后台运行且不随终端关闭而退出      |
 
 ```bash
 ps -ef | grep java          # 查找 java 进程
@@ -411,7 +407,7 @@ service iptables save                # 保存规则
 
 ---
 
-## 十、压缩与编辑类（补充）
+## 十、压缩与编辑类
 
 ### 1. tar — 打包压缩
 
@@ -436,46 +432,43 @@ vim a.txt       # 打开文件（增强版）
 
 **三种模式：**
 
-|   |   |   |
-|---|---|---|
-|模式|说明|切换|
-|命令模式|默认进入，可移动光标、删除|按 `Esc` 进入|
-|插入模式|可输入文字|按 `i` / `a` / `o` 进入|
-|末行模式|保存、退出、查找替换|按 `:` 进入|
+| 模式   | 说明            | 切换                   |
+| ---- | ------------- | -------------------- |
+| 命令模式 | 默认进入，可移动光标、删除 | 按 `Esc` 进入           |
+| 插入模式 | 可输入文字         | 按 `i` / `a` / `o` 进入 |
+| 末行模式 | 保存、退出、查找替换    | 按 `:` 进入             |
 
 **常用操作：**
 
-|   |   |
-|---|---|
-|操作|命令|
-|保存退出| `:wq` 或 `:x` |
-|不保存退出| `:q!` |
-|保存| `:w` |
-|查找|命令模式 `/keyword`，`n` 下一个|
-|替换| `:%s/old/new/g` |
-|删除整行|命令模式 `dd` |
-|复制 / 粘贴行| `yy` / `p` |
-|跳到文件末尾 / 开头| `G` / `gg` |
-|撤销| `u` |
+| 操作          | 命令                      |
+| ----------- | ----------------------- |
+| 保存退出        | `:wq` 或 `:x`            |
+| 不保存退出       | `:q!`                   |
+| 保存          | `:w`                    |
+| 查找          | 命令模式 `/keyword`，`n` 下一个 |
+| 替换          | `:%s/old/new/g`         |
+| 删除整行        | 命令模式 `dd`               |
+| 复制 / 粘贴行    | `yy` / `p`              |
+| 跳到文件末尾 / 开头 | `G` / `gg`              |
+| 撤销          | `u`                     |
 
 ---
 
 ## 附：命令速查总表
 
-|   |   |
-|---|---|
-|类别|核心命令|
-|目录操作| `ls` `cd` `pwd` `mkdir` `rmdir` |
-|文件操作| `rm` `cp` `mv` `touch` `find` |
-|文本查看| `cat` `more` `less` `head` `tail -f` `grep` |
-|权限管理| `chmod` `chown` |
-|软件包| `apt install` `yum` `dpkg` `rpm` |
-|环境变量| `export` `env` `source` `/etc/profile` |
-|进程管理| `ps` `top` `kill` `nohup` |
-|端口网络| `netstat` `ss` `lsof` `curl` `ping` |
-|防火墙| `firewall-cmd` `ufw` `iptables` |
-|压缩编辑| `tar` `vi` `vim` |
+| 类别   | 核心命令                                        |
+| ---- | ------------------------------------------- |
+| 目录操作 | `ls` `cd` `pwd` `mkdir` `rmdir`             |
+| 文件操作 | `rm` `cp` `mv` `touch` `find`               |
+| 文本查看 | `cat` `more` `less` `head` `tail -f` `grep` |
+| 权限管理 | `chmod` `chown`                             |
+| 软件包  | `apt install` `yum` `dpkg` `rpm`            |
+| 环境变量 | `export` `env` `source` `/etc/profile`      |
+| 进程管理 | `ps` `top` `kill` `nohup`                   |
+| 端口网络 | `netstat` `ss` `lsof` `curl` `ping`         |
+| 防火墙  | `firewall-cmd` `ufw` `iptables`             |
+| 压缩编辑 | `tar` `vi` `vim`                            |
 
 ---
 
-这份手册覆盖了你提到的全部命令与分类。如果你想让我把某一类（比如 `vim` 快捷键、`iptables` 规则、Shell 脚本基础）展开成更详细的单独文档，或者导出一个可打印的版本，告诉我就行。
+这份手册覆盖了你提到的全部命令与分类。该文档是 DeepSeek-V 4.1-Flash 写的。
