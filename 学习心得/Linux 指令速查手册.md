@@ -599,14 +599,14 @@ nohup java -jar app.jar > app.log 2>&1 &   # 后台运行 Java 应用并记录�
 
 `[Ubuntu]` 加 `sudo`，`[CentOS]` 直接执行。CentOS 6 及更早的版本用 `service` / `chkconfig`。
 
-| 命令 | 作用 |
-| --- | --- |
-| `systemctl start nginx` | 启动服务 |
-| `systemctl stop nginx` | 停止服务 |
-| `systemctl restart nginx` | 重启服务 |
-| `systemctl status nginx` | 查看服务状态 |
-| `systemctl enable nginx` | 设置开机自启 |
-| `systemctl disable nginx` | 取消开机自启 |
+| 命令                           | 作用       |
+| ---------------------------- | -------- |
+| `systemctl start nginx`      | 启动服务     |
+| `systemctl stop nginx`       | 停止服务     |
+| `systemctl restart nginx`    | 重启服务     |
+| `systemctl status nginx`     | 查看服务状态   |
+| `systemctl enable nginx`     | 设置开机自启   |
+| `systemctl disable nginx`    | 取消开机自启   |
 | `systemctl is-enabled nginx` | 查看是否开机自启 |
 
 ---
@@ -672,7 +672,7 @@ curl -X POST -H "Content-Type: application/json" -d '{"name":"test"}' http://loc
 
 ---
 
-## 九、防火墙类（Ubuntu / CentOS 差异重点）
+## 九、防火墙类
 
 **先记住三个事实：**
 
@@ -858,16 +858,16 @@ vim a.txt       # 打开文件（增强版）
 
 ## 附：命令速查总表
 
-| 类别 | 核心命令 |
-| --- | --- |
-| 目录操作 | `ls` `cd` `pwd` `mkdir` `rmdir` |
-| 文件操作 | `rm` `cp` `mv` `touch` `find` |
-| 文本查看 | `cat` `more` `less` `head` `tail -f` `grep` |
-| 权限管理 | `chmod` `chown` `chgrp` `umask` |
-| 软件包 | `apt` `yum` `dnf` `dpkg` `rpm` |
-| 环境变量 | `export` `env` `source` `/etc/profile` `~/.bashrc` |
-| 进程与服务 | `ps` `top` `kill` `nohup` `systemctl` |
-| 端口网络 | `netstat` `ss` `lsof` `curl` `wget` `ping` |
-| 防火墙 | `ufw`(Ubuntu) `firewall-cmd`(CentOS) `iptables` |
-| 压缩编辑 | `tar` `zip` `vi` `vim` |
-| 发行版差异 | 见「〇」节：sudo / 包管理 / 防火墙对照 |
+| 类别    | 核心命令                                               |
+| ----- | -------------------------------------------------- |
+| 目录操作  | `ls` `cd` `pwd` `mkdir` `rmdir`                    |
+| 文件操作  | `rm` `cp` `mv` `touch` `find`                      |
+| 文本查看  | `cat` `more` `less` `head` `tail -f` `grep`        |
+| 权限管理  | `chmod` `chown` `chgrp` `umask`                    |
+| 软件包   | `apt` `yum` `dnf` `dpkg` `rpm`                     |
+| 环境变量  | `export` `env` `source` `/etc/profile` `~/.bashrc` |
+| 进程与服务 | `ps` `top` `kill` `nohup` `systemctl`              |
+| 端口网络  | `netstat` `ss` `lsof` `curl` `wget` `ping`         |
+| 防火墙   | `ufw`(Ubuntu) `firewall-cmd`(CentOS) `iptables`    |
+| 压缩编辑  | `tar` `zip` `vi` `vim`                             |
+| 发行版差异 | 见「〇」节：sudo / 包管理 / 防火墙对照                           |
