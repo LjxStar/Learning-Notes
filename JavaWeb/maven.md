@@ -400,84 +400,19 @@ mvnw.cmd clean package
 
 ## 5.4 在 IDEA 中执行
 
-IDEA 把 Maven 深度集成进了界面，在里面执行生命周期指令有三种方式，各有适用场景。
+IDEA 把 Maven 深度集成进了界面，在里面执行生命周期指令有两种主要方式。
 
 ### 方式 1：Maven 工具窗口双击阶段
 
-这是最直接的方式，适合临时执行单个阶段：
+`View → Tool Windows → Maven` 打开 Maven 工具窗口，展开项目节点，**Lifecycle** 下挂着 `clean`、`validate`、`compile`、`test`、`package`、`verify`、`install`、`deploy` 等阶段，**双击**任意一个即可执行。构建日志输出在窗口下方，`BUILD SUCCESS` 表示成功，其中的 `ERROR` 是可点击链接，能直接跳到出错的代码行。
 
-1. 打开 Maven 工具窗口，菜单路径为 `View → Tool Windows → Maven`（快捷键 `Alt + F12` 可以显示/隐藏所有工具窗口）；
-2. 展开项目节点，**Lifecycle** 下挂着 `clean`、`validate`、`compile`、`test`、`package`、`verify`、`install`、`deploy` 等阶段；
-3. **双击**任意一个阶段即开始执行，构建日志输出在窗口下方的构建控制台中；日志里的 `BUILD SUCCESS` 表示成功，`BUILD FAILURE` 表示失败，输出中的 `ERROR` 行是带链接的，点击可直接跳转到出错的代码行。
-
-这种方式上手最快，但有两个明显短板：
-
-- **一次只能跑一个阶段**，想执行 `clean package` 就必须点两下、跑两轮；
-- **不会自动先执行 `clean`**。如果上一次构建在 `target` 里留下了已被删除的 class 文件，重新打出来的 jar 仍会包含这些废弃类，往往要到运行时才报错。
+上手最快，但有两个短板：一次只能跑一个阶段；**不会自动先执行 `clean`**——若 `target` 里残留了已删除的 class，打出来的 jar 仍会带着它们，往往到运行时才报错。
 
 ### 方式 2：自定义 Maven 运行配置（推荐）
 
-它把整条指令当作一条命令来执行，可以同时写多个阶段、还能带参数，是日常开发中使用频率最高的方式。
+把整条指令当成一条命令执行，可以写多个阶段、还能带参数，日常开发主要用这个。
 
-1. 在 IDEA 顶部运行配置下拉框中选择 **Edit Configurations...**，点左上角 `+` 新建配置，在列表中选择 **Maven**；
-2. 按下表填写各字段（只填前两项就能跑）：
-
-| 字段                  | 填什么                                                                                     |
-| --------------------- | ----------------------------------------------------------------------------------------- |
-| `Name`                | 运行配置的名称，随意取，如 `clean package`                                                |
-| `Working directory`   | 项目根目录，即 `pom.xml` 所在目录，直接填 `$MODULE_WORKING_DIR$` 即可                          |
-| `Command line`        | 要执行的阶段与参数，**不要写 `mvn` 前缀**，多个用空格隔开，如 `clean package`                    |
-| `Active profiles`     | 需要激活的 profile，对应 `pom.xml` 中 `<profiles>` 声明的 `id`，不勾选则用默认配置                 |
-| `Before launch`       | 可选的构建前置步骤，日常构建 Maven 项目时保持默认即可，不需要额外加 `Build`                      |
-
-3. 保存后即可在右上角一键运行，日志输出在底部的 **Run** 面板。
-
-**`Command line` 栏的写法要点**——这里写的是**去掉 `mvn` 之后的部分**：
-
-| `Command line` 填写内容              | 实际执行的命令                             |
-| ----------------------------------- | ------------------------------------- |
-| `clean package`                     | `mvn clean package`（最常用）             |
-| `clean install`                     | `mvn clean install`                     |
-| `clean package -DskipTests`         | `mvn clean package -DskipTests`         |
-| `clean package -Dmaven.test.skip=true` | `mvn clean package -Dmaven.test.skip=true` |
-| `clean package -P prod`             | `mvn clean package -P prod`，激活 `prod` 这个 profile |
-| `clean package -U`                  | `mvn clean package -U`，强制检查远程仓库更新   |
-| `clean help:effective-pom`          | `mvn clean help:effective-pom`，导出最终生效的 `pom.xml` |
-| `dependency:tree`                   | `mvn dependency:tree`，只出依赖树不构建         |
-
-建议把日常用得最多的 `clean package` 和 `clean install -DskipTests` 各建一个运行配置，切换项目时可以直接复用。
-
-### 方式 3：在 IDEA 内置终端中执行
-
-`Alt + F12` 或 `View → Tool Windows → Terminal` 可以打开 IDEA 内置的终端，这里就是 5.3 讲的那套命令，区别只是省去了切换到外部终端的步骤，目录切换、Tab 补全、`mvnw.cmd` 等能力全都保留。
-
-适合需要临时敲复杂参数、或者想在 IDEA 里一边看代码一边构建的场景。
-
-### 三种方式的对比
-
-| 执行方式            | 一次跑多个阶段 | 可带参数 | 自动 `clean` | 适用场景               |
-| ------------------- | -------------- | -------- | ------------ | ---------------------- |
-| 双击 Lifecycle 阶段 | ❌              | ❌        | ❌            | 临时跑单个 `compile`/`package` |
-| Maven 运行配置      | ✅              | ✅        | ✅（自己写）   | **日常构建，推荐**      |
-| 内置终端            | ✅              | ✅        | ✅（自己写）   | 复杂命令、配合 `mvnw` 使用 |
-
-> [!tip] 多模块项目怎么执行
-> 多模块项目在 Maven 工具窗口中会展开成一个父工程加若干子模块。此时**双击哪个节点，就只构建哪个模块**；想一次性构建全部模块，要选中**最上层的父工程节点**再执行 `clean install`，Maven 会按照 `pom.xml` 中 `<modules>` 声明的顺序依次构建各个子模块，某个子模块失败会立即中止。
-
-**几个必须检查的 IDEA 设置**（`File → Settings → Build, Execution, Deployment → Build Tools → Maven`）：
-
-| 配置项               | 建议值                                          |
-| -------------------- | ----------------------------------------------- |
-| `Maven home path`    | 选 `Use Maven home` 并指定 `D:\apache-maven-3.9.9`  |
-| `User settings file` | 指向 `D:\apache-maven-3.9.9\conf\settings.xml`  |
-| `Local repository`   | 指向 `D:\apache-maven-3.9.9\mvn_repo`           |
-| `JDK for importer`   | 与项目所用 JDK 保持一致，避免导入时用错版本        |
-
-> [!warning] IDEA 中执行 Maven 常见的坑
-> - **Command line 里多写了 `mvn`**：会报找不到 goal 的错误，这里只填 `clean package` 这样的阶段与参数即可。
-> - **Working directory 填错位置**：若不在 `pom.xml` 所在目录，会报 `The goal you specified requires a project to execute but there is no POM in this directory`。
-> - **IDEA 用的是自带 Maven 而不是你配置的 3.9.9**：`Maven home path` 没改，于是 `settings.xml` 里的镜像和本地仓库全部被忽略——这既是「明明配了阿里云镜像却依然卡在下载」的原因，也意味着本文 2.2、2.3 两节的配置对 IDEA 并不生效。这是排查此类问题时的第一站。
-> - **改完 `pom.xml` 后构建仍用旧依赖**：IDEA 会弹出是否 Reload All Maven Projects 的提示，需要点确认才会重新解析依赖；也可以点 Maven 工具窗口的刷新按钮强制重新加载。
-> - **删除或改名了某个类之后仍报旧错误**：多半是 `target` 里残留了旧的 class 文件，执行一次 `clean package` 或 IDEA 的 `Build → Rebuild Project` 即可。
-> - **IDEA 里下载依赖很慢、外部终端里却很快**：两者是各自独立的配置，外部终端读的是环境变量 `MAVEN_HOME` 指向的那份，需要回到 `User settings file` 确认路径。
-
+1. 在顶部运行配置下拉框中选择 **Edit Configurations...**，点 `+` 新建配置，选择 **Maven** 类型；
+2. `Working directory` 填项目根目录，即 `pom.xml` 所在位置，直接填 `$MODULE_WORKING_DIR$` 即可；
+3. `Command line` 填要执行的阶段与参数——**注意不要写 `mvn` 前缀**，多个用空格隔开，如 `clean package`、`clean install -DskipTests`、`clean package -P prod`；
+4. 保存后即可在右上角一键运行，日志输出在底部的 **Run** 面板。
