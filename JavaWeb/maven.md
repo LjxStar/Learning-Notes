@@ -185,7 +185,7 @@ POM 是 Project Object Model（项目对象模型）的缩写，`pom.xml` 就是
 | `<name>` / `<description>` | 项目名称与描述，只给人看，删掉也不影响构建                           |
 | `<properties>`             | 属性定义区，相当于常量，通过 `${属性名}` 引用；最常用于统一管理版本号和字符编码     |
 | `<dependencies>`           | 声明本项目需要引入的依赖                                    |
-| `<dependencyManagement>`   | 统一管理依赖的**版本**（以及排除哪些传递依赖），自身**不会**把任何依赖引入项目中    |
+| `<dependencyManagement>`   | 统一管理依赖的版本（以及排除哪些传递依赖），自身不会把任何依赖引入项目中            |
 | `<build>`                  | 构建配置，包括插件、最终产物名称、目录定制等                          |
 | `<repositories>`           | 声明额外的远程仓库，依赖不在中央仓库或镜像中时才需要配置                    |
 | `<parent>`                 | 声明父工程，子工程用它继承父工程中的依赖、插件与属性                      |
@@ -243,9 +243,7 @@ org.springframework:spring-webmvc:6.1.4
 - `artifactId`：构件名，一个构件一个名字，在同一 `groupId` 内唯一
 - `version`：构件版本，升级依赖改的就是这里
 
-完整形式还会在后面追加第四段的 `type`（`jar`、`war` 等）和第五段的 `classifier`（如 `sources`、`javadoc`），平时写依赖时只写前三段就够了。
-
-**坐标去哪里查？** 直接搜 [Maven 中央仓库搜索](https://search.maven.org) 或 [MvnRepository](https://mvnrepository.com/)，输入 `spring-webmvc` 就能看到所有版本，选一个即可。IDEA 中还有更快的办法：在 `pom.xml` 里先敲 `groupId`，再敲一个 `:`，IDEA 会自动拉取候选列表，用方向键选中就能补全，写 `version` 时同理。
+**坐标去哪里查？** 直接搜 [Maven 中央仓库搜索](https://search.maven.org) 或 [MvnRepository](https://mvnrepository.com/)，输入 `spring-webmvc` 就能看到所有版本，选一个即可。IDEA 中还有更快的办法：在 `pom.xml` 里敲 `groupId:`，IDEA 会自动拉取候选列表，用方向键选中就能补全，写 `version` 时同理。
 
 ## 4.2 引入依赖
 
@@ -261,38 +259,19 @@ org.springframework:spring-webmvc:6.1.4
 </dependencies>
 ```
 
-一个依赖标签的完整形态如下：
-
-```xml
-<dependency>
-    <groupId>org.springframework</groupId>              <!-- 必填：分组 -->
-    <artifactId>spring-webmvc</artifactId>              <!-- 必填：构件名 -->
-    <version>6.1.4</version>                             <!-- 必填：版本 -->
-    <type>jar</type>                                    <!-- 选填，默认 jar -->
-    <scope>compile</scope>                              <!-- 选填：依赖范围，默认 compile -->
-    <optional>false</optional>                          <!-- 选填：是否可选依赖 -->
-    <exclusions>                                        <!-- 选填：排除不需要的传递依赖 -->
-        <exclusion>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-    </exclusions>
-</dependency>
-```
-
 写完后 IDEA 会触发一次依赖下载，把对应的 jar 缓存到本地仓库（`D:\apache-maven-3.9.9\mvn_repo`），随后就能在 `External Libraries` 中看到它。
 
 ## 4.3 依赖范围 scope
 
 `<scope>` 决定依赖在编译期、测试期、运行期分别是否可见，也决定它会不会被打进最终产物：
 
-| `scope`    | 主程序编译 | 测试编译 | 打包/运行 | 典型场景                                              |
-| ---------- | --------- | -------- | --------- | --------------------------------------------------- |
-| `compile`  | ✅        | ✅       | ✅        | 默认值，绝大多数依赖都是它                                 |
-| `provided` | ✅        | ✅       | ❌        | 由运行环境提供，打包时不带。如 `servlet-api`                 |
-| `runtime`  | ❌        | ✅       | ✅        | 编译用不到、运行时才需要。如 MySQL 驱动                        |
-| `test`     | ❌        | ✅       | ❌        | 只在测试中使用，不进产物。如 `junit-jupiter`、`mockito`       |
-| `import`   | —         | —        | —        | 仅在 `<dependencyManagement>` 中使用，导入一份版本清单           |
+| `scope`    | 主程序编译 | 测试编译 | 打包/运行 | 典型场景                                     |
+| ---------- | ----- | ---- | ----- | ---------------------------------------- |
+| `compile`  | ✅     | ✅    | ✅     | 默认值，绝大多数依赖都是它                            |
+| `provided` | ✅     | ✅    | ❌     | 由运行环境提供，打包时不带。如 `servlet-api`            |
+| `runtime`  | ❌     | ✅    | ✅     | 编译用不到、运行时才需要。如 MySQL 驱动                  |
+| `test`     | ❌     | ✅    | ❌     | 只在测试中使用，不进产物。如 `junit-jupiter`、`mockito` |
+| `import`   | —     | —    | —     | 仅在 `<dependencyManagement>` 中使用，导入一份版本清单 |
 
 最需要留意的是 `provided`：**它的依赖会参与编译，却不会被打进 jar 包**，这正是它存在的意义。例如传统 Web 工程里的写法：
 
@@ -329,45 +308,11 @@ Maven 具备**传递依赖**能力：项目直接依赖 A，A 又依赖 B，B �
 </dependency>
 ```
 
-使用排除时有几个容易踩的点：
-
-1. **`<exclusion>` 中不能写 `<version>`**。只填 `groupId` 和 `artifactId` 两个标签，多写了会直接报错。
-2. **排除针对整棵下游依赖树，而不是某一个直接依赖**。例如 A → B → C，在 A 上排除 C 是有效的；但如果想排除 B 传递过来的 C，必须写在 A 的 `<exclusions>` 里，不能「下钻」到 B 里面去改，因为 B 的 `pom.xml` 你无权修改。
-3. **只能排除传递依赖，无法排除自己直接声明的依赖**。要停用某个直接依赖，只能删掉或注释对应的 `<dependency>` 标签。
-4. **只排除不引入**。如果排除后仍然需要这个库，就得自己再单独声明一次，版本自己定。
-
-如果想把某个依赖带来的**全部**传递依赖一次性剪掉（Maven 3.2.1 起支持通配符）：
-
-```xml
-<exclusions>
-    <exclusion>
-        <groupId>*</groupId>
-        <artifactId>*</artifactId>
-    </exclusion>
-</exclusions>
-```
-
-> [!warning] 慎用通配符
-> 一刀切剪掉所有传递依赖会让依赖关系变得难以追踪，新接手项目的人无法从 `pom.xml` 判断运行时到底加载了哪些 jar。更稳妥的做法是用 `mvn dependency:tree` 看清依赖关系后，**有针对性地**逐个排除。
-
 ## 4.5 依赖冲突与依赖树
 
-当同一个 jar 通过多条路径被引入且版本不一致时，就会发生依赖冲突。Maven 的仲裁规则是**「最短优先」（就近原则）**：离当前项目声明越近的版本优先级越高；同一层深度上，则由先声明的那个说了算。
+当同一个 jar 通过多条路径被引入且版本不一致时，就会发生依赖冲突。Maven 的仲裁规则是「最短优先」：离当前项目声明越近的版本优先级越高；同一层深度上，则由先声明的那个说了算。
 
-想看清楚依赖关系，用下面的命令输出依赖树：
-
-```bash
-# 查看完整依赖树
-mvn dependency:tree
-
-# 只看与 Spring 相关的那一部分
-mvn dependency:tree -Dincludes=org.springframework
-
-# 分析哪些依赖「声明了但没用」或「用了但没声明」
-mvn dependency:analyze
-```
-
-IDEA 中查看更方便：Maven 工具窗口的 `Dependencies` 标签页会以树形展开所有依赖（含传递依赖），点某个节点还能在下方直接看到对应的 `pom.xml` 片段。
+在 IDEA 的 Maven 工具窗口的 `Dependencies` 标签页会以树形展开所有依赖（含传递依赖），点某个节点还能在下方直接看到对应的 `pom.xml` 片段。
 
 > [!tip] 更推荐的解法：dependencyManagement
 > 实际开发中，版本冲突多数由 Spring Boot 这类框架的**依赖管理**机制解决——父工程的 `<dependencyManagement>` 已经把常用库的版本统一钉死，子模块声明依赖时不再写 `<version>` 即可。要覆盖某个版本，只需要在子模块的 `<dependencyManagement>` 中重写该依赖的版本号，而不是在 `<dependencies>` 里重复声明。
@@ -375,8 +320,6 @@ IDEA 中查看更方便：Maven 工具窗口的 `Dependencies` 标签页会以�
 > 需要注意：`<dependencyManagement>` 里的条目**只管版本，不会真正引入依赖**。想用某个库，仍然必须在 `<dependencies>` 中再写一遍（此时可以省略 `<version>`），这是初学者最容易搞混的一点。
 
 # 五、生命周期与构建命令
-
-前三章解决了「依赖从哪来」的问题，这一章解决「怎么把它构建成 jar 包」的问题。
 
 ## 5.1 三套生命周期
 
