@@ -101,11 +101,6 @@ Maven 官方提供的**中央仓库**（Central Repository）服务器位于国�
 
 ![[Pasted image 20260926173141.png]]
 
-> [!warning] 镜像不是越多越好
-> 如果 `central` 已被 `*` 覆盖，就不要再为它单独配置 `<mirror>`，否则 Maven 会因镜像重复而报错。确有多个镜像需求时，应将 `<mirrorOf>` 改写得更精确，例如 `<mirrorOf>*,!companyRepo</mirrorOf>`，表示除 `companyRepo` 外的所有仓库都走该镜像。
->
-> 修改镜像地址后建议删除本地仓库中 `com` / `org` 等目录下已缓存的失败文件（`_remote.repositories` 与 `*.lastUpdated` 文件），否则 Maven 可能仍会使用缓存中的失败记录。
-
 ## 2.4 验证配置是否生效
 
 完成上述三步后，可以做一次简单验证：
@@ -114,8 +109,3 @@ Maven 官方提供的**中央仓库**（Central Repository）服务器位于国�
 2. 新建一个测试项目（含 `pom.xml`），执行一次 `mvn compile` 或 `mvn package`：
     - 首次构建时下载依赖会持续数分钟，属于正常现象，构建结束后 jar 包会出现在 `D:\apache-maven-3.9.9\mvn_repo` 中；
     - 执行 `mvn package` 成功并在 `target` 目录下生成 jar 包，说明环境、依赖下载、打包流程全部正常。
-
-> [!tip] 常见问题
-> - **依赖下载仍然很慢**：确认 `settings.xml` 中的镜像配置写在 `<mirrors>` 标签内部，并检查该文件是否被误保存为 `settings.xml.txt`（Windows 记事本默认会加扩展名）。
-> - **修改配置不生效**：确认改的是 Maven 实际使用的那个 `settings.xml`（可用 `mvn help:evaluate -Dexpression=settings.localRepository` 查看当前生效的本地仓库路径），并在**新开的**终端中重新执行命令。
-> - **在 IDEA 中仍然下载缓慢**：IDEA 默认使用自带的 Maven，需要在 `Settings → Build Tools → Maven` 中把 `User settings file` 指向同一个 `settings.xml`，改动才会同步生效。
