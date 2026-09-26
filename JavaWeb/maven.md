@@ -334,25 +334,18 @@ Maven 把项目构建的过程划分为若干个**阶段（phase）**，并预�
 
 日常只会用到 clean 和 default 两套，各个阶段的含义如下：
 
-| 阶段      | 作用                                                                |
-| --------- | ------------------------------------------------------------------ |
-| `clean`   | 删除 `target` 目录                                                    |
-| `validate`| 校验项目，检查 `pom.xml` 是否正确、格式是否合法                                |
-| `compile` | 编译 `src/main/java` 下的代码，产物放到 `target/classes`                    |
-| `test`    | 运行 `src/test/java` 下的单元测试                                        |
-| `package` | 打包，`jar` 项目生成 `target/demo-1.0-SNAPSHOT.jar`                        |
-| `verify`  | 检查打包结果是否符合要求，用于打包后再做一次校验                                |
-| `install` | 将构件**安装到本地仓库**，这样其他项目才能通过坐标引用到它                       |
-| `deploy`  | 把构件发布到远程仓库（私服或中央仓库），需要在 `pom.xml` 中配置 `distributionManagement` |
+| 阶段         | 作用                                                             |
+| ---------- | -------------------------------------------------------------- |
+| `clean`    | 删除 `target` 目录                                                 |
+| `validate` | 校验项目，检查 `pom.xml` 是否正确、格式是否合法                                  |
+| `compile`  | 编译 `src/main/java` 下的代码，产物放到 `target/classes`                  |
+| `test`     | 运行 `src/test/java` 下的单元测试                                      |
+| `package`  | 打包，`jar` 项目生成 `target/demo-1.0-SNAPSHOT.jar`                   |
+| `verify`   | 检查打包结果是否符合要求，用于打包后再做一次校验                                       |
+| `install`  | 将构件安装到本地仓库，这样其他项目才能通过坐标引用到它                                    |
+| `deploy`   | 把构件发布到远程仓库（私服或中央仓库），需要在 `pom.xml` 中配置 `distributionManagement` |
 
-**最需要记住的一条规则**：执行某个阶段时，Maven 会自动按顺序把它之前的所有阶段一并执行，而且这个顺序是固定的，不能调整。
-
-因此：
-
-- `mvn compile` 实际等于 `validate` + `compile`
-- `mvn package` 实际等于 `validate` + `compile` + `test` + `package`
-- `mvn install` 实际等于 `mvn package` + `install`
-
+**最需要记住的一条规则**：执行某个阶段时，Maven 会自动按顺序把它之前的所有阶段一并执行，而且这个顺序是固定的，不能调整。例如 `mvn package` 实际等于 `validate` + `compile` + `test` + `package`
 也正因为 `package` 之前会先跑 `test`，所以每次打包都会自动执行一遍测试；如果觉得每次都跑测试太慢，就要用参数跳过去。
 
 ## 5.2 常用命令速查
