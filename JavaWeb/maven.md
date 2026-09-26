@@ -20,3 +20,6 @@
 </mirror>
 ```
 
+注意配置的位置，在 `<mirrors> ... </mirrors>` 中间添加配置。如下图所示：
+
+![[Pasted image 20260926173141.png]]
