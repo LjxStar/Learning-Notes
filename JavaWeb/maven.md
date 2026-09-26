@@ -359,10 +359,6 @@ Maven 把项目构建的过程划分为若干个**阶段（phase）**，并预�
 | `mvn clean install -DskipTests`            | 跳过**执行**测试（测试代码仍会编译）                    |
 | `mvn clean package -Dmaven.test.skip=true` | 跳过测试，且测试代码**也不编译**，速度最快                 |
 
-两个跳过测试的参数经常被混用，区别在于：
-
-- `-DskipTests`：测试代码照常编译，只是**不运行**，编译失败时仍会报错
-- `-Dmaven.test.skip=true`：测试代码**连编译都不做**，适合测试代码本身有问题、只想先把主程序打出来的情况
 
 > [!tip] 用 `package` 还是 `install`？
 > - 只是想生成一个 jar 包给同事传阅 → 用 `package` 即可
