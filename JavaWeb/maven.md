@@ -30,4 +30,6 @@ Maven 环境变量的配置类似于 JDK 环境变量配置一样
 
 1. 在系统变量处新建一个变量 MAVEN_HOME。 MAVEN_HOME 环境变量的值，设置为 maven 的解压安装目录
 2. 在Path中进行配置。 PATH环境变量的值，设置为：%MAVEN_HOME%\bin
-3. 打开终端输入`mvn -v`，出现如图所示表示安装成功。
+3. 打开终端输入 `mvn -v`，出现如图所示表示安装成功。
+
+![[Pasted image 20260926173400.png]]
