@@ -6,7 +6,6 @@ Apache Maven 是一种用于 Java 项目的构建工具。通过使用项目对�
 
 ![[Pasted image 20260926170102.png]]
 
-## 1.2 maven 项目模型
+## 1.2 Maven 的
 
-![[Pasted image 20260926170205.png]]
 
