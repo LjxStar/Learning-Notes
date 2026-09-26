@@ -261,7 +261,7 @@ org.springframework:spring-webmvc:6.1.4
 
 写完后 IDEA 会触发一次依赖下载，把对应的 jar 缓存到本地仓库（`D:\apache-maven-3.9.9\mvn_repo`），随后就能在 `External Libraries` 中看到它。
 
-## 4.3 依赖范围 scope
+## 4.3 依赖范围
 
 `<scope>` 决定依赖在编译期、测试期、运行期分别是否可见，也决定它会不会被打进最终产物：
 
