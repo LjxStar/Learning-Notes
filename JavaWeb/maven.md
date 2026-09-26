@@ -34,7 +34,7 @@ Maven 环境变量的配置方式与 JDK 完全一致，都是两步：先声明
 Apache Maven 3.9.9 (...)
 Maven home: D:\apache-maven-3.9.9
 Java version: 17.0.x, vendor: ..., runtime: ...
-OS name: "windows 11", version: "11", arch: "amd64", family: "windows"
+OS name: "windows 11", version: ..., arch: "amd64", family: "windows"
 ```
 
 ## 2.2 配置本地仓库
@@ -66,11 +66,6 @@ Maven 从远程仓库下载下来的所有 jar 包与插件，都会**缓存到�
 
 ![[Pasted image 20260926172810.png]]
 
-> [!warning] 本地仓库放在安装目录内的注意事项
-> - `localRepository` 指向的目录不需要手动创建，Maven 首次构建时会自动生成。但目录所在磁盘要有足够空间，一个中等规模项目的依赖缓存通常在几百 MB 到数 GB。
-> - 修改本地仓库位置后，之前缓存在默认目录中的 jar 包不会被自动搬移，如仍需使用旧缓存，可手动将 `.m2\repository` 下的内容复制到新目录。
-> - 由于仓库目录位于安装目录**内部**，以后升级 Maven（例如换成 3.9.10）时会解压出一个新目录，`mvn_repo` 不会自动跟过去。升级时应先把 `mvn_repo` 整个剪切到新目录，并同步修改新版本 `conf\settings.xml` 中的 `localRepository` 与系统变量 `MAVEN_HOME`，否则会出现「明明配过却回到默认 `.m2\repository` 下载」的现象。
-
 ## 2.3 配置仓库镜像
 
 Maven 官方提供的**中央仓库**（Central Repository）服务器位于国外，国内直连下载通常比较慢，甚至会超时。为了解决这个问题，阿里巴巴提供了公共的 Maven 仓库镜像，其中基本涵盖了主流开源项目的 jar 包，且国内访问速度很快。
@@ -101,11 +96,3 @@ Maven 官方提供的**中央仓库**（Central Repository）服务器位于国�
 
 ![[Pasted image 20260926173141.png]]
 
-## 2.4 验证配置是否生效
-
-完成上述三步后，可以做一次简单验证：
-
-1. 执行 `mvn -v`，确认 Maven 能被识别，且输出的 `Maven home` 指向 `D:\apache-maven-3.9.9`；
-2. 新建一个测试项目（含 `pom.xml`），执行一次 `mvn compile` 或 `mvn package`：
-    - 首次构建时下载依赖会持续数分钟，属于正常现象，构建结束后 jar 包会出现在 `D:\apache-maven-3.9.9\mvn_repo` 中；
-    - 执行 `mvn package` 成功并在 `target` 目录下生成 jar 包，说明环境、依赖下载、打包流程全部正常。
