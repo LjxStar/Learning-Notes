@@ -50,7 +50,7 @@ Maven 从远程仓库下载下来的所有 jar 包与插件，都会**缓存到�
 
 本地仓库的默认路径是用户主目录下的 `.m2\repository`。由于 C 盘空间有限且重装系统后缓存会全部丢失，建议在 Maven 安装目录下新建一个固定目录专门存放 jar 包，本文使用的是 `D:\apache-maven-3.9.9\mvn_repo`（如图所示）：
 
-![[Pasted image 20260926172429.png]]
+![[Maven本地仓库推荐地址.png]]
 
 然后进入 `D:\apache-maven-3.9.9\conf` 目录，打开 `settings.xml` 配置文件，找到被注释掉的 `<localRepository>` 标签：
 
@@ -71,7 +71,7 @@ Maven 从远程仓库下载下来的所有 jar 包与插件，都会**缓存到�
 
 修改完成后保存，配置结果如下图所示：
 
-![[Pasted image 20260926172810.png]]
+![[Maven配置本地仓库.png]]
 
 ## 2.3 配置仓库镜像
 
@@ -101,7 +101,7 @@ Maven 官方提供的**中央仓库**（Central Repository）服务器位于国�
 
 配置完成后保存，效果如下图所示：
 
-![[Pasted image 20260926173141.png]]
+![[Maven配置镜像.png]]
 
 至此 Maven 的三项基础配置就完成了。此后只要执行任意一条 Maven 命令，它都会按下面的规则工作：需要依赖时到远程仓库下载并缓存到 `D:\apache-maven-3.9.9\mvn_repo`，需要构建时按固定的阶段顺序完成编译、测试与打包。
 
@@ -393,54 +393,11 @@ mvnw.cmd clean package
 
 ## 5.4 在 IDEA 中执行
 
-IDEA 对 Maven 做了深度集成，共有两种常用方式。
-
-**方式一：在 Maven 工具窗口双击生命周期阶段**
+在 Idea 的 Maven 工具窗口双击生命周期阶段
 
 1. 打开右侧的 **Maven** 工具窗口；
 2. 展开项目节点，能看到 **Lifecycle** 下挂着 `clean`、`validate`、`compile`、`test`、`package`、`install`、`deploy` 等阶段，**双击**任意一个即可执行；
 3. 窗口下方的构建控制台会输出完整的构建日志，其中 `BUILD SUCCESS` 表示成功；若构建失败，输出中的 `ERROR` 行是带链接的，点击可直接跳转到出错的代码行。
-
-**双击 `package` 不会自动先执行 `clean`**。如果上一次构建在 `target` 里留下了已被删除的 class 文件，重新打包出来的 jar 仍会包含这些废弃类，运行时才报错。稳妥的做法是使用下面这种方式，把 `clean package` 作为一条完整命令来跑。
-
-**方式二：使用 Maven 运行配置（推荐）**
-
-1. 在 IDEA 顶部运行配置下拉框中选择 **Edit Configurations**，点 `+` 新建一个 **Maven** 类型配置；
-2. 在 **Command line** 中填入想要执行的阶段或命令，例如 `clean package`，多个命令用空格隔开；
-3. 保存后即可在右上角一键运行，日志输出在底部的 **Run** 面板。
-
-**几个必须检查的 IDEA 设置**（`File → Settings → Build, Execution, Deployment → Build Tools → Maven`）：
-
-| 配置项                | 建议值                                          |
-| --------------------- | ----------------------------------------------- |
-| `Maven home path`     | 选 `Use Maven home` 并指定 `D:\apache-maven-3.9.9`  |
-| `User settings file`  | 指向 `D:\apache-maven-3.9.9\conf\settings.xml`  |
-| `Local repository`    | 指向 `D:\apache-maven-3.9.9\mvn_repo`           |
-| `JDK for importer`    | 与项目所用 JDK 保持一致，避免导入时用错版本        |
-
-> [!warning] 配置不生效的常见原因
-> - **IDEA 用的是自带 Maven 而不是你配置的 3.9.9**：`Maven home path` 没改，于是 `settings.xml` 里的镜像和本地仓库全部被忽略。这是最常见的原因，也是「明明配了阿里云镜像却依然卡在下载」的解释。
-> - **改完 `pom.xml` 后构建仍用旧依赖**：IDEA 会弹出是否 Reload All Maven Projects 的提示，需要点确认才会重新解析依赖；也可以点 Maven 工具窗口的刷新按钮强制重新加载。
-> - **删除或改名了某个类之后仍报旧错误**：多半是 `target` 里残留了旧的 class 文件，执行一次 `mvn clean` 或 IDEA 的 `Build → Rebuild Project` 即可。
-> - **IDEA 中下载依赖很慢、终端里却很快**：再次检查 `User settings file` 是否指向了 `D:\apache-maven-3.9.9\conf\settings.xml`，这是两个互相独立的配置，改终端那份不会影响 IDEA。
-
-# 六、小结与后续学习
-
-回到开头那句话，Maven 做的事情无非两件：**帮你把依赖找齐**，**帮你把项目打成 jar 包**。整篇笔记的内容都围绕这两点展开：
-
-- **找依赖**：坐标（`groupId:artifactId:version`）→ 在 `<dependencies>` 中声明 → Maven 经镜像下载并缓存到 `mvn_repo`
-- **打 jar 包**：按 `clean` → `compile` → `test` → `package` → `install` 的固定阶段顺序执行，终端敲命令或 IDEA 里双击阶段均可
-- **出问题时的排查工具**：`mvn help:effective-pom` 看最终生效的配置，`mvn dependency:tree` 看依赖关系，`mvn clean` 清掉一切重来
-
-掌握到这里，日常开发已经够用了。接下来可以按需要继续深入：
-
-| 主题              | 解决的问题                                                          |
-| ----------------- | ----------------------------------------------------------------- |
-| 多模块工程         | 项目拆成多个子模块分别开发，用父工程统一管理版本与插件                            |
-| 常用插件           | `maven-compiler-plugin` 配 JDK 版本、`spring-boot-maven-plugin` 打可执行 jar     |
-| profile            | 为开发、测试、生产配置不同的资源文件与参数，`mvn package -P prod` 激活              |
-| `distributionManagement` | 把 jar 发布到公司 Nexus 私服，供团队统一管理                            |
-| 私服（Nexus）      | 内网环境下统一代理中央仓库，避免每台电脑单独配镜像和下载依赖                        |
 
 
 
