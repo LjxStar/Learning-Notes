@@ -393,11 +393,8 @@ mvnw.cmd clean package
 
 ## 5.4 在 IDEA 中执行
 
-在 Idea 的 Maven 工具窗口双击生命周期阶段
-
-1. 打开右侧的 **Maven** 工具窗口；
-2. 展开项目节点，能看到 **Lifecycle** 下挂着 `clean`、`validate`、`compile`、`test`、`package`、`install`、`deploy` 等阶段，**双击**任意一个即可执行；
-3. 窗口下方的构建控制台会输出完整的构建日志，其中 `BUILD SUCCESS` 表示成功；若构建失败，输出中的 `ERROR` 行是带链接的，点击可直接跳转到出错的代码行。
+在 Idea 的 Maven 工具窗口展开项目节点，能看到 **Lifecycle** 下挂着 `clean`、`validate`、`compile`、`test`、`package`、`install`、`deploy` 等阶段，**双击**任意一个即可执行；
+1. 窗口下方的构建控制台会输出完整的构建日志，其中 `BUILD SUCCESS` 表示成功；若构建失败，输出中的 `ERROR` 行是带链接的，点击可直接跳转到出错的代码行。
 
 
 
