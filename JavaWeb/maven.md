@@ -23,3 +23,10 @@
 注意配置的位置，在 `<mirrors> ... </mirrors>` 中间添加配置。如下图所示：
 
 ![[Pasted image 20260926173141.png]]
+
+# 3.配置环境变量
+
+Maven 环境变量的配置类似于 JDK 环境变量配置一样
+
+1. 在系统变量处新建一个变量 MAVEN_HOME。 MAVEN_HOME 环境变量的值，设置为 maven 的解压安装目录
+2. 在Path中进行配置。 PATH环境变量的值，设置为：%MAVEN_HOME%\bin
