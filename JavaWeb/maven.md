@@ -378,6 +378,7 @@ cd D:\project
 mvn clean package
 ```
 
+
 第二，**也可以完全不切目录，用 `-f` 参数直接指定 `pom.xml` 的路径**，在同时维护多个项目时很方便：
 
 ```bash
@@ -390,26 +391,17 @@ mvn -f D:\develop\project\demo\pom.xml clean package
 mvnw.cmd clean package
 ```
 
-这样团队成员即使本机没装 Maven，克隆项目后也能构建出完全一致的结果——这也是团队项目通常把 Maven 版本「锁死」在 Wrapper 里的原因。
-
-日常最常敲的就这两行：
-
-```bash
-mvn clean package                  # 清理、编译、测试、打包
-mvn clean install -DskipTests      # 打包并装进本地仓库，同时跳过测试
-```
-
 ## 5.4 在 IDEA 中执行
 
 IDEA 对 Maven 做了深度集成，共有两种常用方式。
 
 **方式一：在 Maven 工具窗口双击生命周期阶段**
 
-1. 打开右侧的 **Maven** 工具窗口（若没显示，`View → Tool Windows → Maven`）；
+1. 打开右侧的 **Maven** 工具窗口；
 2. 展开项目节点，能看到 **Lifecycle** 下挂着 `clean`、`validate`、`compile`、`test`、`package`、`install`、`deploy` 等阶段，**双击**任意一个即可执行；
 3. 窗口下方的构建控制台会输出完整的构建日志，其中 `BUILD SUCCESS` 表示成功；若构建失败，输出中的 `ERROR` 行是带链接的，点击可直接跳转到出错的代码行。
 
-这种方式最直观，但有个坑：**双击 `package` 不会自动先执行 `clean`**。如果上一次构建在 `target` 里留下了已被删除的 class 文件，重新打包出来的 jar 仍会包含这些废弃类，运行时才报错。稳妥的做法是使用下面这种方式，把 `clean package` 作为一条完整命令来跑。
+**双击 `package` 不会自动先执行 `clean`**。如果上一次构建在 `target` 里留下了已被删除的 class 文件，重新打包出来的 jar 仍会包含这些废弃类，运行时才报错。稳妥的做法是使用下面这种方式，把 `clean package` 作为一条完整命令来跑。
 
 **方式二：使用 Maven 运行配置（推荐）**
 
