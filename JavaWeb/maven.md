@@ -350,18 +350,18 @@ Maven 把项目构建的过程划分为若干个**阶段（phase）**，并预�
 
 ## 5.2 常用命令速查
 
-| 命令                                        | 作用                                              |
-| ------------------------------------------- | ----------------------------------------------- |
-| `mvn clean`                                 | 清理 `target` 目录                                  |
-| `mvn compile`                               | 只编译主程序，不打包                                     |
-| `mvn test`                                  | 编译主程序并运行单元测试                                 |
-| `mvn clean package`                         | **最常用**：清理 → 编译 → 测试 → 打包                    |
-| `mvn clean install`                         | 打包并安装到本地仓库，自研 jar 供其他项目引用时必须用这个        |
-| `mvn clean install -DskipTests`             | 跳过**执行**测试（测试代码仍会编译）                          |
-| `mvn clean package -Dmaven.test.skip=true`  | 跳过测试，且测试代码**也不编译**，速度最快                  |
-| `mvn clean package -U`                      | 强制检查远程仓库更新，绕过本地缓存的旧版本                       |
-| `mvn help:effective-pom`                    | 查看所有继承、profile 叠加后**最终生效**的完整 `pom.xml`     |
-| `mvn dependency:tree`                       | 查看依赖树，排查依赖冲突                                    |
+| 命令                                         | 作用                                      |
+| ------------------------------------------ | --------------------------------------- |
+| `mvn clean`                                | 清理 `target` 目录                          |
+| `mvn compile`                              | 只编译主程序，不打包                              |
+| `mvn test`                                 | 编译主程序并运行单元测试                            |
+| `mvn clean package`                        | **最常用**：清理 → 编译 → 测试 → 打包               |
+| `mvn clean install`                        | 打包并安装到本地仓库，自研 jar 供其他项目引用时必须用这个         |
+| `mvn clean install -DskipTests`            | 跳过**执行**测试（测试代码仍会编译）                    |
+| `mvn clean package -Dmaven.test.skip=true` | 跳过测试，且测试代码**也不编译**，速度最快                 |
+| `mvn clean package -U`                     | 强制检查远程仓库更新，绕过本地缓存的旧版本                   |
+| `mvn help:effective-pom`                   | 查看所有继承、profile 叠加后**最终生效**的完整 `pom.xml` |
+| `mvn dependency:tree`                      | 查看依赖树，排查依赖冲突                            |
 
 两个跳过测试的参数经常被混用，区别在于：
 
