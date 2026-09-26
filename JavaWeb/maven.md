@@ -350,15 +350,17 @@ Maven 把项目构建的过程划分为若干个**阶段（phase）**，并预�
 
 ## 5.2 构建命令
 
-| 命令                                         | 作用                                      |
-| ------------------------------------------ | --------------------------------------- |
-| `mvn clean`                                | 清理 `target` 目录                          |
-| `mvn compile`                              | 只编译主程序，不打包                              |
-| `mvn test`                                 | 编译主程序并运行单元测试                            |
-| `mvn clean install`                        | 打包并安装到本地仓库，自研 jar 供其他项目引用时必须用这个         |
-| `mvn clean install -DskipTests`            | 跳过**执行**测试（测试代码仍会编译）                    |
-| `mvn clean package -Dmaven.test.skip=true` | 跳过测试，且测试代码**也不编译**，速度最快                 |
-
+| 指令                                         | 作用                  |
+| ------------------------------------------ | ------------------- |
+| `mvn clean`                                | 清理 `target` 目录      |
+| `mvn compile`                              | 只编译主程序，不打包          |
+| `mvn test`                                 | 执行单元测试              |
+| `mvn package`                              | 编译测试后打包生成 jar/war   |
+| `mvn install`                              | 打包并安装到本地仓库          |
+| `mvn clean package`                        | 先清理，再打包             |
+| `mvn clean package -DskipTests`            | 打包，编译测试代码但**不执行测试** |
+| `mvn clean package -Dmaven.test.skip=true` | 打包，**不编译也不执行测试**    |
+| `mvn clean install`                        | 清理、打包，安装到本地仓库       |
 
 > [!tip] 用 `package` 还是 `install`？
 > - 只是想生成一个 jar 包给同事传阅 → 用 `package` 即可
@@ -369,7 +371,7 @@ Maven 把项目构建的过程划分为若干个**阶段（phase）**，并预�
 
 在终端里执行 `mvn` 命令，需要注意三件事。
 
-第一，**必须先进入含 `pom.xml` 的项目根目录**，否则 Maven 会报找不到 `pom.xml`。这里有个 Windows 特有的坑：**在 CMD 中 `cd D:\project` 只会改变当前目录、不会切换盘符**，命令实际上还停留在原盘符上，于是提示找不到文件。正确写法是加一个 `/d` 参数：
+第一，**必须先进入含 `pom.xml` 的项目根目录**，否则 Maven 会报找不到 `pom.xml`。这里有个 Windows 特有的坑：在 CMD 中 `cd D:\project` 只会改变当前目录、不会切换盘符，命令实际上还停留在原盘符上，于是提示找不到文件。正确写法是加一个 `/d` 参数：
 
 ```bash
 cd /d D:\project        # CMD 中切盘符并进入目录
