@@ -371,14 +371,12 @@ Maven 把项目构建的过程划分为若干个**阶段（phase）**，并预�
 
 在终端里执行 `mvn` 命令，需要注意三件事。
 
-第一，**必须先进入含 `pom.xml` 的项目根目录**，否则 Maven 会报找不到 `pom.xml`。这里有个 Windows 特有的坑：在 CMD 中 `cd D:\project` 只会改变当前目录、不会切换盘符，命令实际上还停留在原盘符上，于是提示找不到文件。正确写法是加一个 `/d` 参数：
+第一，**必须先进入含 `pom.xml` 的项目根目录**，否则 Maven 会报找不到 `pom.xml`。
 
 ```bash
-cd /d D:\project        # CMD 中切盘符并进入目录
+cd D:\project
 mvn clean package
 ```
-
-在 PowerShell 中则没有这个问题，`cd D:\project` 会自动切换盘符，直接用即可。
 
 第二，**也可以完全不切目录，用 `-f` 参数直接指定 `pom.xml` 的路径**，在同时维护多个项目时很方便：
 
