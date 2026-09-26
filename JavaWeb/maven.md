@@ -14,7 +14,7 @@ Maven 是 Apache 基金会推出的 Java 项目自动化构建工具，也是目
 2. **Maven 的安装与配置** —— 环境变量、本地仓库、仓库镜像
 3. **标准目录结构与 pom 文件** —— 项目里都有哪些目录，`pom.xml` 每个标签的含义
 4. **Maven 坐标与依赖管理** —— 怎么找依赖、怎么引依赖、怎么排依赖、怎么看依赖
-5. **生命周期与构建命令** —— 打包的各个阶段，终端与 IDEA 中分别怎么执行
+5. **生命周期与构建命令** —— 打包的各个阶段，以及在终端与 IDEA 中分别怎么执行
 
 # 二、Maven 的安装与配置
 
@@ -243,7 +243,7 @@ org.springframework:spring-webmvc:6.1.4
 - `artifactId`：构件名，一个构件一个名字，在同一 `groupId` 内唯一
 - `version`：构件版本，升级依赖改的就是这里
 
-**坐标去哪里查？** 直接通过 [MvnRepository](https://mvnrepository.com/) 中央仓库查找，输入 `spring-webmvc` 就能看到所有版本，选一个即可。IDEA 中还有更快的办法：在 `pom.xml` 里敲 `groupId:`，IDEA 会自动拉取候选列表，用方向键选中就能补全，写 `version` 时同理。
+**坐标去哪里查？** 可以通过 [MvnRepository](https://mvnrepository.com/) 检索中央仓库中的构件，输入 `spring-webmvc` 就能看到所有版本，选一个即可。IDEA 中还有更快的办法：在 `pom.xml` 里敲 `groupId:`，IDEA 会自动拉取候选列表，用方向键选中就能补全，写 `version` 时同理。
 
 ## 4.2 引入依赖
 
@@ -312,7 +312,7 @@ Maven 具备**传递依赖**能力：项目直接依赖 A，A 又依赖 B，B �
 
 当同一个 jar 通过多条路径被引入且版本不一致时，就会发生依赖冲突。Maven 的仲裁规则是「最短优先」：离当前项目声明越近的版本优先级越高；同一层深度上，则由先声明的那个说了算。
 
-在 IDEA 的 Maven 工具窗口的 `Dependencies` 标签页会以树形展开所有依赖（含传递依赖），点某个节点还能在下方直接看到对应的 `pom.xml` 片段。
+想看清楚依赖到底是怎么被引进来的，在项目根目录执行 `mvn dependency:tree` 即可输出完整依赖树（其中的 `+-` 表示直接依赖，`\-` 表示依赖树中最后一次出现的重复依赖），加上 `-Dincludes=坐标` 还能只看某一部分。IDEA 中查看更直观：Maven 工具窗口切换到 `Dependencies` 标签页，会以树形展开所有依赖（含传递依赖），点某个节点还能在下方直接看到对应的 `pom.xml` 片段。
 
 > [!tip] 更推荐的解法：dependencyManagement
 > 实际开发中，版本冲突多数由 Spring Boot 这类框架的**依赖管理**机制解决——父工程的 `<dependencyManagement>` 已经把常用库的版本统一钉死，子模块声明依赖时不再写 `<version>` 即可。要覆盖某个版本，只需要在子模块的 `<dependencyManagement>` 中重写该依赖的版本号，而不是在 `<dependencies>` 里重复声明。
@@ -336,17 +336,22 @@ Maven 把项目构建的过程划分为若干个**阶段（phase）**，并预�
 
 | 阶段         | 作用                                                             |
 | ---------- | -------------------------------------------------------------- |
-| `clean`    | 删除 `target` 目录                                                 |
-| `validate` | 校验项目，检查 `pom.xml` 是否正确、格式是否合法                                  |
+| `clean`    | 删除 `target` 目录                                             |
+| `validate` | 校验项目，检查 `pom.xml` 是否正确、格式是否合法                              |
 | `compile`  | 编译 `src/main/java` 下的代码，产物放到 `target/classes`                  |
-| `test`     | 运行 `src/test/java` 下的单元测试                                      |
-| `package`  | 打包，`jar` 项目生成 `target/demo-1.0-SNAPSHOT.jar`                   |
-| `verify`   | 检查打包结果是否符合要求，用于打包后再做一次校验                                       |
-| `install`  | 将构件安装到本地仓库，这样其他项目才能通过坐标引用到它                                    |
+| `test`     | 运行 `src/test/java` 下的单元测试                                          |
+| `package`  | 打包，`jar` 项目生成 `target/demo-1.0-SNAPSHOT.jar`                       |
+| `verify`   | 检查打包结果是否符合要求，用于打包后再做一次校验                                 |
+| `install`  | 将构件安装到本地仓库，这样其他项目才能通过坐标引用到它                          |
 | `deploy`   | 把构件发布到远程仓库（私服或中央仓库），需要在 `pom.xml` 中配置 `distributionManagement` |
 
-**最需要记住的一条规则**：执行某个阶段时，Maven 会自动按顺序把它之前的所有阶段一并执行，而且这个顺序是固定的，不能调整。例如 `mvn package` 实际等于 `validate` + `compile` + `test` + `package`
-也正因为 `package` 之前会先跑 `test`，所以每次打包都会自动执行一遍测试；如果觉得每次都跑测试太慢，就要用参数跳过去。
+**最需要记住的一条规则**：执行某个阶段时，Maven 会自动按顺序把它之前的所有阶段一并执行，而且这个顺序是固定的，不能调整。例如：
+
+- `mvn compile` 实际等于 `validate` + `compile`
+- `mvn package` 实际等于 `validate` + `compile` + `test` + `package`
+- `mvn install` 实际等于 `mvn package` + `install`
+
+也正因为 `package` 之前会先跑 `test`，所以每次打包都会自动执行一遍测试；如果觉得每次都跑测试太慢，就要用参数跳过去（见 5.2）。
 
 ## 5.2 常见构建命令
 
@@ -378,6 +383,8 @@ cd D:\project
 mvn clean package
 ```
 
+> [!note] CMD 中切盘符要加 `/d`
+> 在 **CMD** 里 `cd D:\project` 只改变当前目录、不切换盘符，命令其实还停留在原盘符上，于是报找不到文件，正确写法是 `cd /d D:\project`；PowerShell 没有这个问题，直接 `cd D:\project` 即可。
 
 第二，**也可以完全不切目录，用 `-f` 参数直接指定 `pom.xml` 的路径**，在同时维护多个项目时很方便：
 
@@ -393,9 +400,84 @@ mvnw.cmd clean package
 
 ## 5.4 在 IDEA 中执行
 
-**方式 1：Maven 侧边栏直接运行**
+IDEA 把 Maven 深度集成进了界面，在里面执行生命周期指令有三种方式，各有适用场景。
 
-在 Idea 的 Maven 工具窗口展开项目节点，能看到 **Lifecycle** 下挂着 `clean`、`validate`、`compile`、`test`、`package`、`install`、`deploy` 等阶段，双击任意一个即可执行；
+### 方式 1：Maven 工具窗口双击阶段
 
-**方式 2：自定义 Maven 运行配置**
+这是最直接的方式，适合临时执行单个阶段：
+
+1. 打开 Maven 工具窗口，菜单路径为 `View → Tool Windows → Maven`（快捷键 `Alt + F12` 可以显示/隐藏所有工具窗口）；
+2. 展开项目节点，**Lifecycle** 下挂着 `clean`、`validate`、`compile`、`test`、`package`、`verify`、`install`、`deploy` 等阶段；
+3. **双击**任意一个阶段即开始执行，构建日志输出在窗口下方的构建控制台中；日志里的 `BUILD SUCCESS` 表示成功，`BUILD FAILURE` 表示失败，输出中的 `ERROR` 行是带链接的，点击可直接跳转到出错的代码行。
+
+这种方式上手最快，但有两个明显短板：
+
+- **一次只能跑一个阶段**，想执行 `clean package` 就必须点两下、跑两轮；
+- **不会自动先执行 `clean`**。如果上一次构建在 `target` 里留下了已被删除的 class 文件，重新打出来的 jar 仍会包含这些废弃类，往往要到运行时才报错。
+
+### 方式 2：自定义 Maven 运行配置（推荐）
+
+它把整条指令当作一条命令来执行，可以同时写多个阶段、还能带参数，是日常开发中使用频率最高的方式。
+
+1. 在 IDEA 顶部运行配置下拉框中选择 **Edit Configurations...**，点左上角 `+` 新建配置，在列表中选择 **Maven**；
+2. 按下表填写各字段（只填前两项就能跑）：
+
+| 字段                  | 填什么                                                                                     |
+| --------------------- | ----------------------------------------------------------------------------------------- |
+| `Name`                | 运行配置的名称，随意取，如 `clean package`                                                |
+| `Working directory`   | 项目根目录，即 `pom.xml` 所在目录，直接填 `$MODULE_WORKING_DIR$` 即可                          |
+| `Command line`        | 要执行的阶段与参数，**不要写 `mvn` 前缀**，多个用空格隔开，如 `clean package`                    |
+| `Active profiles`     | 需要激活的 profile，对应 `pom.xml` 中 `<profiles>` 声明的 `id`，不勾选则用默认配置                 |
+| `Before launch`       | 可选的构建前置步骤，日常构建 Maven 项目时保持默认即可，不需要额外加 `Build`                      |
+
+3. 保存后即可在右上角一键运行，日志输出在底部的 **Run** 面板。
+
+**`Command line` 栏的写法要点**——这里写的是**去掉 `mvn` 之后的部分**：
+
+| `Command line` 填写内容              | 实际执行的命令                             |
+| ----------------------------------- | ------------------------------------- |
+| `clean package`                     | `mvn clean package`（最常用）             |
+| `clean install`                     | `mvn clean install`                     |
+| `clean package -DskipTests`         | `mvn clean package -DskipTests`         |
+| `clean package -Dmaven.test.skip=true` | `mvn clean package -Dmaven.test.skip=true` |
+| `clean package -P prod`             | `mvn clean package -P prod`，激活 `prod` 这个 profile |
+| `clean package -U`                  | `mvn clean package -U`，强制检查远程仓库更新   |
+| `clean help:effective-pom`          | `mvn clean help:effective-pom`，导出最终生效的 `pom.xml` |
+| `dependency:tree`                   | `mvn dependency:tree`，只出依赖树不构建         |
+
+建议把日常用得最多的 `clean package` 和 `clean install -DskipTests` 各建一个运行配置，切换项目时可以直接复用。
+
+### 方式 3：在 IDEA 内置终端中执行
+
+`Alt + F12` 或 `View → Tool Windows → Terminal` 可以打开 IDEA 内置的终端，这里就是 5.3 讲的那套命令，区别只是省去了切换到外部终端的步骤，目录切换、Tab 补全、`mvnw.cmd` 等能力全都保留。
+
+适合需要临时敲复杂参数、或者想在 IDEA 里一边看代码一边构建的场景。
+
+### 三种方式的对比
+
+| 执行方式            | 一次跑多个阶段 | 可带参数 | 自动 `clean` | 适用场景               |
+| ------------------- | -------------- | -------- | ------------ | ---------------------- |
+| 双击 Lifecycle 阶段 | ❌              | ❌        | ❌            | 临时跑单个 `compile`/`package` |
+| Maven 运行配置      | ✅              | ✅        | ✅（自己写）   | **日常构建，推荐**      |
+| 内置终端            | ✅              | ✅        | ✅（自己写）   | 复杂命令、配合 `mvnw` 使用 |
+
+> [!tip] 多模块项目怎么执行
+> 多模块项目在 Maven 工具窗口中会展开成一个父工程加若干子模块。此时**双击哪个节点，就只构建哪个模块**；想一次性构建全部模块，要选中**最上层的父工程节点**再执行 `clean install`，Maven 会按照 `pom.xml` 中 `<modules>` 声明的顺序依次构建各个子模块，某个子模块失败会立即中止。
+
+**几个必须检查的 IDEA 设置**（`File → Settings → Build, Execution, Deployment → Build Tools → Maven`）：
+
+| 配置项               | 建议值                                          |
+| -------------------- | ----------------------------------------------- |
+| `Maven home path`    | 选 `Use Maven home` 并指定 `D:\apache-maven-3.9.9`  |
+| `User settings file` | 指向 `D:\apache-maven-3.9.9\conf\settings.xml`  |
+| `Local repository`   | 指向 `D:\apache-maven-3.9.9\mvn_repo`           |
+| `JDK for importer`   | 与项目所用 JDK 保持一致，避免导入时用错版本        |
+
+> [!warning] IDEA 中执行 Maven 常见的坑
+> - **Command line 里多写了 `mvn`**：会报找不到 goal 的错误，这里只填 `clean package` 这样的阶段与参数即可。
+> - **Working directory 填错位置**：若不在 `pom.xml` 所在目录，会报 `The goal you specified requires a project to execute but there is no POM in this directory`。
+> - **IDEA 用的是自带 Maven 而不是你配置的 3.9.9**：`Maven home path` 没改，于是 `settings.xml` 里的镜像和本地仓库全部被忽略——这既是「明明配了阿里云镜像却依然卡在下载」的原因，也意味着本文 2.2、2.3 两节的配置对 IDEA 并不生效。这是排查此类问题时的第一站。
+> - **改完 `pom.xml` 后构建仍用旧依赖**：IDEA 会弹出是否 Reload All Maven Projects 的提示，需要点确认才会重新解析依赖；也可以点 Maven 工具窗口的刷新按钮强制重新加载。
+> - **删除或改名了某个类之后仍报旧错误**：多半是 `target` 里残留了旧的 class 文件，执行一次 `clean package` 或 IDEA 的 `Build → Rebuild Project` 即可。
+> - **IDEA 里下载依赖很慢、外部终端里却很快**：两者是各自独立的配置，外部终端读的是环境变量 `MAVEN_HOME` 指向的那份，需要回到 `User settings file` 确认路径。
 
