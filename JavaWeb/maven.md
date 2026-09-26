@@ -393,7 +393,7 @@ mvnw.cmd clean package
 
 ## 5.4 在 IDEA 中执行
 
+**方式 1：Maven 侧边栏直接运行**
+
 在 Idea 的 Maven 工具窗口展开项目节点，能看到 **Lifecycle** 下挂着 `clean`、`validate`、`compile`、`test`、`package`、`install`、`deploy` 等阶段，**双击**任意一个即可执行；
-
-
 
