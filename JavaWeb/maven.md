@@ -37,9 +37,6 @@ Java version: 17.0.x, vendor: ..., runtime: ...
 OS name: "windows 11", version: "11", arch: "amd64", family: "windows"
 ```
 
-> [!warning] 报错排查
-> 如果提示 `'mvn' 不是内部或外部命令`，依次检查：变量名是否拼写正确、`Path` 末尾是否漏加分号、是否在**新开的**终端中执行。若 `mvn -v` 显示的 Java 版本不是期望值，说明它读到的是 `JAVA_HOME` 指向的 JDK，而非本机其他版本。
-
 ## 2.2 配置本地仓库
 
 Maven 从远程仓库下载下来的所有 jar 包与插件，都会**缓存到本地仓库**中，之后再使用同一个依赖时就无需联网下载，直接从本地读取，速度极快。
