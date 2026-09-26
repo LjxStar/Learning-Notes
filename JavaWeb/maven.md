@@ -243,7 +243,7 @@ org.springframework:spring-webmvc:6.1.4
 - `artifactId`：构件名，一个构件一个名字，在同一 `groupId` 内唯一
 - `version`：构件版本，升级依赖改的就是这里
 
-**坐标去哪里查？** 直接搜 [Maven 中央仓库搜索](https://search.maven.org) 或 [MvnRepository](https://mvnrepository.com/)，输入 `spring-webmvc` 就能看到所有版本，选一个即可。IDEA 中还有更快的办法：在 `pom.xml` 里敲 `groupId:`，IDEA 会自动拉取候选列表，用方向键选中就能补全，写 `version` 时同理。
+**坐标去哪里查？** 直接通过 [MvnRepository](https://mvnrepository.com/) 中央仓库查找，输入 `spring-webmvc` 就能看到所有版本，选一个即可。IDEA 中还有更快的办法：在 `pom.xml` 里敲 `groupId:`，IDEA 会自动拉取候选列表，用方向键选中就能补全，写 `version` 时同理。
 
 ## 4.2 引入依赖
 
@@ -394,7 +394,6 @@ mvnw.cmd clean package
 ## 5.4 在 IDEA 中执行
 
 在 Idea 的 Maven 工具窗口展开项目节点，能看到 **Lifecycle** 下挂着 `clean`、`validate`、`compile`、`test`、`package`、`install`、`deploy` 等阶段，**双击**任意一个即可执行；
-1. 窗口下方的构建控制台会输出完整的构建日志，其中 `BUILD SUCCESS` 表示成功；若构建失败，输出中的 `ERROR` 行是带链接的，点击可直接跳转到出错的代码行。
 
 
 
