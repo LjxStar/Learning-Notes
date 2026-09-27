@@ -342,3 +342,32 @@ public class PageResult {
 
 
 对于/emps?page=1&pageSize=10
+service 层需要额外获取总计数，不会自动分页参数这些过程都相对固定
+```java
+@Override  
+public PageResult<Emp> list(Integer page, Integer pageSize) {  
+    // 查询总记录数  
+    Long total = empMapper.count();  
+  
+    // 计算分页参数  
+    int offset = (page - 1) * pageSize;  
+  
+    // 查询分页数据  
+    List<Emp> data = empMapper.list(offset, pageSize);  
+  
+    // 返回分页结果  
+    return new PageResult<Emp>(total, data);  
+}
+```
+
+```java
+@Select("SELECT COUNT(*) FROM emp left join dept on emp.dept_id = dept.id")  
+Long count();  
+  
+@Select("SELECT emp.*, dept.name As dept_name FROM emp left join dept on emp.dept_id = dept.id LIMIT #{offset}, #{pageSize}")  
+List<Emp> list(int offset, Integer pageSize);
+```
+
+
+12.2 PageHelper
+**PageHelper 是第三方提供的 Mybatis 框架中的一款功能强大、方便易用的分页插件，支持任何形式的单标、多表的分页查询。**
