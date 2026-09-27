@@ -7,7 +7,8 @@ tags:
 
 # 一、项目结构与开发约定
 
-> 本篇笔记围绕「天机栈（tlias）员工管理系统」的开发过程整理，覆盖参数传递、MyBatis、日志、分页、动态 SQL 与事务六大主题。
+> [!NOTE]
+> 本篇笔记围绕「天机栈（tlias）员工管理系统」的开发过程整理，覆盖项目结构、参数传递、MyBatis、日志、分页、动态 SQL 与事务七大主题。
 
 ## 1.1 分层结构
 
@@ -130,16 +131,14 @@ public class DeptController {
 
 ### 1.2.2 @RequestMapping 及其派生注解
 
-`@RequestMapping` 用于声明请求路径（`value`）与请求方式（`method`）：
+`@RequestMapping` 用于声明请求路径（`value`）与请求方式（`method`）。实际开发中常用它的四个派生注解，可以省略 `method` 属性，写法更简洁：
 
-```java
-@GetMapping  // 等价于 @RequestMapping(value = "/xxx", method = RequestMethod.GET)
-@PostMapping // 等价于 @RequestMapping(value = "/xxx", method = RequestMethod.POST)
-@PutMapping  // 等价于 @RequestMapping(value = "/xxx", method = RequestMethod.PUT)
-@DeleteMapping // 等价于 @RequestMapping(value = "/xxx", method = RequestMethod.DELETE)
-```
-
-派生注解可以省略 `method` 属性，写法更简洁，是实际开发中的首选。
+| 派生注解 | 等价写法 | 请求方式 |
+| --- | --- | --- |
+| `@GetMapping` | `@RequestMapping(value = "/xxx", method = RequestMethod.GET)` | GET |
+| `@PostMapping` | `@RequestMapping(value = "/xxx", method = RequestMethod.POST)` | POST |
+| `@PutMapping` | `@RequestMapping(value = "/xxx", method = RequestMethod.PUT)` | PUT |
+| `@DeleteMapping` | `@RequestMapping(value = "/xxx", method = RequestMethod.DELETE)` | DELETE |
 
 ---
 
@@ -161,10 +160,9 @@ public Result delete(@RequestParam("id") Integer id) {
     deptService.deleteById(id);
     return Result.success();
 }
-
-// 等价写法，显式写出 value
-// public Result delete(@RequestParam(value = "id") Integer id) { ... }
 ```
+
+当形参与请求参数名一致时，`@RequestParam("id")` 中的 `"id"` 也可以省略，写成 `@RequestParam Integer id`。
 
 ### 2.1.2 方式二：HttpServletRequest 原生对象
 
@@ -196,22 +194,19 @@ public Result delete(Integer id) {
 
 ### 2.2.1 @PathVariable 接收路径变量
 
-把参数直接写进 URL 路径，用 `/变量名` 占位，再通过 `@PathVariable` 取出。适合「按 ID 查详情」这类资源定位场景。
+把参数直接写进 URL 路径，用 `/{id}` 占位，再通过 `@PathVariable` 取出。适合「按 ID 查详情」这类资源定位场景。
 
 ```java
-@GetMapping("/depts/{id}")                 // 路径中用 {id} 占位
+// 完整路径：GET /depts/1
+@GetMapping("/depts/{id}")                  // 路径中用 {id} 占位
 public Result getById(@PathVariable Integer id) {
     Dept dept = deptService.getById(id);
     return Result.success(dept);
 }
-
-// 多个路径参数：GET /depts/1/emps/2
-// public Result getById(@PathVariable("deptId") Integer deptId,
-//                       @PathVariable("empId") Integer empId) { ... }
 ```
 
 > [!TIP]
-> 当形参名与路径变量名不一致时，必须写明名称：`@PathVariable("id") Integer deptId`。
+> 当形参名与路径变量名不一致时，必须写明名称，例如 `@PathVariable("id") Integer deptId`。
 
 ## 2.3 JSON 请求体
 
@@ -336,8 +331,7 @@ public interface DeptMapper {
     Dept getById(Integer id);
 
     /** 保存部门 */
-    @Insert("INSERT INTO dept (name, create_time, update_time) " +
-            "VALUES (#{name}, #{createTime}, #{updateTime})")
+    @Insert("INSERT INTO dept (name, create_time, update_time) VALUES (#{name}, #{createTime}, #{updateTime})")
     void save(Dept dept);
 
     /** 更新部门 */
@@ -388,10 +382,9 @@ DML（增删改）语句执行完毕后同样有返回值，**返回值就是受
 ```java
 @Delete("DELETE FROM dept WHERE id = #{id}")
 int deleteById(Integer id);   // 返回受影响的行数
-
-@Delete("DELETE FROM dept WHERE id = #{id}")
-void deleteById(Integer id);  // 不关心影响行数，用 void
 ```
+
+若不关心影响行数，返回值直接声明为 `void` 即可。
 
 ## 3.3 结果映射
 
@@ -532,27 +525,19 @@ public interface EmpMapper {
 }
 ```
 
+插入成功后，`emp.getId()` 已经有值，可以直接拿去关联工作经历：
+
 ```java
-@Service
-public class EmpServiceImpl implements EmpService {
+@Override
+public void save(Emp emp) {
+    // 1. 保存基本信息，执行完毕后 emp.id 已被回填
+    empMapper.save(emp);
 
-    @Autowired
-    private EmpMapper empMapper;
-    @Autowired
-    private EmpExprMapper empExprMapper;
-
-    @Override
-    @Transactional
-    public void save(Emp emp) {
-        // 1. 保存基本信息，执行后 emp.id 已有值
-        empMapper.save(emp);
-
-        // 2. 直接用回填的 id 关联工作经历
-        List<EmpExpr> exprs = emp.getExprs();
-        if (exprs != null && !exprs.isEmpty()) {
-            exprs.forEach(expr -> expr.setEmpId(emp.getId()));
-            empExprMapper.saveBatch(exprs);
-        }
+    // 2. 直接用回填的 id 关联工作经历
+    List<EmpExpr> exprs = emp.getExprs();
+    if (exprs != null && !exprs.isEmpty()) {
+        exprs.forEach(expr -> expr.setEmpId(emp.getId()));
+        empExprMapper.saveBatch(exprs);
     }
 }
 ```
@@ -565,12 +550,12 @@ public class EmpServiceImpl implements EmpService {
 
 ### 4.1.1 JUL / SLF4J / Log4j / Logback
 
-| 名称 | 说明 |
-| --- | --- |
-| **JUL** | Java SE 平台自带的官方日志框架。配置简单，但不灵活，性能较差 |
-| **SLF4J** | Simple Logging Facade for Java，**日志门面**。只提供一套标准的日志接口与抽象类，不做具体实现，允许应用随时切换底层框架 |
-| **Log4j** | Apache 的流行日志框架，配置灵活，支持多种输出目标。需注意 Log4j 1.x 存在严重漏洞，实际使用应选 Log4j 2 |
-| **Logback** | 由 Log4j 原作者开发，是 **SLF4J 的参考实现**，性能优于 Log4j，配置更丰富，是 Spring Boot 默认集成的日志实现 |
+| 名称          | 说明                                                                           |
+| ----------- | ---------------------------------------------------------------------------- |
+| **JUL**     | Java SE 平台自带的官方日志框架。配置简单，但不灵活，性能较差                                           |
+| **SLF4J**   | Simple Logging Facade for Java，**日志门面**。只提供一套标准的日志接口与抽象类，不做具体实现，允许应用随时切换底层框架 |
+| **Log4j**   | Apache 的流行日志框架，配置灵活，支持多种输出目标。需注意 Log4j 1.x 存在严重漏洞，实际使用应选 Log4j 2             |
+| **Logback** | 由 Log4j 原作者开发，是 **SLF4J 的参考实现**，性能优于 Log4j，配置更丰富，是 Spring Boot 默认集成的日志实现     |
 
 SLF4J 本身没有实现，它是「门面」；真正干活的是绑定到它的实现（Logback / Log4j2 / JUL）。调用方只依赖 SLF4J API，底层换实现不需要改业务代码。
 
@@ -592,13 +577,14 @@ public class LogTest {
 
     @Test
     public void testLog() {
+        log.debug("开始计算...");
+
         int[] nums = {1, 5, 3, 2, 1, 4, 5, 4, 6, 7, 4, 34, 2, 23};
         int sum = 0;
         for (int num : nums) {
             sum += num;
         }
 
-        log.debug("开始计算...");
         log.info("计算结果为：{}", sum);
         log.debug("结束计算...");
     }
@@ -718,13 +704,15 @@ Logback 的配置文件固定叫 `logback.xml`，放在 `src/main/resources` 目
 `<root level="...">` 就是日志总开关：`ALL` 表示全部开启，`OFF` 表示全部关闭。把多个 appender 通过 `appender-ref` 挂到 root 上，即可同时输出到控制台和文件。
 
 ```xml
-<!-- 全部开启：输出到控制台 + 输出到文件 -->
+<!-- 开启全部日志：输出到控制台 + 输出到文件 -->
 <root level="ALL">
     <appender-ref ref="STDOUT"/>
     <appender-ref ref="FILE"/>
 </root>
+```
 
-<!-- 全部关闭 -->
+```xml
+<!-- 关闭全部日志：把级别改为 OFF -->
 <root level="OFF">
     <appender-ref ref="STDOUT"/>
     <appender-ref ref="FILE"/>
@@ -733,13 +721,13 @@ Logback 的配置文件固定叫 `logback.xml`，放在 `src/main/resources` 目
 
 日志级别指日志信息的类型，**只有大于等于所配置级别的日志才会被输出**。
 
-| 日志级别 | 说明 | 记录方式 |
-| --- | --- | --- |
-| `trace` | 追踪，记录程序运行轨迹 【使用很少】 | `log.trace("...")` |
-| `debug` | 调试，记录程序调试过程中的信息，实际应用中一般视为最低级别 【使用较多】 | `log.debug("...")` |
-| `info` | 记录一般信息，描述程序运行的关键事件，如网络连接、IO 操作 【使用较多】 | `log.info("...")` |
-| `warn` | 警告信息，记录潜在有害的情况 【使用较多】 | `log.warn("...")` |
-| `error` | 错误信息 【使用较多】 | `log.error("...")` |
+| 日志级别    | 说明                                    | 记录方式               |
+| ------- | ------------------------------------- | ------------------ |
+| `trace` | 追踪，记录程序运行轨迹 【使用很少】                    | `log.trace("...")` |
+| `debug` | 调试，记录程序调试过程中的信息，实际应用中一般视为最低级别 【使用较多】  | `log.debug("...")` |
+| `info`  | 记录一般信息，描述程序运行的关键事件，如网络连接、IO 操作 【使用较多】 | `log.info("...")`  |
+| `warn`  | 警告信息，记录潜在有害的情况 【使用较多】                 | `log.warn("...")`  |
+| `error` | 错误信息 【使用较多】                           | `log.error("...")` |
 
 优先级由低到高：`trace < debug < info < warn < error < off`。把级别配成 `info`，则 `trace` 和 `debug` 都不会输出。
 
@@ -797,9 +785,7 @@ public interface EmpMapper {
     Long count();
 
     /** 查询分页数据，LIMIT 第一个参数是偏移量，第二个参数是条数 */
-    @Select("SELECT e.*, d.name AS deptName " +
-            "FROM emp e LEFT JOIN dept d ON e.dept_id = d.id " +
-            "LIMIT #{offset}, #{pageSize}")
+    @Select("SELECT e.*, d.name AS deptName FROM emp e LEFT JOIN dept d ON e.dept_id = d.id LIMIT #{offset}, #{pageSize}")
     List<Emp> list(int offset, Integer pageSize);
 }
 ```
@@ -925,15 +911,15 @@ INSERT INTO emp_expr (emp_id, `begin`, `end`, company, job)
 VALUES (39, '2019-01-01', '2020-01-01', '百度', '开发'),
        (39, '2020-01-10', '2022-02-01', '阿里', '架构');
 
--- 4. 全部成功则提交
+-- 4. 以上全部成功则提交，数据正式生效
 COMMIT;
 
--- 5. 任意一步失败则回滚，数据恢复到事务开始前
+-- 5. 若第 2 或 3 步失败，则执行回滚，数据恢复到事务开始前
 ROLLBACK;
 ```
 
 > [!TIP]
-> `begin`、`end` 在 MySQL 中是关键字，作列名时要用反引号 `` `begin` `` 包起来。
+> `begin`、`end` 在 MySQL 中是关键字，作列名时要用反引号包裹。
 
 ## 6.2 Spring 事务 @Transactional
 
