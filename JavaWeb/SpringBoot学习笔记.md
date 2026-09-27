@@ -301,3 +301,7 @@ Logback 日志框架的配置文件叫 `logback.xml` 。
 ```java
 log.info("根据 id 删除部门, id: {}" , id);
 ```
+
+10. 路径抽取
+一个完整的请求路径，应该是类上的 @RequestMapping 的 value 属性 + 方法上的 @RequestMapping 的 value 属性。
+把公共的路径都放到类的@RequestMapping 上避免重复
