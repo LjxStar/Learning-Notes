@@ -376,19 +376,19 @@ List<Emp> list(int offset, Integer pageSize);
 当使用了 PageHelper 分页插件进行分页，就无需再 Mapper 中进行手动分页了。在 Mapper 中我们只需要进行正常的列表查询即可。在 Service 层中，调用 Mapper 的方法之前设置分页参数，在调用 Mapper 方法执行查询之后，解析分页结果，并将结果封装到 PageResult 对象中返回。
 
 
-```java
-// 使用 PageHelper 分页插件方式  
-@Override  
-public PageResult<Emp> list(Integer page, Integer pageSize) {  
+```java 
+public PageResult<Emp> list(EmpQueryParam empQueryParam) {  
     // 设置分页参数  
-    PageHelper.startPage(page, pageSize);  
+    PageHelper.startPage(empQueryParam.getPage(), empQueryParam.getPageSize());  
   
     // 查询员工列表  
-    List<Emp> empList = empMapper.list();  
-    Page<Emp> empPage = (Page<Emp>) empList;  
+    List<Emp> empList = empMapper.list(empQueryParam);  
+  
+    // 获取分页信息  
+    PageInfo<Emp> pageInfo = new PageInfo<>(empList);  
   
     // 返回分页结果  
-    return new PageResult<Emp>(empPage.getTotal(), empPage.getResult());  
+    return new PageResult<>(pageInfo.getTotal(), pageInfo.getList());  
 }
 ```
 
