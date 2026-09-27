@@ -1,5 +1,5 @@
 
-1.mapper 到 mybatis
+1.mapper 到 mybatis 绑定
 实体类属性名和数据库表查询返回的字段名一致，mybatis 会自动封装。如果实体类属性名和数据库表查询返回的字段名不一致，不能自动封装。
 
 ```java
@@ -43,4 +43,14 @@ mybatis:
 - PUT 方式：@PutMapping
 - DELETE 方式：@DeleteMapping
 
-3.
+3.mapper 到 mybatis
+```
+/**  
+ * 根据ID删除部门  
+ */  
+@Select("DELETE FROM dept WHERE id = #{id}")  
+void deleteById(Integer id);
+```
+如果 mapper 接口方法形参只有一个普通类型的参数，`#{…}` 里面的属性名可以随便写，如：`#{id}`、`#{value}`。
+
+对于 DML 语句来说，执行完毕，也是有返回值的，返回值代表的是增删改操作，影响的记录数，所以可以将执行 DML 语句的方法返回值设置为 Integer。但是一般开发时，是不需要这个返回值的，所以也可以设置为 void。
