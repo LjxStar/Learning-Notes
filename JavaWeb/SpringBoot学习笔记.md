@@ -295,3 +295,9 @@ Logback 日志框架的配置文件叫 `logback.xml` 。
     <appender-ref ref="FILE" />
 </root>
 ```
+
+9.3 传参
+有几个大括号，逗号后面就要传几个对应参数
+```java
+log.info("根据 id 删除部门, id: {}" , id);
+```
