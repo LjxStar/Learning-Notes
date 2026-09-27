@@ -374,3 +374,32 @@ List<Emp> list(int offset, Integer pageSize);
 
 
 当使用了 PageHelper 分页插件进行分页，就无需再 Mapper 中进行手动分页了。在 Mapper 中我们只需要进行正常的列表查询即可。在 Service 层中，调用 Mapper 的方法之前设置分页参数，在调用 Mapper 方法执行查询之后，解析分页结果，并将结果封装到 PageResult 对象中返回。
+
+
+```java
+// 使用 PageHelper 分页插件方式  
+@Override  
+public PageResult<Emp> list(Integer page, Integer pageSize) {  
+    // 设置分页参数  
+    PageHelper.startPage(page, pageSize);  
+  
+    // 查询员工列表  
+    List<Emp> empList = empMapper.list();  
+    Page<Emp> empPage = (Page<Emp>) empList;  
+  
+    // 返回分页结果  
+    return new PageResult<Emp>(empPage.getTotal(), empPage.getResult());  
+}
+```
+
+行了两条 SQL 语句，而这两条 SQL 语句，其实是从我们在 Mapper 接口中定义的 SQL 演变而来的。
+
+- 第一条 SQL 语句，用来查询总记录数。其实就是将我们编写的SQL语句进行的改造增强，将查询返回的字段列表替换成了 `count(0)` 来统计总记录数。
+- 第二条SQL语句，用来进行分页查询，查询指定页码对应的数据列表。其实就是将我们编写的SQL语句进行的改造增强，在SQL语句之后拼接上了limit进行分页查询，而由于测试时查询的是第一页，起始索引是0，所以简写为limit ？。
+
+而 PageHelper 在进行分页查询时，会执行上述两条 SQL 语句，并将查询到的总记录数，与数据列表封装到了 `Page<Emp>` 对象中，我们再获取查询结果时，只需要调用 Page 对象的方法就可以获取。
+
+> [!TIP]
+> - PageHelper 实现分页查询时，SQL 语句的结尾一定一定一定不要加分号(;).。
+>     
+> - PageHelper 只会对紧跟在其后的第一条 SQL 语句进行分页处理。
