@@ -404,8 +404,13 @@ public PageResult<Emp> list(Integer page, Integer pageSize) {
 >     
 > - PageHelper 只会对紧跟在其后的第一条 SQL 语句进行分页处理。
 
-
-
+当我们在测试的时候，页码输入负数，查询是有问题的，查不到对应的数据了。
+```Java
+pagehelper:
+  reasonable: true
+  helper-dialect: mysql
+```
+reasonable：分页合理化参数，默认值为 false。当该参数设置为 true 时，pageNum<=0时会查询第一页，pageNum>pages（超过总数时），会查询最后一页。默认 false 时，直接根据参数进行查询。
 
 13. 前端到 controller 的一些细节
 @RequestParam(defaultValue="默认值") //设置请求参数默认值
