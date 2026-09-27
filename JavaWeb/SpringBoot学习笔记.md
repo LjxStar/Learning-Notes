@@ -43,7 +43,7 @@ mybatis:
 - PUT 方式：@PutMapping
 - DELETE 方式：@DeleteMapping
 
-3.mapper 到 mybatis
+3.mapper （参数为单个或多个变量）到 mybatis （一般与参数名相同）
 ```java
 /**  
  * 根据ID删除部门  
@@ -56,7 +56,7 @@ void deleteById(Integer id);
 对于 DML 语句来说，执行完毕，也是有返回值的，返回值代表的是增删改操作，影响的记录数，所以可以将执行 DML 语句的方法返回值设置为 Integer。但是一般开发时，是不需要这个返回值的，所以也可以设置为 void。
 
 
-4.前端到 controller 简单传参
+4.前端（url 拼接参数？）到 controller（单个或多个变量） 简单传参
 ```java
 /**  
  * 删除部门  
@@ -81,6 +81,22 @@ public Result delete(HttpServletRequest request) {
 // 方式3 同名参数自动绑定  
 public Result delete(Integer id) {  
     deptService.deleteById(id);  
+    return Result.success();  
+}
+```
+
+5. mapper（参数为对象）到 mybatis（对象属性名）
+如果在 mapper 接口中，需要传递多个参数，可以把多个参数封装到一个对象中。在 SQL 语句中获取参数的时候，`#{...}` 里面写的是对象的属性名【注意是属性名，不是表的字段名】。
+
+6. 前端（json）到 controller（对象） （json、请求体传参）
+```java
+/**  
+ * 添加部门  
+ * json传参  
+ */  
+@PostMapping("/depts")  
+public Result save(@RequestBody Dept dept) {  
+    deptService.save(dept);  
     return Result.success();  
 }
 ```
