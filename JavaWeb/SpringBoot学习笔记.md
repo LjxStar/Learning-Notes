@@ -480,6 +480,17 @@ public Result page(EmpQueryParam empQueryParam) {
 </mapper>
 ```
 
+`<foreach>` 标签，该标签的作用，是用来遍历循环，常见的属性说明：
+
+1. collection：集合名称
+2. item：集合遍历出来的元素/项
+3. separator：每一次遍历使用的分隔符
+4. open：遍历开始前拼接的片段
+5. close：遍历结束后拼接的片段
+    
+上述的属性，是可选的，并不是所有的都是必须的。可以自己根据实际需求，来指定对应的属性
+
+
 15.主键返回 sql 插入后会自动生成主键然后将 id 赋回程序中的对象
 @Options(useGeneratedKeys = true, keyProperty = "id")
 
