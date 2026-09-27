@@ -101,6 +101,15 @@ public Result save(@RequestBody Dept dept) {
 }
 ```
 
-7.前端（url 路径参数/） 到 controller   路径传参
-```
+7.前端（url 路径参数/a或者/a/b） 到 controller （单个或多个变量）  路径传参
+```java
+/**  
+ * 根据ID查询部门  
+ * 路径传参  
+ */  
+@GetMapping("/depts/{id}")  
+public Result getById(@PathVariable Integer id) {  
+    Dept dept = deptService.getById(id);  
+    return Result.success(dept);  
+}
 ```
