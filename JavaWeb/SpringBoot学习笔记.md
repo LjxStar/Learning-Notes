@@ -479,3 +479,8 @@ public Result page(EmpQueryParam empQueryParam) {
     </select>
 </mapper>
 ```
+
+15.主键返回 sql 插入后会自动生成主键然后将 id 赋回程序中的对象
+@Options(useGeneratedKeys = true, keyProperty = "id")
+
+由于稍后，我们在保存工作经历信息的时候，需要记录是哪位员工的工作经历。所以，保存完员工信息之后，是需要获取到员工的 ID 的，那这里就需要通过 Mybatis 中提供的主键返回功能来获取。
