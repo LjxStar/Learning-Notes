@@ -376,7 +376,7 @@ Maven 把项目构建的过程划分为若干个**阶段（phase）**，并预�
 
 在终端里执行 `mvn` 命令，需要注意三件事。
 
-第一，**必须先进入含 `pom.xml` 的项目根目录**，否则 Maven 会报找不到 `pom.xml`。
+**方式 1**：**必须先进入含 `pom.xml` 的项目根目录**，否则 Maven 会报找不到 `pom.xml`。
 
 ```bash
 cd D:\project
@@ -386,13 +386,13 @@ mvn clean package
 > [!note] CMD 中切盘符要加 `/d`
 > 在 **CMD** 里 `cd D:\project` 只改变当前目录、不切换盘符，命令其实还停留在原盘符上，于是报找不到文件，正确写法是 `cd /d D:\project`；PowerShell 没有这个问题，直接 `cd D:\project` 即可。
 
-第二，**也可以完全不切目录，用 `-f` 参数直接指定 `pom.xml` 的路径**，在同时维护多个项目时很方便：
+**方式 2**：**也可以完全不切目录，用 `-f` 参数直接指定 `pom.xml` 的路径**，在同时维护多个项目时很方便：
 
 ```bash
 mvn -f D:\develop\project\demo\pom.xml clean package
 ```
 
-第三，**用 Maven Wrapper 可以免装 Maven**。IDEA 创建 Maven 项目时默认会生成 `mvnw.cmd`（Windows）、`mvnw`（macOS / Linux）两个脚本和一个 `.mvn` 目录，它们会自动下载与项目匹配的 Maven 版本。在 Windows 上要执行的是带 `.cmd` 后缀的那个：
+**方式 3**：**用 Maven Wrapper 可以免装 Maven**。IDEA 创建 Maven 项目时默认会生成 `mvnw.cmd`（Windows）、`mvnw`（macOS / Linux）两个脚本和一个 `.mvn` 目录，它们会自动下载与项目匹配的 Maven 版本。在 Windows 上要执行的是带 `.cmd` 后缀的那个：
 
 ```bash
 mvnw.cmd clean package
@@ -402,13 +402,13 @@ mvnw.cmd clean package
 
 IDEA 把 Maven 深度集成进了界面，在里面执行生命周期指令有两种主要方式。
 
-### 方式 1：Maven 工具窗口双击阶段
+**方式 1**：Maven 工具窗口双击阶段
 
 `View → Tool Windows → Maven` 打开 Maven 工具窗口，展开项目节点，**Lifecycle** 下挂着 `clean`、`validate`、`compile`、`test`、`package`、`verify`、`install`、`deploy` 等阶段，**双击**任意一个即可执行。构建日志输出在窗口下方，`BUILD SUCCESS` 表示成功，其中的 `ERROR` 是可点击链接，能直接跳到出错的代码行。
 
 上手最快，但有两个短板：一次只能跑一个阶段；**不会自动先执行 `clean`**——若 `target` 里残留了已删除的 class，打出来的 jar 仍会带着它们，往往到运行时才报错。
 
-### 方式 2：自定义 Maven 运行配置（推荐）
+**方式 2**：自定义 Maven 运行配置
 
 把整条指令当成一条命令执行，可以写多个阶段、还能带参数，日常开发主要用这个。
 
