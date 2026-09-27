@@ -311,3 +311,30 @@ log.info("根据 id 删除部门, id: {}" , id);
 Controller（RestController） controller 上的类
 service 放到 service.impl 下的对应实现类上
 mapper （resposity）放到 mapper 包的对应接口
+
+
+12.分页
+1. 前端在请求服务端时，传递的参数
+    
+    1. 当前页码 page
+        
+    2. 每页显示条数 pageSize
+        
+2. 后端需要响应什么数据给前端
+    
+    1. 所查询到的数据列表（存储到 List 集合中）
+        
+    2. 总记录数
+
+
+```Java
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class PageResult {
+        private Long total; //总记录数
+        private List rows; //当前页数据列表
+}
+```
+
+12.1 原始方式
