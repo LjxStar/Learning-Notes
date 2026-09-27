@@ -1,5 +1,5 @@
 
-1.mapper 到 mybatis 绑定
+1.mybatis 到 mapper（对象） 驼峰与下划线
 实体类属性名和数据库表查询返回的字段名一致，mybatis 会自动封装。如果实体类属性名和数据库表查询返回的字段名不一致，不能自动封装。
 
 ```java
@@ -56,7 +56,7 @@ void deleteById(Integer id);
 对于 DML 语句来说，执行完毕，也是有返回值的，返回值代表的是增删改操作，影响的记录数，所以可以将执行 DML 语句的方法返回值设置为 Integer。但是一般开发时，是不需要这个返回值的，所以也可以设置为 void。
 
 
-4.前端（url 拼接参数？）到 controller（单个或多个变量） 简单传参
+4.前端（url 简单参数？）到 controller（单个或多个变量） 简单传参
 ```java
 /**  
  * 删除部门  
@@ -99,4 +99,8 @@ public Result save(@RequestBody Dept dept) {
     deptService.save(dept);  
     return Result.success();  
 }
+```
+
+7.前端（url 路径参数/） 到 controller   路径传参
+```
 ```
