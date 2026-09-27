@@ -338,7 +338,7 @@ public class PageResult {
 ```
 
 12.1 原始方式
-@RequestParam(defaultValue="默认值") //设置请求参数默认值
+
 
 
 对于/emps?page=1&pageSize=10
@@ -403,3 +403,10 @@ public PageResult<Emp> list(Integer page, Integer pageSize) {
 > - PageHelper 实现分页查询时，SQL 语句的结尾一定一定一定不要加分号(;).。
 >     
 > - PageHelper 只会对紧跟在其后的第一条 SQL 语句进行分页处理。
+
+
+
+
+13. 前端到 controller 的一些细节
+@RequestParam(defaultValue="默认值") //设置请求参数默认值
+@DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate begin
