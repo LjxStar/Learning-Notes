@@ -338,3 +338,7 @@ public class PageResult {
 ```
 
 12.1 原始方式
+@RequestParam(defaultValue="默认值") //设置请求参数默认值
+
+
+对于/emps?page=1&pageSize=10
