@@ -409,4 +409,5 @@ public PageResult<Emp> list(Integer page, Integer pageSize) {
 
 13. 前端到 controller 的一些细节
 @RequestParam(defaultValue="默认值") //设置请求参数默认值
-@DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate begin
+
+@DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate begin // Spring MVC 接收前端提交的字符串日期，自动转为 `LocalDate` 对象
