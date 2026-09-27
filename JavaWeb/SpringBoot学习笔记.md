@@ -113,3 +113,36 @@ public Result getById(@PathVariable Integer id) {
     return Result.success(dept);  
 }
 ```
+
+8. mapper 的四种注释
+```java
+/**  
+ * 查询所有部门  
+ */   
+@Select("SELECT * FROM dept")  
+List<Dept> findAll();  
+  
+/**  
+ * 根据ID删除部门  
+ */  
+@Select("DELETE FROM dept WHERE id = #{id}")  
+void deleteById(Integer id);  
+  
+/**  
+ * 保存部门  
+ */  
+@Insert("INSERT INTO dept (name, create_time, update_time) VALUES (#{name}, #{createTime}, #{updateTime})")  
+void save(Dept dept);  
+  
+/**  
+ * 根据ID查询部门  
+ */  
+@Select("SELECT * FROM dept WHERE id = #{id}")  
+Dept getById(Integer id);  
+  
+/**  
+ * 更新部门  
+ */  
+@Update("UPDATE dept SET name = #{name}, update_time = #{updateTime} WHERE id = #{id}")  
+void update(Dept dept);
+```
