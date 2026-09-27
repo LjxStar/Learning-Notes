@@ -1,171 +1,672 @@
+---
+tags:
+  - SpringBoot
+  - MyBatis
+  - JavaWeb
+---
 
-1.mybatis 到 mapper（对象） 驼峰与下划线
-实体类属性名和数据库表查询返回的字段名一致，mybatis 会自动封装。如果实体类属性名和数据库表查询返回的字段名不一致，不能自动封装。
+# 一、项目结构与开发约定
+
+> 本篇笔记围绕「天机栈（tlias）员工管理系统」的开发过程整理，覆盖参数传递、MyBatis、日志、分页、动态 SQL 与事务六大主题。
+
+## 1.1 分层结构
+
+### 1.1.1 三个核心注解
+
+Spring Boot 项目的代码按 Controller → Service → Mapper 三层组织，每一层由一个固定注解标记，注解位置错了 Spring 就无法完成依赖注入与对象管理。
+
+| 注解                | 标注位置                                     | 作用                                                          |
+| ----------------- | ---------------------------------------- | ----------------------------------------------------------- |
+| `@RestController` | Controller 类上                            | 标记为控制器，等价于 `@Controller` + `@ResponseBody`，方法返回值自动序列化为 JSON |
+| `@Service`        | Service 层**实现类**上（即 `service.impl` 包下的类） | 标记为业务层组件，参与事务管理                                             |
+| `@Mapper`         | Mapper 包下的接口上                            | 标记为 MyBatis Mapper 接口，自动生成代理实现类                             |
+
+> [!TIP]
+> `@Service` 要标在 `service.impl` 下的**实现类**上，不要标在接口上；`@Mapper` 要标在 `mapper` 包的**接口**上。
 
 ```java
-@Mapper  
-public interface DeptMapper {  
-  
-    /**  
-     * 查询所有部门  
-     */  
-  
-    // 方式1 如果使用了驼峰命名法，则需要在SQL中使用AS关键字进行别名映射  
-    // @Select("SELECT id, name, create_time AS createTime, update_time AS updateTime FROM dept")  
-  
-    /*  
-    方式2 通过 @Results 及 @Result 进行手动结果映射。  
-    @Results({            
-	    @Result(property = "createTime", column = "create_time"),            
-	    @Result(property = "updateTime", column = "update_time")    
-    })    
-    @Select("SELECT * FROM dept")     */  
-    
-    // 方式3 通过全局配置开启驼峰命名法映射  
-    @Select("SELECT * FROM dept")  
-    List<Dept> findAll();  
+@Mapper
+public interface DeptMapper {
+
+    @Select("SELECT * FROM dept")
+    List<Dept> findAll();
 }
 ```
-1.在 SQL 语句中，对不一样的列名起别名，别名和实体类属性名一样。
-2.在 DeptMapper 接口方法上，通过 @Results 及@Result 进行手动结果映射。
-3.如果字段名与属性名符合驼峰命名规则，mybatis 会自动通过驼峰命名规则映射。
-```yml
+
+```java
+@Service
+public class DeptServiceImpl implements DeptService {
+
+    @Autowired
+    private DeptMapper deptMapper;   // 由 Spring 注入 Mapper 代理对象
+
+    @Override
+    public List<Dept> findAll() {
+        return deptMapper.findAll();
+    }
+}
+```
+
+```java
+@RestController
+@RequestMapping("/depts")
+public class DeptController {
+
+    @Autowired
+    private DeptService deptService; // 由 Spring 注入 Service 代理对象
+
+    @GetMapping
+    public Result list() {
+        return Result.success(deptService.findAll());
+    }
+}
+```
+
+### 1.1.2 统一响应结果 Result
+
+后端所有接口统一返回 `Result` 对象，把「业务状态码 + 提示信息 + 数据」三部分封装在一起，前端只需判断 `code` 即可。
+
+```java
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Result {
+
+    private Integer code;   // 1 = 成功，0 = 失败
+    private String msg;     // 错误提示信息
+    private Object data;    // 业务数据
+
+    /** 成功，不返回数据 */
+    public static Result success() {
+        return new Result(1, "success", null);
+    }
+
+    /** 成功，返回数据 */
+    public static Result success(Object data) {
+        return new Result(1, "success", data);
+    }
+
+    /** 失败 */
+    public static Result error(String msg) {
+        return new Result(0, msg, null);
+    }
+}
+```
+
+## 1.2 路径抽取
+
+### 1.2.1 类级 + 方法级 @RequestMapping 组合
+
+一个完整的请求路径 = **类上 `@RequestMapping` 的 value** + **方法上 `@RequestMapping` 的 value**。把公共前缀（资源名）统一放在类上，方法上只写子路径，既避免重复，也便于维护。
+
+```java
+@RestController
+@RequestMapping("/depts")   // 公共前缀，只写一次
+public class DeptController {
+
+    // 完整路径：GET /depts
+    @GetMapping
+    public Result list() {
+        return Result.success();
+    }
+
+    // 完整路径：GET /depts/{id}
+    @GetMapping("/{id}")
+    public Result getById(@PathVariable Integer id) {
+        return Result.success();
+    }
+
+    // 完整路径：POST /depts
+    @PostMapping
+    public Result save(@RequestBody Dept dept) {
+        return Result.success();
+    }
+}
+```
+
+### 1.2.2 @RequestMapping 及其派生注解
+
+`@RequestMapping` 用于声明请求路径（`value`）与请求方式（`method`）：
+
+```java
+@GetMapping  // 等价于 @RequestMapping(value = "/xxx", method = RequestMethod.GET)
+@PostMapping // 等价于 @RequestMapping(value = "/xxx", method = RequestMethod.POST)
+@PutMapping  // 等价于 @RequestMapping(value = "/xxx", method = RequestMethod.PUT)
+@DeleteMapping // 等价于 @RequestMapping(value = "/xxx", method = RequestMethod.DELETE)
+```
+
+派生注解可以省略 `method` 属性，写法更简洁，是实际开发中的首选。
+
+---
+
+# 二、参数传递
+
+前端到 Controller 的参数传递共分四类：**简单参数**、**复杂对象**、**路径参数**、**JSON 请求体**。
+
+## 2.1 简单参数
+
+以删除部门为例，前端请求 `DELETE /depts?id=1`，有三种接收方式。
+
+### 2.1.1 方式一：@RequestParam 注解（推荐）
+
+`@RequestParam` 显式指定请求参数的名称。当形参名与请求参数名不一致时（或未开启 `-parameters` 编译参数）**必须**使用。
+
+```java
+@DeleteMapping("/depts")
+public Result delete(@RequestParam("id") Integer id) {
+    deptService.deleteById(id);
+    return Result.success();
+}
+
+// 等价写法，显式写出 value
+// public Result delete(@RequestParam(value = "id") Integer id) { ... }
+```
+
+### 2.1.2 方式二：HttpServletRequest 原生对象
+
+直接注入 Servlet 原始对象，从请求参数表里按名取值。类型转换需要自己完成，一般不推荐。
+
+```java
+@DeleteMapping("/depts")
+public Result delete(HttpServletRequest request) {
+    // 从请求参数表中取出字符串，再手动转成 Integer
+    Integer id = Integer.parseInt(request.getParameter("id"));
+    deptService.deleteById(id);
+    return Result.success();
+}
+```
+
+### 2.1.3 方式三：同名参数自动绑定
+
+当**形参名与请求参数名完全一致**时，可以省略 `@RequestParam`，Spring MVC 会自动完成类型转换与绑定。
+
+```java
+@DeleteMapping("/depts")
+public Result delete(Integer id) {
+    deptService.deleteById(id);
+    return Result.success();
+}
+```
+
+## 2.2 路径参数
+
+### 2.2.1 @PathVariable 接收路径变量
+
+把参数直接写进 URL 路径，用 `/变量名` 占位，再通过 `@PathVariable` 取出。适合「按 ID 查详情」这类资源定位场景。
+
+```java
+@GetMapping("/depts/{id}")                 // 路径中用 {id} 占位
+public Result getById(@PathVariable Integer id) {
+    Dept dept = deptService.getById(id);
+    return Result.success(dept);
+}
+
+// 多个路径参数：GET /depts/1/emps/2
+// public Result getById(@PathVariable("deptId") Integer deptId,
+//                       @PathVariable("empId") Integer empId) { ... }
+```
+
+> [!TIP]
+> 当形参名与路径变量名不一致时，必须写明名称：`@PathVariable("id") Integer deptId`。
+
+## 2.3 JSON 请求体
+
+### 2.3.1 @RequestBody 接收 JSON
+
+当请求体是 JSON 格式（`Content-Type: application/json`）时，用 `@RequestBody` 把 JSON 反序列化成 Java 对象。
+
+```java
+@PostMapping("/depts")
+public Result save(@RequestBody Dept dept) {
+    deptService.save(dept);
+    return Result.success();
+}
+```
+
+请求示例：
+
+```json
+{
+  "name": "研发部",
+  "createTime": "2024-01-01 10:00:00"
+}
+```
+
+## 2.4 复杂参数封装
+
+### 2.4.1 用实体类封装多个查询条件
+
+分页条件查询的请求参数很多（页码、姓名、性别、入职时间区间……），直接堆在方法形参上既冗长又难维护。正确做法是**定义一个实体类统一封装**，并保证**前端传递的请求参数名与实体类属性名完全一致**，Spring MVC 会自动完成绑定。
+
+```java
+package com.itheima.pojo;
+
+import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDate;
+
+@Data
+public class EmpQueryParam {
+
+    private Integer page = 1;        // 页码，给默认值，防止前端不传
+    private Integer pageSize = 10;   // 每页展示记录数
+    private String name;             // 姓名
+    private Integer gender;          // 性别
+    private Short job;               // 职位
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate begin;         // 入职开始时间
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate end;           // 入职结束时间
+}
+```
+
+```java
+@GetMapping
+public Result page(EmpQueryParam empQueryParam) {
+    // 直接把整个对象当形参接收，参数自动按属性名绑定
+    log.info("查询请求参数： {}", empQueryParam);
+    PageResult<Emp> pageResult = empService.page(empQueryParam);
+    return Result.success(pageResult);
+}
+```
+
+### 2.4.2 常用参数注解补充
+
+| 注解 | 作用 |
+| --- | --- |
+| `@RequestParam(defaultValue = "1")` | 设置请求参数的默认值，请求参数缺失时生效 |
+| `@RequestParam(required = false)` | 参数非必填，`null` 也能通过校验 |
+| `@RequestBody` | 接收 JSON 请求体 |
+| `@PathVariable` | 接收 URL 路径变量 |
+| `@DateTimeFormat(pattern = "yyyy-MM-dd")` | Spring MVC 接收前端提交的字符串日期，自动转为 `LocalDate` |
+| `@RestControllerAdvice` + `@ExceptionHandler` | 全局异常处理，把异常统一转成 `Result` |
+
+`@RequestParam(defaultValue = "1")` 的典型用法——前端不传页码时兜底：
+
+```java
+@GetMapping
+public Result page(@RequestParam(defaultValue = "1") Integer page,
+                   @RequestParam(defaultValue = "10") Integer pageSize) {
+    // page 缺省为 1，pageSize 缺省为 10
+    return Result.success();
+}
+```
+
+### 2.4.3 参数传递速查表
+
+| 前端传参场景 | 请求示例 | Controller 写法 | 参数位置 |
+| --- | --- | --- | --- |
+| 简单参数 | `DELETE /depts?id=1` | `delete(@RequestParam Integer id)` | Query String |
+| 多条件查询 | `GET /emps?page=1&name=张` | `page(EmpQueryParam param)` | Query String，同名自动绑定 |
+| 路径参数 | `GET /depts/1` | `get(@PathVariable Integer id)` | 路径变量 |
+| JSON 传参 | `POST /depts` + JSON 体 | `save(@RequestBody Dept dept)` | 请求体 |
+
+---
+
+# 三、MyBatis
+
+## 3.1 基础注解
+
+### 3.1.1 四种 CRUD 注解
+
+MyBatis 支持用注解直接在接口方法上编写 SQL，无需 XML。四种注解与 SQL 类型的对应关系如下：
+
+| 注解 | 对应 SQL | 用途 |
+| --- | --- | --- |
+| `@Select` | `SELECT` | 查询 |
+| `@Insert` | `INSERT` | 新增 |
+| `@Update` | `UPDATE` | 修改 |
+| `@Delete` | `DELETE` | 删除 |
+
+```java
+@Mapper
+public interface DeptMapper {
+
+    /** 查询所有部门 */
+    @Select("SELECT * FROM dept")
+    List<Dept> findAll();
+
+    /** 根据 ID 查询部门 */
+    @Select("SELECT * FROM dept WHERE id = #{id}")
+    Dept getById(Integer id);
+
+    /** 保存部门 */
+    @Insert("INSERT INTO dept (name, create_time, update_time) " +
+            "VALUES (#{name}, #{createTime}, #{updateTime})")
+    void save(Dept dept);
+
+    /** 更新部门 */
+    @Update("UPDATE dept SET name = #{name}, update_time = #{updateTime} WHERE id = #{id}")
+    void update(Dept dept);
+
+    /** 根据 ID 删除部门 */
+    @Delete("DELETE FROM dept WHERE id = #{id}")
+    void deleteById(Integer id);
+}
+```
+
+> [!WARNING]
+> 注解名必须与 SQL 类型严格对应。写 `@Select("DELETE ...")` 会在运行时报 `BadSqlGrammarException`，这是本笔记中最容易踩的坑。
+
+## 3.2 参数与返回值
+
+### 3.2.1 单个或多个简单类型参数
+
+Mapper 方法的形参是单个普通类型时，`#{…}` 里的属性名可以任意写（`#{id}`、`#{value}` 都可以），MyBatis 会把唯一的那一个实参传进去。
+
+```java
+/** 根据 ID 删除部门 */
+@Delete("DELETE FROM dept WHERE id = #{id}")
+void deleteById(Integer id);
+```
+
+### 3.2.2 对象类型参数
+
+需要传多个参数时，把它们封装到一个对象中。此时 `#{…}` 里写的是**对象的属性名**，注意是 Java 属性名，不是数据库表的字段名。
+
+```java
+@Mapper
+public interface EmpMapper {
+
+    /** 保存员工，同时返回自增主键 */
+    @Insert("INSERT INTO emp (name, gender, entry_date) VALUES (#{name}, #{gender}, #{entryDate})")
+    void save(Emp emp);
+}
+```
+
+上例中 `#{name}`、`#{gender}`、`#{entryDate}` 取的都是 `Emp` 对象的属性；注意 `entryDate` 对应表字段 `entry_date`，靠的是驼峰命名映射（见 3.3）。
+
+### 3.2.3 DML 语句的返回值
+
+DML（增删改）语句执行完毕后同样有返回值，**返回值就是受影响的记录数**。所以方法返回值可以声明为 `Integer`；但实际开发中一般用不到这个值，通常直接声明为 `void`。
+
+```java
+@Delete("DELETE FROM dept WHERE id = #{id}")
+int deleteById(Integer id);   // 返回受影响的行数
+
+@Delete("DELETE FROM dept WHERE id = #{id}")
+void deleteById(Integer id);  // 不关心影响行数，用 void
+```
+
+## 3.3 结果映射
+
+**核心问题**：实体类属性名与数据库查询返回的字段名不一致时，MyBatis 无法自动封装。字段名与属性名**符合驼峰命名规则**时（`create_time` ↔ `createTime`），MyBatis 会自动完成映射。三种解决方式如下。
+
+### 3.3.1 方式一：全局配置开启驼峰映射（推荐）
+
+在 `application.yml` 中开启，一行配置全局生效，无需改动任何 SQL。
+
+```yaml
 mybatis:
   configuration:
+    # 开启下划线命名到驼峰命名的自动映射，默认 false
     map-underscore-to-camel-case: true
 ```
 
+开启后，SQL 可以直接写 `SELECT *`：
 
-2.RequestMapping
-@RequestMapping(value = "/depts", method = RequestMethod._GET_)
-- GET 方式：@GetMapping
-- POST 方式：@PostMapping
-- PUT 方式：@PutMapping
-- DELETE 方式：@DeleteMapping
-
-3.mapper （参数为单个或多个变量）到 mybatis （一般与参数名相同）
 ```java
-/**  
- * 根据ID删除部门  
- */  
-@Select("DELETE FROM dept WHERE id = #{id}")  
-void deleteById(Integer id);
+@Select("SELECT * FROM dept")
+List<Dept> findAll();
 ```
-如果 mapper 接口方法形参只有一个普通类型的参数，`#{…}` 里面的属性名可以随便写，如：`#{id}`、`#{value}`。
 
-对于 DML 语句来说，执行完毕，也是有返回值的，返回值代表的是增删改操作，影响的记录数，所以可以将执行 DML 语句的方法返回值设置为 Integer。但是一般开发时，是不需要这个返回值的，所以也可以设置为 void。
+### 3.3.2 方式二：SQL 中使用 AS 起别名
 
+在 SQL 里为不一致的列名起别名，别名与实体类属性名保持一致。
 
-4.前端（url 简单参数？）到 controller（单个或多个变量） 简单传参
 ```java
-/**  
- * 删除部门  
- * 简单传参  
- */  
-@DeleteMapping("/depts")  
-  
-// 方式1 通过@RequestParam注解获取请求参数  
-/*  
-public Result delete(@RequestParam("id") Integer id)  
-public Result delete(@RequestParam(value = "id") Integer id) {  
-    // 删除部门逻辑  
-    return Result.success();}  
- */  
-  
-// 方式2 通过原始的 HttpServletRequest 对象获取请求参数  
-/*  
-public Result delete(HttpServletRequest request) {  
-    String idStr = request.getParameter("id");    int id = Integer.parseInt(idStr);    // 删除部门逻辑  
-    return Result.success();}  
- */  
-// 方式3 同名参数自动绑定  
-public Result delete(Integer id) {  
-    deptService.deleteById(id);  
-    return Result.success();  
+@Select("SELECT id, name, create_time AS createTime, update_time AS updateTime FROM dept")
+List<Dept> findAll();
+```
+
+### 3.3.3 方式三：@Results + @Result 手动映射
+
+在方法上用注解声明「属性名 ↔ 列名」的对应关系，适合列名与属性名毫无规律的情况。
+
+```java
+@Results({
+    @Result(property = "createTime", column = "create_time"),
+    @Result(property = "updateTime", column = "update_time")
+})
+@Select("SELECT * FROM dept")
+List<Dept> findAll();
+```
+
+> [!TIP]
+> 三种方式可以叠加使用：全局驼峰映射兜底，个别特殊列再用 `@Results` 补充。
+
+## 3.4 动态 SQL
+
+**动态 SQL**，就是随用户输入或外部条件变化而变化的 SQL 语句。项目中用 XML 映射文件编写。
+
+### 3.4.1 <if> 与 <where>
+
+- `<if>`：判断条件是否成立，成立（`test` 为 `true`）则把标签内的 SQL 片段拼接进来。
+- `<where>`：根据查询条件动态生成 `where` 关键字，并**自动去除条件前面多余的 `and` / `or`**。
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.mapper.EmpMapper">
+
+    <select id="list" resultType="com.itheima.pojo.Emp">
+        SELECT e.*, d.name AS deptName
+        FROM emp AS e
+        LEFT JOIN dept AS d ON e.dept_id = d.id
+        <where>
+            <!-- 姓名：模糊查询，注意用 concat 拼接 % -->
+            <if test="name != null and name != ''">
+                AND e.name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <!-- 性别：精确查询 -->
+            <if test="gender != null">
+                AND e.gender = #{gender}
+            </if>
+            <!-- 入职时间：区间查询 -->
+            <if test="begin != null and end != null">
+                AND e.entry_date BETWEEN #{begin} AND #{end}
+            </if>
+        </where>
+        ORDER BY e.id DESC
+    </select>
+
+</mapper>
+```
+
+> [!TIP]
+> `<where>` 已经去掉了多余的 `and`，但仍建议**显式书写 `AND`**，这样 XML 可读性更好、复制片段时也不会出错。
+
+### 3.4.2 <foreach> 遍历集合
+
+`<foreach>` 用于遍历集合，常用于 `IN (...)` 查询或批量插入。
+
+| 属性 | 说明 |
+| --- | --- |
+| `collection` | 集合名称 |
+| `item` | 集合遍历出来的元素 / 项 |
+| `separator` | 每次遍历使用的分隔符 |
+| `open` | 遍历开始前拼接的片段 |
+| `index` | 遍历的下标 |
+
+这些属性都是**可选的**，按实际需求指定即可。
+
+```xml
+<select id="listByIds" resultType="com.itheima.pojo.Emp">
+    SELECT * FROM emp
+    <where>
+        <foreach collection="ids" item="id" open="AND id IN (" separator="," close=")">
+            #{id}
+        </foreach>
+    </where>
+</select>
+```
+
+当 `ids = [1, 2, 3]` 时，拼接结果为：`SELECT * FROM emp WHERE id IN (1,2,3)`。
+
+## 3.5 主键回填
+
+### 3.5.1 @Options 主键返回
+
+依赖数据库的**自增主键**时，插入数据后数据库会生成主键。`@Options(useGeneratedKeys = true, keyProperty = "id")` 能让 MyBatis 把生成的主键**回填到传入对象上**。
+
+典型场景：保存员工基本信息之后，还要用这个员工的 ID 去保存他的工作经历。
+
+```java
+@Mapper
+public interface EmpMapper {
+
+    /**
+     * 保存员工基本信息
+     * 插入成功后，自增主键会自动回填到 emp.id 上
+     */
+    @Options(useGeneratedKeys = true, keyProperty = "id")
+    @Insert("INSERT INTO emp (name, gender, entry_date) VALUES (#{name}, #{gender}, #{entryDate})")
+    void save(Emp emp);
 }
 ```
 
-5. mapper（参数为对象）到 mybatis（对象属性名）
-如果在 mapper 接口中，需要传递多个参数，可以把多个参数封装到一个对象中。在 SQL 语句中获取参数的时候，`#{...}` 里面写的是对象的属性名【注意是属性名，不是表的字段名】。
-
-6. 前端（json）到 controller（对象） （json、请求体传参）
 ```java
-/**  
- * 添加部门  
- * json传参  
- */  
-@PostMapping("/depts")  
-public Result save(@RequestBody Dept dept) {  
-    deptService.save(dept);  
-    return Result.success();  
+@Service
+public class EmpServiceImpl implements EmpService {
+
+    @Autowired
+    private EmpMapper empMapper;
+    @Autowired
+    private EmpExprMapper empExprMapper;
+
+    @Override
+    @Transactional
+    public void save(Emp emp) {
+        // 1. 保存基本信息，执行后 emp.id 已有值
+        empMapper.save(emp);
+
+        // 2. 直接用回填的 id 关联工作经历
+        List<EmpExpr> exprs = emp.getExprs();
+        if (exprs != null && !exprs.isEmpty()) {
+            exprs.forEach(expr -> expr.setEmpId(emp.getId()));
+            empExprMapper.saveBatch(exprs);
+        }
+    }
 }
 ```
 
-7.前端（url 路径参数/a或者/a/b） 到 controller （单个或多个变量）  路径传参
+---
+
+# 四、日志
+
+## 4.1 常见日志框架
+
+### 4.1.1 JUL / SLF4J / Log4j / Logback
+
+| 名称 | 说明 |
+| --- | --- |
+| **JUL** | Java SE 平台自带的官方日志框架。配置简单，但不灵活，性能较差 |
+| **SLF4J** | Simple Logging Facade for Java，**日志门面**。只提供一套标准的日志接口与抽象类，不做具体实现，允许应用随时切换底层框架 |
+| **Log4j** | Apache 的流行日志框架，配置灵活，支持多种输出目标。需注意 Log4j 1.x 存在严重漏洞，实际使用应选 Log4j 2 |
+| **Logback** | 由 Log4j 原作者开发，是 **SLF4J 的参考实现**，性能优于 Log4j，配置更丰富，是 Spring Boot 默认集成的日志实现 |
+
+SLF4J 本身没有实现，它是「门面」；真正干活的是绑定到它的实现（Logback / Log4j2 / JUL）。调用方只依赖 SLF4J API，底层换实现不需要改业务代码。
+
+## 4.2 SLF4J 使用
+
+### 4.2.1 手动定义 Logger
+
+三行固定搭配：导入 `Logger` 接口、`LoggerFactory` 工厂类，然后声明一个 `private static final` 日志记录器。
+
 ```java
-/**  
- * 根据ID查询部门  
- * 路径传参  
- */  
-@GetMapping("/depts/{id}")  
-public Result getById(@PathVariable Integer id) {  
-    Dept dept = deptService.getById(id);  
-    return Result.success(dept);  
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class LogTest {
+
+    // 固定搭配：传入当前类的 Class 对象，框架据此输出类名
+    private static final Logger log = LoggerFactory.getLogger(LogTest.class);
+
+    @Test
+    public void testLog() {
+        int[] nums = {1, 5, 3, 2, 1, 4, 5, 4, 6, 7, 4, 34, 2, 23};
+        int sum = 0;
+        for (int num : nums) {
+            sum += num;
+        }
+
+        log.debug("开始计算...");
+        log.info("计算结果为：{}", sum);
+        log.debug("结束计算...");
+    }
 }
 ```
 
-8. mapper 的四种注释
+### 4.2.2 Lombok @Slf4j 简化定义
+
+Lombok 提供的 `@Slf4j` 注解可以省去手动定义日志记录器这一步。加了注解，等价于自动在类中生成了这一行：
+
 ```java
-/**  
- * 查询所有部门  
- */   
-@Select("SELECT * FROM dept")  
-List<Dept> findAll();  
-  
-/**  
- * 根据ID删除部门  
- */  
-@Select("DELETE FROM dept WHERE id = #{id}")  
-void deleteById(Integer id);  
-  
-/**  
- * 保存部门  
- */  
-@Insert("INSERT INTO dept (name, create_time, update_time) VALUES (#{name}, #{createTime}, #{updateTime})")  
-void save(Dept dept);  
-  
-/**  
- * 根据ID查询部门  
- */  
-@Select("SELECT * FROM dept WHERE id = #{id}")  
-Dept getById(Integer id);  
-  
-/**  
- * 更新部门  
- */  
-@Update("UPDATE dept SET name = #{name}, update_time = #{updateTime} WHERE id = #{id}")  
-void update(Dept dept);
+private static final Logger log = LoggerFactory.getLogger(Xxx.class);
 ```
 
+```java
+import lombok.extern.slf4j.Slf4j;
 
-9. 日志技术
-- **JUL****：**这是 JavaSE 平台提供的官方日志框架，也被称为 JUL。配置相对简单，但不够灵活，性能较差。
-    
-- **Slf 4 j****：**（Simple Logging Facade for Java）简单日志门面，提供了一套日志操作的标准接口及抽象类，允许应用程序使用不同的底层日志框架。
-- **Log 4 j****：**一个流行的日志框架，提供了灵活的配置选项，支持多种输出目标。
-    
-- **Logback：**基于 Log 4 j 升级而来，提供了更多的功能和配置选项，性能由于 Log 4 j。
+@Slf4j   // 自动生成 log 字段
+@RestController
+@RequestMapping("/depts")
+public class DeptController {
 
-9.1
-Logback 入门
+    @Autowired
+    private DeptService deptService;
 
-最简单的 logback.xml
+    @GetMapping
+    public Result list() {
+        log.info("查询部门列表");
+        return Result.success(deptService.findAll());
+    }
+}
+```
+
+> [!TIP]
+> 有了 `@Slf4j` 就不要再手动 `LoggerFactory.getLogger(...)`，否则会字段重名。
+
+### 4.2.3 占位符传参
+
+**有几个大括号 `{}`，后面就要传几个对应参数**。参数不会被提前拼接，不传参时这一行日志的开销几乎为零，因此推荐用占位符而不是字符串 `+` 拼接。
+
+```java
+// 推荐：占位符，参数按需 toString，不做无用拼接
+log.info("根据 id 删除部门，id：{}", id);
+
+// 不推荐：无论是否输出都会先做字符串拼接
+log.info("根据 id 删除部门，id：" + id);
+```
+
+多个参数时按顺序一一对应：
+
+```java
+log.info("新增部门：{}，创建时间：{}", dept.getName(), dept.getCreateTime());
+```
+
+## 4.3 Logback 配置文件
+
+### 4.3.1 最简 logback.xml
+
+Logback 的配置文件固定叫 `logback.xml`，放在 `src/main/resources` 目录下，**文件名叫错或放错位置都会导致配置不生效**。该文件用于控制日志的输出格式、输出位置与日志开关。
+
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+
     <!-- 控制台输出 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
+            <!-- %d 日期 | %thread 线程名 | %-5level 级别左对齐宽 5 | %logger 类名 | %msg 消息 | %n 换行 -->
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
@@ -175,401 +676,385 @@ Logback 入门
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
     </root>
+
 </configuration>
 ```
-放入 src/main/resources
 
-```java
-import org.junit.jupiter.api.Test;  
-import org.slf4j.Logger;  
-import org.slf4j.LoggerFactory;  
-  
-public class LogTest {  
-    private static final Logger log = LoggerFactory.getLogger(LogTest.class);  
-  
-    @Test  
-    public void testLog(){  
-        log.debug("开始计算...");  
-        int sum = 0;  
-        int[] nums = {1, 5, 3, 2, 1, 4, 5, 4, 6, 7, 4, 34, 2, 23};  
-        for (int i = 0; i < nums.length; i++) {  
-            sum += nums[i];  
-        }  
-        log.info("计算结果为: "+sum);  
-        log.debug("结束计算...");  
-    }  
-  
-}
-```
-简单测试在
-private static final Logger log = LoggerFactory.getLogger(LogTest.class);固定搭配
-import org.slf 4 j.Logger;  
-import org.slf 4 j.LoggerFactory;  
-两个都是引入 slf 4 j
+### 4.3.2 输出到控制台
 
-----
+常用的两种日志输出位置是**控制台**和**系统文件**。需要输出到控制台时配置如下：
 
-lombok 中提供的@Slf 4 j 注解，可以简化定义日志记录器这步操作。添加了该注解，就相当于在类中定义了日志记录器，就下面这句代码：
-
-`private static Logger log = LoggerFactory. getLogger(Xxx. class);`
-
-9.2 Logback 配置文件
-Logback 日志框架的配置文件叫 `logback.xml` 。
-
-该配置文件是对 Logback 日志框架输出的日志进行控制的，可以来配置输出的格式、位置及日志开关等。
-
-常用的两种输出日志的位置：控制台、系统文件。
-
-  
-
-**1). 如果需要输出日志到控制台。添加如下配置：**
-
-```XML
-<!-- 控制台输出 -->
+```xml
 <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <!--格式化输出：%d 表示日期，%thread 表示线程名，%-5level表示级别从左显示5个字符宽度，%msg表示日志消息，%n表示换行符 -->
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50}-%msg%n</pattern>
-    </encoder>
-</appender>
-```
-
-  
-
-**2). 如果需要输出日志到文件。添加如下配置：**
-
-```XML
-<!-- 按照每天生成日志文件 -->
-<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-        <!-- 日志文件输出的文件名, %i表示序号 -->
-        <FileNamePattern>D:/tlias-%d{yyyy-MM-dd}-%i.log</FileNamePattern>
-        <!-- 最多保留的历史日志文件数量 -->
-        <MaxHistory>30</MaxHistory>
-        <!-- 最大文件大小，超过这个大小会触发滚动到新文件，默认为 10MB -->
-        <maxFileSize>10MB</maxFileSize>
-    </rollingPolicy>
-
-    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-        <!--格式化输出：%d 表示日期，%thread 表示线程名，%-5level表示级别从左显示5个字符宽度，%msg表示日志消息，%n表示换行符 -->
         <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50}-%msg%n</pattern>
     </encoder>
 </appender>
 ```
 
-  
+### 4.3.3 输出到文件（按天 + 按大小滚动）
 
-**3). 日志开关配置 （开启日志（****ALL****），取消日志（OFF））**
+需要输出到系统文件时配置 `RollingFileAppender`，日志文件会按天和大小自动滚动归档：
 
-```XML
-<!-- 日志输出级别 -->
+```xml
+<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+        <!-- 归档文件名，%d 日期，%i 序号 -->
+        <fileNamePattern>D:/logs/tlias-%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+        <!-- 最多保留 30 天的历史日志 -->
+        <maxHistory>30</maxHistory>
+        <!-- 单个文件最大 10MB，超过则滚动到新文件 -->
+        <maxFileSize>10MB</maxFileSize>
+    </rollingPolicy>
+
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+        <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50}-%msg%n</pattern>
+    </encoder>
+</appender>
+```
+
+### 4.3.4 日志开关与日志级别
+
+`<root level="...">` 就是日志总开关：`ALL` 表示全部开启，`OFF` 表示全部关闭。把多个 appender 通过 `appender-ref` 挂到 root 上，即可同时输出到控制台和文件。
+
+```xml
+<!-- 全部开启：输出到控制台 + 输出到文件 -->
 <root level="ALL">
-    <!--输出到控制台-->
-    <appender-ref ref="STDOUT" />
-    <!--输出到文件-->
-    <appender-ref ref="FILE" />
+    <appender-ref ref="STDOUT"/>
+    <appender-ref ref="FILE"/>
+</root>
+
+<!-- 全部关闭 -->
+<root level="OFF">
+    <appender-ref ref="STDOUT"/>
+    <appender-ref ref="FILE"/>
 </root>
 ```
 
+日志级别指日志信息的类型，**只有大于等于所配置级别的日志才会被输出**。
 
-9.2 日志级别
-日志级别指的是日志信息的类型，日志都会分级别，常见的日志级别如下（优先级由低到高）：
+| 日志级别 | 说明 | 记录方式 |
+| --- | --- | --- |
+| `trace` | 追踪，记录程序运行轨迹 【使用很少】 | `log.trace("...")` |
+| `debug` | 调试，记录程序调试过程中的信息，实际应用中一般视为最低级别 【使用较多】 | `log.debug("...")` |
+| `info` | 记录一般信息，描述程序运行的关键事件，如网络连接、IO 操作 【使用较多】 | `log.info("...")` |
+| `warn` | 警告信息，记录潜在有害的情况 【使用较多】 | `log.warn("...")` |
+| `error` | 错误信息 【使用较多】 | `log.error("...")` |
 
-|       |                                        |                  |
-| ----- | -------------------------------------- | ---------------- |
-| 日志级别  | 说明                                     | 记录方式             |
-| trace | 追踪，记录程序运行轨迹 【使用很少】                     | log.trace("...") |
-| debug | 调试，记录程序调试过程中的信息，实际应用中一般将其视为最低级别 【使用较多】 | log.debug("...") |
-| info  | 记录一般信息，描述程序运行的关键事件，如：网络连接、io 操作 【使用较多】 | log.info("...")  |
-| warn  | 警告信息，记录潜在有害的情况 【使用较多】                  | log.warn("...")  |
-| error | 错误信息 【使用较多】                            | log.error("...") |
+优先级由低到高：`trace < debug < info < warn < error < off`。把级别配成 `info`，则 `trace` 和 `debug` 都不会输出。
 
-可以在配置文件 `logback.xml` 中，灵活的控制输出那些类型的日志。（大于等于配置的日志级别的日志才会输出）
-
-```XML
-<!-- 日志输出级别 -->
-<root level="info">
-    <!--输出到控制台-->
-    <appender-ref ref="STDOUT" />
-    <!--输出到文件-->
-    <appender-ref ref="FILE" />
+```xml
+<!-- 只输出 info 及以上级别 -->
+<root level="INFO">
+    <appender-ref ref="STDOUT"/>
+    <appender-ref ref="FILE"/>
 </root>
 ```
 
-9.3 传参
-有几个大括号，逗号后面就要传几个对应参数
+---
+
+# 五、分页
+
+## 5.1 分页需求分析
+
+### 5.1.1 前后端约定
+
+**前端请求服务端时传递两个参数：**
+
+1. 当前页码 `page`
+2. 每页显示条数 `pageSize`
+
+**后端需要响应给前端两组数据：**
+
+1. 所查询到的数据列表（存储到 `List` 集合中）
+2. 总记录数
+
+因此需要一个分页结果对象把两者封装起来：
+
 ```java
-log.info("根据 id 删除部门, id: {}" , id);
-```
-
-10. 路径抽取
-一个完整的请求路径，应该是类上的 @RequestMapping 的 value 属性 + 方法上的 @RequestMapping 的 value 属性。
-把公共的路径都放到类的@RequestMapping 上避免重复
-
-
-11. 三种注释
-Controller（RestController） controller 上的类
-service 放到 service.impl 下的对应实现类上
-mapper （resposity）放到 mapper 包的对应接口
-
-
-12.分页
-1. 前端在请求服务端时，传递的参数
-    
-    1. 当前页码 page
-        
-    2. 每页显示条数 pageSize
-        
-2. 后端需要响应什么数据给前端
-    
-    1. 所查询到的数据列表（存储到 List 集合中）
-        
-    2. 总记录数
-
-
-```Java
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PageResult {
-        private Long total; //总记录数
-        private List rows; //当前页数据列表
+public class PageResult<T> {
+
+    private Long total;      // 总记录数
+    private List<T> rows;    // 当前页数据列表
 }
 ```
 
-12.1 原始方式
+## 5.2 手动分页
 
+### 5.2.1 原始方式
 
-
-对于/emps?page=1&pageSize=10
-service 层需要额外获取总计数，不会自动分页参数这些过程都相对固定
-```java
-@Override  
-public PageResult<Emp> list(Integer page, Integer pageSize) {  
-    // 查询总记录数  
-    Long total = empMapper.count();  
-  
-    // 计算分页参数  
-    int offset = (page - 1) * pageSize;  
-  
-    // 查询分页数据  
-    List<Emp> data = empMapper.list(offset, pageSize);  
-  
-    // 返回分页结果  
-    return new PageResult<Emp>(total, data);  
-}
-```
+以 `GET /emps?page=1&pageSize=10` 为例，Service 层需要**额外查询一次总记录数**，且「算偏移量 → 查总数 → 查数据 → 封装」的流程比较固定，代码冗余。
 
 ```java
-@Select("SELECT COUNT(*) FROM emp left join dept on emp.dept_id = dept.id")  
-Long count();  
-  
-@Select("SELECT emp.*, dept.name As dept_name FROM emp left join dept on emp.dept_id = dept.id LIMIT #{offset}, #{pageSize}")  
-List<Emp> list(int offset, Integer pageSize);
-```
+@Mapper
+public interface EmpMapper {
 
+    /** 统计总记录数 */
+    @Select("SELECT COUNT(*) FROM emp e LEFT JOIN dept d ON e.dept_id = d.id")
+    Long count();
 
-12.2 PageHelper
-**PageHelper 是第三方提供的 Mybatis 框架中的一款功能强大、方便易用的分页插件，支持任何形式的单标、多表的分页查询。**
-
-
-当使用了 PageHelper 分页插件进行分页，就无需再 Mapper 中进行手动分页了。在 Mapper 中我们只需要进行正常的列表查询即可。在 Service 层中，调用 Mapper 的方法之前设置分页参数，在调用 Mapper 方法执行查询之后，解析分页结果，并将结果封装到 PageResult 对象中返回。
-
-
-```java 
-public PageResult<Emp> list(EmpQueryParam empQueryParam) {  
-    // 设置分页参数  
-    PageHelper.startPage(empQueryParam.getPage(), empQueryParam.getPageSize());  
-  
-    // 查询员工列表  
-    List<Emp> empList = empMapper.list(empQueryParam);  
-  
-    // 获取分页信息  
-    PageInfo<Emp> pageInfo = new PageInfo<>(empList);  
-  
-    // 返回分页结果  
-    return new PageResult<>(pageInfo.getTotal(), pageInfo.getList());  
+    /** 查询分页数据，LIMIT 第一个参数是偏移量，第二个参数是条数 */
+    @Select("SELECT e.*, d.name AS deptName " +
+            "FROM emp e LEFT JOIN dept d ON e.dept_id = d.id " +
+            "LIMIT #{offset}, #{pageSize}")
+    List<Emp> list(int offset, Integer pageSize);
 }
 ```
 
-行了两条 SQL 语句，而这两条 SQL 语句，其实是从我们在 Mapper 接口中定义的 SQL 演变而来的。
+```java
+@Service
+public class EmpServiceImpl implements EmpService {
 
-- 第一条 SQL 语句，用来查询总记录数。其实就是将我们编写的SQL语句进行的改造增强，将查询返回的字段列表替换成了 `count(0)` 来统计总记录数。
-- 第二条SQL语句，用来进行分页查询，查询指定页码对应的数据列表。其实就是将我们编写的SQL语句进行的改造增强，在SQL语句之后拼接上了limit进行分页查询，而由于测试时查询的是第一页，起始索引是0，所以简写为limit ？。
+    @Autowired
+    private EmpMapper empMapper;
 
-而 PageHelper 在进行分页查询时，会执行上述两条 SQL 语句，并将查询到的总记录数，与数据列表封装到了 `Page<Emp>` 对象中，我们再获取查询结果时，只需要调用 Page 对象的方法就可以获取。
+    @Override
+    public PageResult<Emp> list(Integer page, Integer pageSize) {
+        // 1. 查询总记录数
+        Long total = empMapper.count();
 
-> [!TIP]
-> - PageHelper 实现分页查询时，SQL 语句的结尾一定一定一定不要加分号(;).。
->     
-> - PageHelper 只会对紧跟在其后的第一条 SQL 语句进行分页处理。
+        // 2. 计算分页偏移量：第 n 页的起始索引是 (n - 1) * 每页条数
+        int offset = (page - 1) * pageSize;
 
-当我们在测试的时候，页码输入负数，查询是有问题的，查不到对应的数据了。
-```Java
+        // 3. 查询当前页数据
+        List<Emp> data = empMapper.list(offset, pageSize);
+
+        // 4. 封装分页结果
+        return new PageResult<>(total, data);
+    }
+}
+```
+
+## 5.3 PageHelper
+
+**PageHelper 是第三方为 MyBatis 提供的功能强大、方便易用的分页插件，支持任何形式的单表、多表分页查询。**
+
+使用后 Mapper 中只需写正常的列表查询，**无需再手动分页**。Service 层在调用 Mapper **之前**设置分页参数，调用**之后**解析分页结果。
+
+### 5.3.1 使用步骤
+
+```java
+@Service
+public class EmpServiceImpl implements EmpService {
+
+    @Autowired
+    private EmpMapper empMapper;
+
+    @Override
+    public PageResult<Emp> list(EmpQueryParam param) {
+        // 1. 设置分页参数，必须在查询方法调用之前
+        PageHelper.startPage(param.getPage(), param.getPageSize());
+
+        // 2. 查询员工列表，Mapper 中写普通查询即可
+        List<Emp> empList = empMapper.list(param);
+
+        // 3. 从返回的 List 中获取分页信息（它实际是 Page 对象）
+        PageInfo<Emp> pageInfo = new PageInfo<>(empList);
+
+        // 4. 封装分页结果返回
+        return new PageResult<>(pageInfo.getTotal(), pageInfo.getList());
+    }
+}
+```
+
+此时 Mapper 恢复成最朴素的样子：
+
+```xml
+<select id="list" resultType="com.itheima.pojo.Emp">
+    SELECT e.*, d.name AS deptName
+    FROM emp AS e
+    LEFT JOIN dept AS d ON e.dept_id = d.id
+    ORDER BY e.id DESC
+</select>
+```
+
+### 5.3.2 内部执行的两条 SQL
+
+PageHelper 分页时会执行两条 SQL，这两条 SQL 都是从 Mapper 中我们编写的 SQL **演变**而来的：
+
+- **第一条**：查询总记录数。把原 SQL 的查询字段列表替换成 `count(0)` 进行统计。
+- **第二条**：分页查询指定页码的数据。在原 SQL 之后拼接 `limit`；由于测试时查的是第一页、起始索引为 0，所以简写为 `limit ?`。
+
+PageHelper 把总记录数与数据列表一起封装到 `Page<Emp>` 对象中，我们拿到查询结果后直接调用它的方法即可。
+
+### 5.3.3 注意事项与合理化
+
+> [!WARNING]
+> - PageHelper 分页时，SQL 语句结尾**一定一定一定不要加分号 `;`**，否则分页失效并抛异常。
+> - PageHelper **只会对紧跟其后的第一条 SQL 语句**做分页处理，`startPage()` 和查询方法之间不能插入其他 SQL。
+
+当页码输入负数时，分页结果会异常。开启**分页合理化**参数后，越界的页码会被自动修正：
+
+```yaml
 pagehelper:
+  # 分页合理化：默认 false；设为 true 后 pageNum <= 0 查第一页，pageNum > 总页数 查最后一页
   reasonable: true
+  # 数据库方言
   helper-dialect: mysql
 ```
-reasonable：分页合理化参数，默认值为 false。当该参数设置为 true 时，pageNum<=0时会查询第一页，pageNum>pages（超过总数时），会查询最后一页。默认 false 时，直接根据参数进行查询。
 
-13. 前端到 controller 的一些细节
-@RequestParam(defaultValue="默认值") //设置请求参数默认值
+---
 
-@DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate begin // Spring MVC 接收前端提交的字符串日期，自动转为 `LocalDate` 对象
+# 六、事务
 
-分页条件查询中，请求参数比较多
-定义一个实体类，来封装这几个请求参数。 **【需要保证，****前端传递的请求参数和实体类的属性名是一样的****】
+## 6.1 事务基础
+
+### 6.1.1 概念与三步操作
+
+**事务**是一组操作的集合，是一个不可分割的工作单位。事务会把所有操作作为一个整体，一起向系统提交或撤销操作请求，即这些操作**要么同时成功，要么同时失败**。
+
+事务控制主要三步：
+
+1. 在这组操作执行**之前**，先开启事务（`START TRANSACTION;` 或 `BEGIN;`）。
+2. 所有操作**全部成功**，则提交事务（`COMMIT;`）。
+3. 只要有**任何一个操作失败**，就回滚事务（`ROLLBACK;`）。
+
+```sql
+-- 1. 开启事务
+BEGIN;
+
+-- 2. 保存员工基本信息
+INSERT INTO emp (id, name, username, gender, phone, job, salary, entry_date)
+VALUES (39, 'Tom', '123456', 1, '13300001111', 1, 4000, '2023-11-01');
+
+-- 3. 保存该员工的工作经历信息（两条）
+INSERT INTO emp_expr (emp_id, `begin`, `end`, company, job)
+VALUES (39, '2019-01-01', '2020-01-01', '百度', '开发'),
+       (39, '2020-01-10', '2022-02-01', '阿里', '架构');
+
+-- 4. 全部成功则提交
+COMMIT;
+
+-- 5. 任意一步失败则回滚，数据恢复到事务开始前
+ROLLBACK;
+```
+
+> [!TIP]
+> `begin`、`end` 在 MySQL 中是关键字，作列名时要用反引号 `` `begin` `` 包起来。
+
+## 6.2 Spring 事务 @Transactional
+
+### 6.2.1 注解位置与作用
+
+`@Transactional` 的语义是：**方法执行前开启事务，方法执行完毕提交事务；执行过程中出现异常则回滚事务。**
+
+标注位置有三个层次：
+
+| 位置 | 效果 |
+| --- | --- |
+| 方法上 | 仅当前方法交由 Spring 进行事务管理 |
+| 类上 | 当前类中**所有**方法都交由 Spring 进行事务管理 |
+| 接口上 | 该接口下所有实现类中的所有方法都交由 Spring 进行事务管理 |
+
+我们一般在**业务层（Service）**控制事务。因为一个业务功能往往包含多个数据访问操作，在业务层控制，才能把多个数据访问操作纳入同一个事务范围内。
+
 ```java
+@Service
+public class EmpServiceImpl implements EmpService {
 
-package com.itheima.pojo;
+    @Autowired
+    private EmpMapper empMapper;
+    @Autowired
+    private EmpExprMapper empExprMapper;
 
-import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
-import java.time.LocalDate;
+    @Override
+    @Transactional   // 保存员工与保存工作经历，要么全成功要么全回滚
+    public void save(Emp emp) {
+        // 1. 保存基本信息
+        empMapper.save(emp);
 
-@Data
-public class EmpQueryParam {
-    
-    private Integer page = 1; //页码
-    private Integer pageSize = 10; //每页展示记录数
-    private String name; //姓名
-    private Integer gender; //性别
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate begin; //入职开始时间
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate end; //入职结束时间
-    
+        // 2. 保存工作经历
+        List<EmpExpr> exprs = emp.getExprs();
+        if (exprs != null && !exprs.isEmpty()) {
+            exprs.forEach(expr -> expr.setEmpId(emp.getId()));
+            empExprMapper.saveBatch(exprs);
+        }
+    }
 }
 ```
 
-```Java
-@GetMapping
-public Result page(EmpQueryParam empQueryParam) {
-    log.info("查询请求参数： {}", empQueryParam);
-    PageResult pageResult = empService.page(empQueryParam);
-    return Result.success(pageResult);
-}
-```
+> [!WARNING]
+> `@Transactional` 常见失效场景：① 方法不是 `public`；② 类未交给 Spring 管理（没加 `@Service` 等注解）；③ 异常被方法内部 `try-catch` 吞掉；④ 抛的是 `Error` 而非 `Exception`；⑤ 在同类内部方法间自调用，绕过代理对象。
 
-14.动态 sql
-**动态 SQL，指的就是随着用户的输入或外部的条件的变化而变化的 SQL 语句。**
-`<if>`：判断条件是否成立，如果条件为 true，则拼接 SQL。
+### 6.2.2 事务日志
 
-`<where>`：根据查询条件，来生成 where 关键字，并会自动去除条件前面多余的 and 或 or。
+在 `application.yml` 中开启事务管理日志，就能在控制台看到与事务相关的日志信息（开启、提交、回滚）。
 
-```XML
-<!--定义Mapper映射文件的约束和基本结构-->
-<!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.itheima.mapper.EmpMapper">
-    <select id="list" resultType="com.itheima.pojo.Emp">
-        select e.*, d.name deptName from emp as e left join dept as d on e.dept_id = d.id
-        <where>
-            <if test="name != null and name != ''">
-                e.name like concat('%',#{name},'%')
-            </if>
-            <if test="gender != null">
-                and e.gender = #{gender}
-            </if>
-            <if test="begin != null and end != null">
-                and e.entry_date between #{begin} and #{end}
-            </if>
-        </where>
-    </select>
-</mapper>
-```
-
-`<foreach>` 标签，该标签的作用，是用来遍历循环，常见的属性说明：
-
-1. collection：集合名称
-2. item：集合遍历出来的元素/项
-3. separator：每一次遍历使用的分隔符
-4. open：遍历开始前拼接的片段
-5. close：遍历结束后拼接的片段
-    
-上述的属性，是可选的，并不是所有的都是必须的。可以自己根据实际需求，来指定对应的属性
-
-
-15.主键返回 sql 插入后会自动生成主键然后将 id 赋回程序中的对象
-@Options(useGeneratedKeys = true, keyProperty = "id")
-
-由于稍后，我们在保存工作经历信息的时候，需要记录是哪位员工的工作经历。所以，保存完员工信息之后，是需要获取到员工的 ID 的，那这里就需要通过 Mybatis 中提供的主键返回功能来获取。
-
-
-16.事务
-事务是一组操作的集合，它是一个不可分割的工作单位。事务会把所有的操作作为一个整体一起向系统提交或撤销操作请求，即这些操作要么同时成功，要么同时失败。
-
-事务控制主要三步操作：开启事务、提交事务/回滚事务。
-
-- 需要在这组操作执行之前，先开启事务 ( `start transaction; / begin;`)。
-    
-- 所有操作如果全部都执行成功，则提交事务 ( `commit;` )。
-    
-- 如果这组操作中，有任何一个操作执行失败，都应该回滚事务 ( `rollback` )。
-```SQL
--- 开启事务
-start transaction; / begin;
-
--- 1. 保存员工基本信息
-insert into emp values (39, 'Tom', '123456', '汤姆', 1, '13300001111', 1, 4000, '1.jpg', '2023-11-01', 1, now(), now());
-
--- 2. 保存员工的工作经历信息
-insert into emp_expr(emp_id, begin, end, company, job) values (39,'2019-01-01', '2020-01-01', '百度', '开发'),                                                                                                       (39,'2020-01-10', '2022-02-01', '阿里', '架构');
-
--- 提交事务(全部成功)
-commit;
-
--- 回滚事务(有一个失败)
-rollback;
-```
-
-Spring 事务管理 @Transactional
-
-就是在当前这个方法执行开始之前来开启事务，方法执行完毕之后提交事务。如果在这个方法执行的过程当中出现了异常，就会进行事务的回滚操作。
-**位置：**业务层的方法上、类上、接口上
-
-- 方法上：当前方法交给 spring 进行事务管理
-    
-- 类上：当前类中所有的方法都交由 spring 进行事务管理
-    
-- 接口上：接口下所有的实现类当中所有的方法都交给 spring 进行事务管理
-@Transactional 注解：我们一般会在业务层当中来控制事务，因为在业务层当中，一个业务功能可能会包含多个数据访问的操作。在业务层来控制事务，我们就可以将多个数据访问操作控制在一个事务范围内。
-
-  
-
-说明：可以在 `application.yml` 配置文件中开启事务管理日志，这样就可以在控制看到和事务相关的日志信息了
-```YAML
-#spring事务管理日志
-logging: 
-  level: 
+```yaml
+logging:
+  level:
     org.springframework.jdbc.support.JdbcTransactionManager: debug
 ```
 
-@Transactional 注解当中的两个常见的属性：
+### 6.2.3 回滚规则：rollbackFor
 
-- 异常回滚的属性：`rollbackFor`
-    
-- 事务传播行为：`propagation`
-**默认情况下，只有出现 RuntimeException(运行时异常)才会回滚事务。**
-假如我们想让所有的异常都回滚，需要来配置@Transactional 注解当中的 rollbackFor 属性，通过 rollbackFor 这个属性可以指定出现何种异常类型回滚事务。
+**默认情况下，只有抛出 `RuntimeException`（运行时异常）才会回滚事务**，受检异常（编译期异常）默认不回滚。
 
-什么是事务的传播行为呢？
+如果希望**所有异常都回滚**，需要配置 `@Transactional` 的 `rollbackFor` 属性，指定「出现何种异常类型时回滚事务」。
 
-- 就是当一个事务方法被另一个事务方法调用时，这个事务方法应该如何进行事务控制。
-|   |   |
-|---|---|
-|属性值|含义|
-|REQUIRED|【默认值】需要事务，有则加入，无则创建新事务|
-|REQUIRES_NEW|需要新事务，无论有无，总是创建新事务|
-|SUPPORTS|支持事务，有则加入，无则在无事务状态中运行|
-|NOT_SUPPORTED|不支持事务，在无事务状态下运行,如果当前存在已有事务,则挂起当前事务|
-|MANDATORY|必须有事务，否则抛异常|
-|NEVER|必须没事务，否则抛异常|
-|…||
+```java
+@Service
+public class EmpServiceImpl implements EmpService {
 
-对于这些事务传播行为，我们只需要关注以下两个就可以了：
+    // 无论抛出何种异常都回滚
+    @Transactional(rollbackFor = Exception.class)
+    public void save(Emp emp) {
+        empMapper.save(emp);
+    }
+}
+```
 
-- **REQUIRED：**大部分情况下都是用该传播行为即可。
-    
-- **REQUIRES_NEW：**当我们不希望事务之间相互影响时，可以使用该传播行为。比如：下订单前需要记录日志，不论订单保存成功与否，都需要保证日志记录能够记录成功。
+### 6.2.4 传播行为：propagation
+
+**事务传播行为**指的是：当一个事务方法被另一个事务方法调用时，这个事务方法应该如何进行事务控制。
+
+| 属性值 | 含义 |
+| --- | --- |
+| `REQUIRED` | 【默认值】需要事务，有则加入，无则创建新事务 |
+| `REQUIRES_NEW` | 需要新事务，无论有无，总是创建新事务 |
+| `SUPPORTS` | 支持事务，有则加入，无则在无事务状态中运行 |
+| `NOT_SUPPORTED` | 不支持事务，在无事务状态下运行；若当前存在事务，则挂起当前事务 |
+| `MANDATORY` | 必须有事务，否则抛异常 |
+| `NEVER` | 必须没有事务，否则抛异常 |
+| `NESTED` | 存在事务则创建嵌套事务（子事务），否则同 `REQUIRED` |
+
+实际开发中**只需重点关注两个**：
+
+- **`REQUIRED`**：大部分场景用默认的即可。
+- **`REQUIRES_NEW`**：当不希望事务之间相互影响时使用。例如「下单前记录日志」，无论订单保存成功与否，都必须保证日志记录成功。
+
+```java
+@Service
+public class OrderServiceImpl implements OrderService {
+
+    @Autowired
+    private OrderMapper orderMapper;
+    @Autowired
+    private LogService logService;
+
+    @Override
+    @Transactional
+    public void submit(Order order) {
+        // 1. 保存订单（使用外层事务）
+        orderMapper.save(order);
+
+        // 2. 记录日志，使用独立事务，不受外层事务成败影响
+        logService.record(order);
+    }
+}
+```
+
+```java
+@Service
+public class LogServiceImpl implements LogService {
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)   // 总是开启新事务
+    public void record(Order order) {
+        logMapper.insert(order);
+    }
+}
+```
