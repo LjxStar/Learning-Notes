@@ -146,3 +146,15 @@ Dept getById(Integer id);
 @Update("UPDATE dept SET name = #{name}, update_time = #{updateTime} WHERE id = #{id}")  
 void update(Dept dept);
 ```
+
+
+9. 日志技术
+- **JUL****：**这是 JavaSE 平台提供的官方日志框架，也被称为 JUL。配置相对简单，但不够灵活，性能较差。
+    
+- **Slf 4 j****：**（Simple Logging Facade for Java）简单日志门面，提供了一套日志操作的标准接口及抽象类，允许应用程序使用不同的底层日志框架。
+- **Log 4 j****：**一个流行的日志框架，提供了灵活的配置选项，支持多种输出目标。
+    
+- **Logback：**基于 Log 4 j 升级而来，提供了更多的功能和配置选项，性能由于 Log 4 j。
+
+9.1
+Logback 入门
