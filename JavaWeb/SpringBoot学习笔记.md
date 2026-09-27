@@ -15,11 +15,11 @@ tags:
 
 Spring Boot 项目的代码按 Controller → Service → Mapper 三层组织，每一层由一个固定注解标记，注解位置错了 Spring 就无法完成依赖注入与对象管理。
 
-| 注解                | 标注位置                                     | 作用                                                          |
-| ----------------- | ---------------------------------------- | ----------------------------------------------------------- |
-| `@RestController` | Controller 类上                            | 标记为控制器，等价于 `@Controller` + `@ResponseBody`，方法返回值自动序列化为 JSON |
-| `@Service`        | Service 层**实现类**上（即 `service.impl` 包下的类） | 标记为业务层组件，参与事务管理                                             |
-| `@Mapper`         | Mapper 包下的接口上                            | 标记为 MyBatis Mapper 接口，自动生成代理实现类                             |
+| 注解 | 标注位置 | 作用 |
+| --- | --- | --- |
+| `@RestController` | Controller 类上 | 等价于 `@Controller` + `@ResponseBody`，方法返回值自动序列化为 JSON |
+| `@Service` | Service 层**实现类**上（即 `service.impl` 包下的类） | 标记为业务层组件，参与事务管理 |
+| `@Mapper` | Mapper 包下的**接口**上 | 标记为 MyBatis Mapper 接口，自动生成代理实现类 |
 
 > [!TIP]
 > `@Service` 要标在 `service.impl` 下的**实现类**上，不要标在接口上；`@Mapper` 要标在 `mapper` 包的**接口**上。
@@ -444,7 +444,7 @@ List<Dept> findAll();
 
 **动态 SQL**，就是随用户输入或外部条件变化而变化的 SQL 语句。项目中用 XML 映射文件编写。
 
-### 3.4.1 <if> 与 <where>
+### 3.4.1 if 与 where 标签
 
 - `<if>`：判断条件是否成立，成立（`test` 为 `true`）则把标签内的 SQL 片段拼接进来。
 - `<where>`：根据查询条件动态生成 `where` 关键字，并**自动去除条件前面多余的 `and` / `or`**。
@@ -483,7 +483,7 @@ List<Dept> findAll();
 > [!TIP]
 > `<where>` 已经去掉了多余的 `and`，但仍建议**显式书写 `AND`**，这样 XML 可读性更好、复制片段时也不会出错。
 
-### 3.4.2 <foreach> 遍历集合
+### 3.4.2 foreach 遍历集合
 
 `<foreach>` 用于遍历集合，常用于 `IN (...)` 查询或批量插入。
 
