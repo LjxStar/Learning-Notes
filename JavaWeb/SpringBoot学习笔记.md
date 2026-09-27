@@ -178,3 +178,120 @@ Logback 入门
 </configuration>
 ```
 放入 src/main/resources
+
+```java
+import org.junit.jupiter.api.Test;  
+import org.slf4j.Logger;  
+import org.slf4j.LoggerFactory;  
+  
+public class LogTest {  
+    private static final Logger log = LoggerFactory.getLogger(LogTest.class);  
+  
+    @Test  
+    public void testLog(){  
+        log.debug("开始计算...");  
+        int sum = 0;  
+        int[] nums = {1, 5, 3, 2, 1, 4, 5, 4, 6, 7, 4, 34, 2, 23};  
+        for (int i = 0; i < nums.length; i++) {  
+            sum += nums[i];  
+        }  
+        log.info("计算结果为: "+sum);  
+        log.debug("结束计算...");  
+    }  
+  
+}
+```
+简单测试在
+private static final Logger log = LoggerFactory.getLogger(LogTest.class);固定搭配
+import org.slf 4 j.Logger;  
+import org.slf 4 j.LoggerFactory;  
+两个都是引入 slf 4 j
+
+----
+
+lombok 中提供的@Slf 4 j 注解，可以简化定义日志记录器这步操作。添加了该注解，就相当于在类中定义了日志记录器，就下面这句代码：
+
+`private static Logger log = LoggerFactory. getLogger(Xxx. class);`
+
+9.2 Logback 配置文件
+Logback 日志框架的配置文件叫 `logback.xml` 。
+
+该配置文件是对 Logback 日志框架输出的日志进行控制的，可以来配置输出的格式、位置及日志开关等。
+
+常用的两种输出日志的位置：控制台、系统文件。
+
+  
+
+**1). 如果需要输出日志到控制台。添加如下配置：**
+
+```XML
+<!-- 控制台输出 -->
+<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!--格式化输出：%d 表示日期，%thread 表示线程名，%-5level表示级别从左显示5个字符宽度，%msg表示日志消息，%n表示换行符 -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50}-%msg%n</pattern>
+    </encoder>
+</appender>
+```
+
+  
+
+**2). 如果需要输出日志到文件。添加如下配置：**
+
+```XML
+<!-- 按照每天生成日志文件 -->
+<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+        <!-- 日志文件输出的文件名, %i表示序号 -->
+        <FileNamePattern>D:/tlias-%d{yyyy-MM-dd}-%i.log</FileNamePattern>
+        <!-- 最多保留的历史日志文件数量 -->
+        <MaxHistory>30</MaxHistory>
+        <!-- 最大文件大小，超过这个大小会触发滚动到新文件，默认为 10MB -->
+        <maxFileSize>10MB</maxFileSize>
+    </rollingPolicy>
+
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+        <!--格式化输出：%d 表示日期，%thread 表示线程名，%-5level表示级别从左显示5个字符宽度，%msg表示日志消息，%n表示换行符 -->
+        <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50}-%msg%n</pattern>
+    </encoder>
+</appender>
+```
+
+  
+
+**3). 日志开关配置 （开启日志（****ALL****），取消日志（OFF））**
+
+```XML
+<!-- 日志输出级别 -->
+<root level="ALL">
+    <!--输出到控制台-->
+    <appender-ref ref="STDOUT" />
+    <!--输出到文件-->
+    <appender-ref ref="FILE" />
+</root>
+```
+
+
+9.2 日志级别
+日志级别指的是日志信息的类型，日志都会分级别，常见的日志级别如下（优先级由低到高）：
+
+|       |                                        |                  |
+| ----- | -------------------------------------- | ---------------- |
+| 日志级别  | 说明                                     | 记录方式             |
+| trace | 追踪，记录程序运行轨迹 【使用很少】                     | log.trace("...") |
+| debug | 调试，记录程序调试过程中的信息，实际应用中一般将其视为最低级别 【使用较多】 | log.debug("...") |
+| info  | 记录一般信息，描述程序运行的关键事件，如：网络连接、io 操作 【使用较多】 | log.info("...")  |
+| warn  | 警告信息，记录潜在有害的情况 【使用较多】                  | log.warn("...")  |
+| error | 错误信息 【使用较多】                            | log.error("...") |
+
+可以在配置文件 `logback.xml` 中，灵活的控制输出那些类型的日志。（大于等于配置的日志级别的日志才会输出）
+
+```XML
+<!-- 日志输出级别 -->
+<root level="info">
+    <!--输出到控制台-->
+    <appender-ref ref="STDOUT" />
+    <!--输出到文件-->
+    <appender-ref ref="FILE" />
+</root>
+```
