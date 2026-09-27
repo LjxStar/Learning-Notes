@@ -1,9 +1,3 @@
----
-tags:
-  - SpringBoot
-  - MyBatis
-  - JavaWeb
----
 
 # 一、项目结构与开发约定
 
