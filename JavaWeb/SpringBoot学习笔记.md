@@ -44,7 +44,7 @@ mybatis:
 - DELETE 方式：@DeleteMapping
 
 3.mapper 到 mybatis
-```
+```java
 /**  
  * 根据ID删除部门  
  */  
@@ -54,3 +54,33 @@ void deleteById(Integer id);
 如果 mapper 接口方法形参只有一个普通类型的参数，`#{…}` 里面的属性名可以随便写，如：`#{id}`、`#{value}`。
 
 对于 DML 语句来说，执行完毕，也是有返回值的，返回值代表的是增删改操作，影响的记录数，所以可以将执行 DML 语句的方法返回值设置为 Integer。但是一般开发时，是不需要这个返回值的，所以也可以设置为 void。
+
+
+4.前端到 controller 简单传参
+```java
+/**  
+ * 删除部门  
+ * 简单传参  
+ */  
+@DeleteMapping("/depts")  
+  
+// 方式1 通过@RequestParam注解获取请求参数  
+/*  
+public Result delete(@RequestParam("id") Integer id)  
+public Result delete(@RequestParam(value = "id") Integer id) {  
+    // 删除部门逻辑  
+    return Result.success();}  
+ */  
+  
+// 方式2 通过原始的 HttpServletRequest 对象获取请求参数  
+/*  
+public Result delete(HttpServletRequest request) {  
+    String idStr = request.getParameter("id");    int id = Integer.parseInt(idStr);    // 删除部门逻辑  
+    return Result.success();}  
+ */  
+// 方式3 同名参数自动绑定  
+public Result delete(Integer id) {  
+    deptService.deleteById(id);  
+    return Result.success();  
+}
+```
