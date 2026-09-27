@@ -305,3 +305,9 @@ log.info("根据 id 删除部门, id: {}" , id);
 10. 路径抽取
 一个完整的请求路径，应该是类上的 @RequestMapping 的 value 属性 + 方法上的 @RequestMapping 的 value 属性。
 把公共的路径都放到类的@RequestMapping 上避免重复
+
+
+11. 三种注释
+Controller（RestController） controller 上的类
+service 放到 service.impl 下的对应实现类上
+mapper （resposity）放到 mapper 包的对应接口
