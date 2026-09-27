@@ -371,3 +371,6 @@ List<Emp> list(int offset, Integer pageSize);
 
 12.2 PageHelper
 **PageHelper 是第三方提供的 Mybatis 框架中的一款功能强大、方便易用的分页插件，支持任何形式的单标、多表的分页查询。**
+
+
+当使用了 PageHelper 分页插件进行分页，就无需再 Mapper 中进行手动分页了。在 Mapper 中我们只需要进行正常的列表查询即可。在 Service 层中，调用 Mapper 的方法之前设置分页参数，在调用 Mapper 方法执行查询之后，解析分页结果，并将结果封装到 PageResult 对象中返回。
