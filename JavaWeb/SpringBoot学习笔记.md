@@ -1019,4 +1019,110 @@ public class LogServiceImpl implements LogService {
 
 
 七
-1. 文件上传
+
+1.事务四大特性
+2.文件上传
+上传文件的原始 form 表单，要求表单必须具备以下三点（上传文件页面三要素）：
+
+- 表单必须有 file 域，用于选择要上传的文件
+    
+- 表单提交方式必须为 POST：通常上传的文件会比较大，所以需要使用 POST 提交方式
+    
+- 表单的编码类型 enctype 必须要设置为：multipart/form-data：普通默认的编码格式是不适合传输大型的二进制数据的，所以在文件上传时，表单的编码格式必须设置为 multipart/form-data
+2.1 本地存储
+请加上一些解释
+```java
+package com.ljxstar.controller;  
+  
+import com.ljxstar.pojo.Result;  
+import lombok.extern.slf4j.Slf4j;  
+import org.springframework.web.bind.annotation.PostMapping;  
+import org.springframework.web.bind.annotation.RestController;  
+import org.springframework.web.multipart.MultipartFile;  
+  
+import java.io.File;  
+import java.util.UUID;  
+  
+  
+@Slf4j  
+@RestController  
+public class UploadController {  
+    private static final String UPLOAD_DIR = "uploads/";  
+  
+    /**  
+     * 文件上传，本地存储  
+     */  
+    @PostMapping("/upload")  
+    public Result uploadFile(MultipartFile file) {  
+        log.info("上传文件: {}", file.getOriginalFilename());  
+  
+        if (!file.isEmpty()) {  
+            try {  
+                // 获取文件原始名称和扩展名  
+                String originalFilename = file.getOriginalFilename();  
+                String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));  
+                String newFileName = UUID.randomUUID().toString() + fileExtension;  
+  
+                // 创建上传目录  
+                File newFile = new File(UPLOAD_DIR + newFileName);  
+  
+                if (!newFile.getParentFile().exists()) {  
+                    newFile.getParentFile().mkdirs();  
+                }  
+  
+                // 保存文件到指定目录  
+                file.transferTo(newFile);  
+                log.info("文件上传成功: {}", newFile.getAbsolutePath());  
+  
+            } catch (Exception e) {  
+                log.error("文件上传失败", e);  
+                return Result.error("文件上传失败");  
+            }  
+        }  
+        return Result.success();  
+    }  
+}
+```
+
+**MultipartFile 常见方法：**
+
+- `String getOriginalFilename();` //获取原始文件名
+    
+- `void transferTo(File dest);` //将接收的文件转存到磁盘文件中
+    
+- `long getSize();` //获取文件的大小，单位：字节
+    
+- `byte[] getBytes();` //获取文件内容的字节数组
+    
+- `InputStream getInputStream();` //获取接收到的文件内容的输入流
+
+上传一个较大的文件(超出 1 M)时发现，后端程序报错：
+
+```yml
+spring：
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 100MB
+```
+
+
+2.2 阿里云 OSS
+2.2.1 准备
+开通 OSS 云服务 -》创建一个 Bucket -》不要开通公共访问、选择公共读 -》 **创建 AccessKey** -》 **配置 AccessKey**
+
+```SQL
+set OSS_ACCESS_KEY_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+set OSS_ACCESS_KEY_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+```Shell
+setx OSS_ACCESS_KEY_ID "%OSS_ACCESS_KEY_ID%"
+setx OSS_ACCESS_KEY_SECRET "%OSS_ACCESS_KEY_SECRET%"
+```
+```Shell
+echo %OSS_ACCESS_KEY_ID%
+echo %OSS_ACCESS_KEY_SECRET%
+```
+
+2.2.2 简单入门
+1.依赖
