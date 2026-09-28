@@ -1130,14 +1130,14 @@ spring：
 
 在 [RAM 控制台](https://ram.console.aliyun.com/users/create)，创建**使用永久 AccessKey 访问**的 RAM 用户，保存 AccessKey，然后为该用户授予 `AliyunOSSFullAccess` 权限。
 ```SQL
-set OSS_ACCESS_KEY_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-set OSS_ACCESS_KEY_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+set OSS_ACCESS_KEY_ID="YOUR_ACCESS_KEY_ID"
+set OSS_ACCESS_KEY_SECRET="YOUR_ACCESS_KEY_SECRET"
 ```
-```Shell
-setx OSS_ACCESS_KEY_ID "%OSS_ACCESS_KEY_ID%"
-setx OSS_ACCESS_KEY_SECRET "%OSS_ACCESS_KEY_SECRET%"
+```bash
+setx OSS_ACCESS_KEY_ID "YOUR_ACCESS_KEY_ID"
+setx OSS_ACCESS_KEY_SECRET "YOUR_ACCESS_KEY_SECRET"
 ```
-```Shell
+```bash
 echo %OSS_ACCESS_KEY_ID%
 echo %OSS_ACCESS_KEY_SECRET%
 ```
