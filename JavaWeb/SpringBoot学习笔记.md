@@ -264,14 +264,13 @@ public Result page(EmpQueryParam empQueryParam) {
 
 ### 2.4.2 常用参数注解补充
 
-| 注解 | 作用 |
-| --- | --- |
-| `@RequestParam(defaultValue = "1")` | 设置请求参数的默认值，请求参数缺失时生效 |
-| `@RequestParam(required = false)` | 参数非必填，`null` 也能通过校验 |
-| `@RequestBody` | 接收 JSON 请求体 |
-| `@PathVariable` | 接收 URL 路径变量 |
-| `@DateTimeFormat(pattern = "yyyy-MM-dd")` | Spring MVC 接收前端提交的字符串日期，自动转为 `LocalDate` |
-| `@RestControllerAdvice` + `@ExceptionHandler` | 全局异常处理，把异常统一转成 `Result` |
+| 注解                                            | 作用                                       |
+| --------------------------------------------- | ---------------------------------------- |
+| `@RequestParam(defaultValue = "1")`           | 设置请求参数的默认值，请求参数缺失时生效                     |
+| `@RequestParam(required = false)`             | 参数非必填，`null` 也能通过校验                      |
+| `@RequestBody`                                | 接收 JSON 请求体                              |
+| `@PathVariable`                               | 接收 URL 路径变量                              |
+| `@DateTimeFormat(pattern = "yyyy-MM-dd")`     | Spring MVC 接收前端提交的字符串日期，自动转为 `LocalDate` |
 
 `@RequestParam(defaultValue = "1")` 的典型用法——前端不传页码时兜底：
 
@@ -283,15 +282,6 @@ public Result page(@RequestParam(defaultValue = "1") Integer page,
     return Result.success();
 }
 ```
-
-### 2.4.3 参数传递速查表
-
-| 前端传参场景 | 请求示例 | Controller 写法 | 参数位置 |
-| --- | --- | --- | --- |
-| 简单参数 | `DELETE /depts?id=1` | `delete(@RequestParam Integer id)` | Query String |
-| 多条件查询 | `GET /emps?page=1&name=张` | `page(EmpQueryParam param)` | Query String，同名自动绑定 |
-| 路径参数 | `GET /depts/1` | `get(@PathVariable Integer id)` | 路径变量 |
-| JSON 传参 | `POST /depts` + JSON 体 | `save(@RequestBody Dept dept)` | 请求体 |
 
 ---
 
@@ -337,7 +327,7 @@ public interface DeptMapper {
 ```
 
 > [!WARNING]
-> 注解名必须与 SQL 类型严格对应。写 `@Select("DELETE ...")` 会在运行时报 `BadSqlGrammarException`，这是本笔记中最容易踩的坑。
+> 注解名必须与 SQL 类型严格对应。写 `@Select("DELETE ...")` 会在运行时报 `BadSqlGrammarException`。
 
 ## 3.2 参数与返回值
 
@@ -365,18 +355,7 @@ public interface EmpMapper {
 }
 ```
 
-上例中 `#{name}`、`#{gender}`、`#{entryDate}` 取的都是 `Emp` 对象的属性；注意 `entryDate` 对应表字段 `entry_date`，靠的是驼峰命名映射（见 3.3）。
-
-### 3.2.3 DML 语句的返回值
-
-DML（增删改）语句执行完毕后同样有返回值，**返回值就是受影响的记录数**。所以方法返回值可以声明为 `Integer`；但实际开发中一般用不到这个值，通常直接声明为 `void`。
-
-```java
-@Delete("DELETE FROM dept WHERE id = #{id}")
-int deleteById(Integer id);   // 返回受影响的行数
-```
-
-若不关心影响行数，返回值直接声明为 `void` 即可。
+上例中 `#{name}`、`#{gender}`、`#{entryDate}` 取的都是 `Emp` 对象的属性；注意 `entryDate` 对应表字段 `entry_date`，靠的是驼峰命名映射。
 
 ## 3.3 结果映射
 
