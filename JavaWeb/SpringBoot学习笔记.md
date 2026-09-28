@@ -7,11 +7,11 @@
 
 SSM + Spring Boot 项目的代码按 Controller → Service → Mapper 三层组织，每一层由一个固定注解标记，注解位置错了 Spring 就无法完成依赖注入与对象管理。
 
-| 注解                | 标注位置                                     | 作用                                                   |
-| ----------------- | ---------------------------------------- | ---------------------------------------------------- |
-| `@RestController` | Controller 类上                            | 等价于 `@Controller` + `@ResponseBody`，方法返回值自动序列化为 JSON |
-| `@Service`        | Service 层**实现类**上（即 `service.impl` 包下的类） | 标记为业务层组件，参与事务管理                                      |
-| `@Mapper`         | Mapper 包下的**接口**上                        | 标记为 MyBatis Mapper 接口，自动生成代理实现类                      |
+| 注解                | 标注位置               | 作用                                                   |
+| ----------------- | ------------------ | ---------------------------------------------------- |
+| `@RestController` | Controller 响应类 层的上 | 等价于 `@Controller` + `@ResponseBody`，方法返回值自动序列化为 JSON |
+| `@Service`        | Service 层**实现类**上  | 标记为业务层组件，参与事务管理                                      |
+| `@Mapper`         | Mapper 层**接口**上    | 标记为 MyBatis Mapper 接口，自动生成代理实现类                      |
 
 > [!TIP]
 > `@Service` 要标在 `service.impl` 下的**实现类**上，不要标在接口上；`@Mapper` 要标在 `mapper` 包的**接口**上。
