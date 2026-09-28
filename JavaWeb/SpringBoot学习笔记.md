@@ -1108,9 +1108,12 @@ spring：
 
 
 2.2 阿里云 OSS
+
 2.2.1 准备
 开通 OSS 云服务 -》创建 Bucket -》不要开通公共访问、选择公共读 （解释下为什么这样）
 2.2.2 简单入门
+
+以 java sdk v 2 为例
 1.安装 sdk
 在 `pom.xml` 添加如下依赖，并将 `<version>` 替换为在 [Maven Repository](https://mvnrepository.com/artifact/com.aliyun/alibabacloud-oss-v2) 查询到的最新版本号：
 ```xml
