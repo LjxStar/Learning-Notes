@@ -124,11 +124,11 @@ public class DeptController {
 
 `@RequestMapping` 用于声明请求路径（`value`）与请求方式（`method`）。实际开发中常用它的四个派生注解，可以省略 `method` 属性，写法更简洁：
 
-| 派生注解 | 等价写法 | 请求方式 |
-| --- | --- | --- |
-| `@GetMapping` | `@RequestMapping(value = "/xxx", method = RequestMethod.GET)` | GET |
-| `@PostMapping` | `@RequestMapping(value = "/xxx", method = RequestMethod.POST)` | POST |
-| `@PutMapping` | `@RequestMapping(value = "/xxx", method = RequestMethod.PUT)` | PUT |
+| 派生注解             | 等价写法                                                             | 请求方式   |
+| ---------------- | ---------------------------------------------------------------- | ------ |
+| `@GetMapping`    | `@RequestMapping(value = "/xxx", method = RequestMethod.GET)`    | GET    |
+| `@PostMapping`   | `@RequestMapping(value = "/xxx", method = RequestMethod.POST)`   | POST   |
+| `@PutMapping`    | `@RequestMapping(value = "/xxx", method = RequestMethod.PUT)`    | PUT    |
 | `@DeleteMapping` | `@RequestMapping(value = "/xxx", method = RequestMethod.DELETE)` | DELETE |
 
 ---
@@ -141,7 +141,21 @@ public class DeptController {
 
 以删除部门为例，前端请求 `DELETE /depts?id=1`，有三种接收方式。
 
-### 2.1.1 方式一：@RequestParam 注解（推荐）
+### 2.1.1 方式一：HttpServletRequest 原生对象
+
+直接注入 Servlet 原始对象，从请求参数表里按名取值。类型转换需要自己完成，一般不推荐。
+
+```java
+@DeleteMapping("/depts")
+public Result delete(HttpServletRequest request) {
+    // 从请求参数表中取出字符串，再手动转成 Integer
+    Integer id = Integer.parseInt(request.getParameter("id"));
+    deptService.deleteById(id);
+    return Result.success();
+}
+```
+
+### 2.1.2 方式二：@RequestParam 注解
 
 `@RequestParam` 显式指定请求参数的名称。当形参名与请求参数名不一致时（或未开启 `-parameters` 编译参数）**必须**使用。
 
@@ -155,19 +169,6 @@ public Result delete(@RequestParam("id") Integer id) {
 
 当形参与请求参数名一致时，`@RequestParam("id")` 中的 `"id"` 也可以省略，写成 `@RequestParam Integer id`。
 
-### 2.1.2 方式二：HttpServletRequest 原生对象
-
-直接注入 Servlet 原始对象，从请求参数表里按名取值。类型转换需要自己完成，一般不推荐。
-
-```java
-@DeleteMapping("/depts")
-public Result delete(HttpServletRequest request) {
-    // 从请求参数表中取出字符串，再手动转成 Integer
-    Integer id = Integer.parseInt(request.getParameter("id"));
-    deptService.deleteById(id);
-    return Result.success();
-}
-```
 
 ### 2.1.3 方式三：同名参数自动绑定
 
@@ -185,7 +186,7 @@ public Result delete(Integer id) {
 
 ### 2.2.1 @PathVariable 接收路径变量
 
-把参数直接写进 URL 路径，用 `/{id}` 占位，再通过 `@PathVariable` 取出。适合「按 ID 查详情」这类资源定位场景。
+把参数直接写进 URL 路径，用 `/{id}` 占位，再通过 `@PathVariable` 取出。适合资源定位的场景。
 
 ```java
 // 完整路径：GET /depts/1
