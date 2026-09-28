@@ -1109,8 +1109,23 @@ spring：
 
 2.2 阿里云 OSS
 2.2.1 准备
-开通 OSS 云服务 -》创建 Bucket -》不要开通公共访问、选择公共读 （解释下为什么这样）-》 **创建 AccessKey** -》 **配置 AccessKey**
+开通 OSS 云服务 -》创建 Bucket -》不要开通公共访问、选择公共读 （解释下为什么这样）
+2.2.2 简单入门
+1.安装 sdk
+在 `pom.xml` 添加如下依赖，并将 `<version>` 替换为在 [Maven Repository](https://mvnrepository.com/artifact/com.aliyun/alibabacloud-oss-v2) 查询到的最新版本号：
+```xml
+<dependency>
+    <groupId>com.aliyun</groupId>
+    <artifactId>alibabacloud-oss-v2</artifactId>
+    <version><!-- 填写最新版本号--></version>
+</dependency>
+```
 
+### **配置访问凭证**
+**创建 AccessKey** -》 **配置 AccessKey**
+将 RAM 用户的 AccessKey 写入环境变量作为凭证。
+
+在 [RAM 控制台](https://ram.console.aliyun.com/users/create)，创建**使用永久 AccessKey 访问**的 RAM 用户，保存 AccessKey，然后为该用户授予 `AliyunOSSFullAccess` 权限。
 ```SQL
 set OSS_ACCESS_KEY_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 set OSS_ACCESS_KEY_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -1123,6 +1138,3 @@ setx OSS_ACCESS_KEY_SECRET "%OSS_ACCESS_KEY_SECRET%"
 echo %OSS_ACCESS_KEY_ID%
 echo %OSS_ACCESS_KEY_SECRET%
 ```
-
-2.2.2 简单入门
-1.依赖
