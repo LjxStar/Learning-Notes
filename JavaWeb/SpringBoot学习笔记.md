@@ -1109,7 +1109,7 @@ spring：
 
 2.2 阿里云 OSS
 2.2.1 准备
-开通 OSS 云服务 -》创建一个 Bucket -》不要开通公共访问、选择公共读 -》 **创建 AccessKey** -》 **配置 AccessKey**
+开通 OSS 云服务 -》创建 Bucket -》不要开通公共访问、选择公共读 （解释下为什么这样）-》 **创建 AccessKey** -》 **配置 AccessKey**
 
 ```SQL
 set OSS_ACCESS_KEY_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
