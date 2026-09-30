@@ -1544,9 +1544,9 @@ public class EmpServiceImpl implements EmpService {
 
 ## 5.3 PageHelper
 
-**PageHelper 是第三方提供的 MyBatis 分页插件，功能强大、使用方便，支持各种单表、多表分页查询。**
+PageHelper 是第三方提供的 MyBatis 分页插件，功能强大、使用方便，支持各种单表、多表分页查询。
 
-使用后 Mapper 中只需写正常的列表查询，**无需再手动分页**。Service 层在调用 Mapper **之前**设置分页参数，调用**之后**解析分页结果。
+>  使用后 Mapper 中只需写正常的列表查询，**无需再手动分页**。Service 层在调用 Mapper **之前**设置分页参数，调用**之后**解析分页结果。
 
 ### 5.3.1 使用步骤
 
@@ -1901,12 +1901,12 @@ public class GlobalExceptionHandler {
 
 > [!IMPORTANT]
 > **给前端看的 `msg` 和给排查用的日志，是两回事**：
-> - `Result.error(...)` 的内容会直接返回给用户，**绝不能包含异常堆栈、SQL、文件路径**；
+> - `Result.error(...)` 的内容会直接返回给用户，绝不能包含异常堆栈、SQL、文件路径；
 > - 完整的异常信息用 `log.error("服务器异常", e)` 打进日志（第二个参数传 `e`，SLF4J 会自动打印堆栈）。
 
 > [!NOTE]
-> Spring MVC 捕获到异常后，会根据异常类型在 Spring 容器中查找匹配的 `@ExceptionHandler` 处理方法，遵循精确类型优先匹配原则；如果没有找到对应异常的处理器，最终会匹配 `Exception.class` 通用异常处理方法。
-> 同一个全局异常处理器里，**类型越具体的 `@ExceptionHandler` 优先级越高**；同一个异常类型不要写两个处理方法，否则 Spring 会在启动时报 `Ambiguous @ExceptionHandler method mapped for ...` 并启动失败。
+> Spring MVC 捕获到异常后，会根据异常类型在 Spring 容器中查找匹配的 `@ExceptionHandler` 处理方法，遵循**精确类型优先匹配原则**；如果没有找到对应异常的处理器，最终会匹配 `Exception.class` 通用异常处理方法。
+> 同一个异常类型不要写两个处理方法，否则 Spring 会在启动时报 `Ambiguous @ExceptionHandler method mapped for ...` 并启动失败。
 
 
 
