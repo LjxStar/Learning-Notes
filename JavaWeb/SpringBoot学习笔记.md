@@ -1859,8 +1859,13 @@ public class GlobalExceptionHandler {
 }
 ```
 
-> [!NOTE]
-> Spring MVC 捕获到异常后，会根据异常类型在 Spring 容器中查找匹配的 `@ExceptionHandler` 处理方法，遵循精确类型优先匹配原则；如果没有找到对应异常的处理器，最终会匹配 `Exception.class` 通用异常处理方法。
+> [!TIP]
+> 编写全局异常处理器的固定套路就三步：
+> 1. 类上加 `@RestControllerAdvice`；
+> 2. 方法上加 `@ExceptionHandler(Exception.class)` ，返回 `Result.error(...)`；
+> 3. 每个方法里先 `log` 记录，再返回统一响应结果。
+>
+> 这样 Controller 里就只剩下「接收参数 → 调 Service → 返回结果」，异常处理完全不用写。
 
 ## 7.3 处理特定异常
 
@@ -1899,21 +1904,10 @@ public class GlobalExceptionHandler {
 > - `Result.error(...)` 的内容会直接返回给用户，**绝不能包含异常堆栈、SQL、文件路径**；
 > - 完整的异常信息用 `log.error("服务器异常", e)` 打进日志（第二个参数传 `e`，SLF4J 会自动打印堆栈）。
 
-## 7.4 执行顺序与注意事项
+> [!NOTE]
+> Spring MVC 捕获到异常后，会根据异常类型在 Spring 容器中查找匹配的 `@ExceptionHandler` 处理方法，遵循精确类型优先匹配原则；如果没有找到对应异常的处理器，最终会匹配 `Exception.class` 通用异常处理方法。
+> 同一个全局异常处理器里，**类型越具体的 `@ExceptionHandler` 优先级越高**；同一个异常类型不要写两个处理方法，否则 Spring 会在启动时报 `Ambiguous @ExceptionHandler method mapped for ...` 并启动失败。
 
-同一个全局异常处理器里，**类型越具体的 `@ExceptionHandler` 优先级越高**；同一个异常类型**不要写两个处理方法**，否则 Spring 会在启动时报 `Ambiguous @ExceptionHandler method mapped for ...` 并启动失败。
 
-| 场景 | 做法 |
-| --- | --- |
-| 业务校验失败 | 抛自定义异常（如 `ServiceException`），处理器里 `Result.error(msg)` |
-| 数据库/网络等底层异常 | 不单独捕获，交给 `Exception.class` 兜底，接口返回「服务器异常」，细节查日志 |
-| 需要记录完整堆栈 | 在兜底处理方法里 `log.error("服务器异常", e)`，注意传 `e` 才会输出堆栈 |
-| 前端联调阶段 | 可以在响应里临时带上 `e.getMessage()`，上线前必须去掉 |
 
-> [!TIP]
-> 编写全局异常处理器的固定套路就三步：
-> 1. 类上加 `@RestControllerAdvice`；
-> 2. 方法上加 `@ExceptionHandler(Exception.class)` 兜底，返回 `Result.error(...)`；
-> 3. 每个方法里先 `log` 记录，再返回统一响应结果。
->
-> 这样 Controller 里就只剩下「接收参数 → 调 Service → 返回结果」，异常处理完全不用写。
+
