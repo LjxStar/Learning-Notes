@@ -1006,6 +1006,7 @@ List<Map<String,Object>> countEmpJobData();
 ```
 
 > 如果查询的记录往 Map 中封装，可以通过 `@MapKey` 注解指定返回的 Map 中的唯一标识是哪一个字段
+
 ### 3.3.4 resultMap 映射
 
 `resultMap` 的设计思想是：简单语句零配置，复杂语句只描述关系。单表查询用 `resultType` 就够了，MyBatis 会自动按属性名映射；而关联查询的「一对多」结构，必须用 `resultMap` 显式声明。
