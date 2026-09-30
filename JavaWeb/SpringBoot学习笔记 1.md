@@ -504,7 +504,7 @@ public Result login(Emp emp) {
 
 #### （3）上传大小限制
 
-Spring Boot 默认单文件上限只有 **1 MB**，超出会抛 `MaxUploadSizeExceededException`（表现为接口直接返回 400）。需要放宽时在 `application.yml` 中配置：
+Spring Boot 默认单文件上限只有 1 MB，超出会抛 `MaxUploadSizeExceededException`（表现为接口直接返回 400）。需要放宽时在 `application.yml` 中配置：
 
 ```yaml
 spring:
