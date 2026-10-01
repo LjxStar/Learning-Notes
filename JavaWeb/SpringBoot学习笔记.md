@@ -639,7 +639,7 @@ echo %OSS_ACCESS_KEY_SECRET%
 
 #### （3）集成代码
 
-建议把上传逻辑封装成一个 `@Component` 组件，对外只暴露一个「传字节数组 + 原始文件名 → 返回 URL」的方法，Controller 调用起来很干净。
+以文件上传为例，把上传逻辑封装成一个 `@Component` 组件，对外只暴露一个「传字节数组 + 原始文件名 → 返回 URL」的方法，Controller 只需调用方法即可完成上传。
 
 ```java
 package com.itheima.utils;
@@ -710,7 +710,7 @@ public class AliyunOSSOperator {
 }
 ```
 
-Controller 侧的调用同样简洁：
+将上传逻辑代码封装起来，Controller 的代码将十分简介，有利于维护：
 
 ```java
 @Slf4j
@@ -731,13 +731,13 @@ public class UploadController {
 }
 ```
 
-| 配置项 | 说明 |
-| --- | --- |
-| `ENDPOINT` | 阿里云 OSS 中 Bucket 对应的域名，如 `https://oss-cn-hangzhou.aliyuncs.com` |
-| `REGION` | Bucket 所属区域，如 `cn-hangzhou`，需与 Bucket 实际所在区域一致 |
-| `BUCKET_NAME` | Bucket 名称（控制台上的名字，不是域名） |
-| `objectKey` | 文件在 Bucket 中的**对象路径**（含文件名），即上面拼的 `yyyy/MM/UUID.后缀` |
-| `EnvironmentVariableCredentialsProvider` | 凭证提供者，从环境变量里读取 AccessKey，避免密钥写进代码 |
+| 配置项                                      | 说明                                                              |
+| ---------------------------------------- | --------------------------------------------------------------- |
+| `ENDPOINT`                               | 阿里云 OSS 中 Bucket 对应的域名，如 `https://oss-cn-hangzhou.aliyuncs.com` |
+| `REGION`                                 | Bucket 所属区域，如 `cn-hangzhou`，需与 Bucket 实际所在区域一致                  |
+| `BUCKET_NAME`                            | Bucket 名称（控制台上的名字，不是域名）                                         |
+| `objectKey`                              | 文件在 Bucket 中的**对象路径**（含文件名），即上面拼的 `yyyy/MM/UUID.后缀`             |
+| `EnvironmentVariableCredentialsProvider` | 凭证提供者，从环境变量里读取 AccessKey，避免密钥写进代码                               |
 
 > [!TIP]
 > 三个概念分清楚，上传代码就写对了：
