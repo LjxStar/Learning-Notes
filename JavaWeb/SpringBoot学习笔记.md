@@ -371,7 +371,7 @@ public Result save(@RequestBody Dept dept) {
 `@RequestHeader` 用于获取 HTTP 请求头中的数据，例如 token、User-Agent 等。
 
 > [!NOTE]
-> token 的存放位置有两种常见方式：放在**请求头**里（如 `token: abc`），用 `@RequestHeader` 获取；放在 **Cookie** 里（`Cookie: token=abc`），用 `@CookieValue` 获取（见 2.4.2）。两者存放位置不同，获取方式也不同，不要混淆。
+> token 的存放位置有两种常见方式：放在**请求头**里（如 `token: abc`），用 `@RequestHeader` 获取；放在 **Cookie** 里（`Cookie: token=abc`），用 `@CookieValue` 获取。两者存放位置不同，获取方式也不同。
 
 #### （1）指定请求头名称
 
@@ -415,6 +415,7 @@ public Result list(HttpServletRequest request) {
 ### 2.4.2 @CookieValue 接收 Cookie
 
 ```java
+// `Cookie: token=abc`
 @GetMapping
 public Result list(@CookieValue("token") String token) {
     log.info("cookie 中的 token：{}", token);
