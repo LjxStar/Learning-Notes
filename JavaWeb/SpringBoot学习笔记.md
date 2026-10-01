@@ -1934,3 +1934,11 @@ public class GlobalExceptionHandler {
 
 
 # 八、登录
+
+## 8.1 会话跟踪技术
+
+### 8.1.1 Cookie
+
+### 8.1.2 Session
+
+### 8.1.3 令牌
