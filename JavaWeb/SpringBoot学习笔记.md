@@ -1681,36 +1681,7 @@ public class EmpServiceImpl implements EmpService {
 
 如果需要自定义回滚规则，让指定异常也触发事务回滚，可以配置 `@Transactional` 的 `rollbackFor` 属性，声明哪些异常类型发生时需要执行事务回滚。
 
-```java
-@Slf4j  
-@RestControllerAdvice  
-public class GlobalExceptionHandler {  
-  
-    @ExceptionHandler    
-    public Result handleException(Exception e) {  
-        log.error("程序出错啦~", e);  
-        return Result.error("出错啦, 请联系管理员~");  
-    }  
-  
-    @ExceptionHandler  
-    public Result handleDuplicateKeyException(DuplicateKeyException e) {  
-        log.error("程序出错啦~", e);  
-        String message = e.getMessage();  
-        int i = message.indexOf("Duplicate entry");  
-        String errMsg = message.substring(i);  
-        String[] arr = errMsg.split(" ");  
-        return Result.error(arr[2] + " 已存在");  
-    }  
-  
-  	// BusinessException 为自定义异常 extends RuntimeException
-    @ExceptionHandler  
-    public Result handleBusinessException(BusinessException e) {  
-        log.error("程序出错啦~", e);  
-        return Result.error(e.getMessage());  
-    }  
-}
-}
-```
+
 
 ### 6.2.3 传播行为 propagation
 
