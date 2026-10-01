@@ -1084,7 +1084,32 @@ List<Map<String,Object>> countEmpJobData();
 >
 > 用 `<where>` 的前提是：所有条件都是用 `and` 连接的（`or` 混用时它无法正确裁剪，需要用 `<trim>`）。
 
-### 3.4.2 foreach 遍历集合
+### 3.4.2 set 标签
+
+`<set>` 是 `<where>` 在更新语句中的对应标签，用于动态生成 `set` 子句，并**自动去掉末尾多余的逗号**。
+
+```xml
+<update id="update">
+    update emp
+    <set>
+        <if test="name != null and name != ''">
+            name = #{name},
+        </if>
+        <if test="gender != null">
+            gender = #{gender},
+        </if>
+        <if test="deptId != null">
+            dept_id = #{deptId},
+        </if>
+    </set>
+    where id = #{id}
+</update>
+```
+
+> [!NOTE]
+> 假设只传了 `name`，拼接结果为 `update emp set name = #{name} where id = #{id}`——末尾的逗号被自动去掉。如果不用 `<set>` 而手动拼接，一旦某个 `<if>` 不成立，`set` 后面可能残留逗号或直接缺失，导致 SQL 语法错误。
+
+### 3.4.3 foreach 遍历集合
 
 `<foreach>` 用于遍历集合，常用于 `in (...)` 查询或批量插入 `values (...)`。
 
@@ -1127,7 +1152,7 @@ List<Map<String,Object>> countEmpJobData();
 > [!WARNING]
 > 批量插入的 SQL **结尾绝对不能加分号**，否则拼接后变成 `values (...), (...);`，直接报语法错误；一次插入的数据量也别太大，几百条一批即可，再多就拆成多次调用（配合事务）。
 
-### 3.4.3 choose 分支选择
+### 3.4.4 choose 分支选择
 
 `<choose>` 用于「多个条件互斥、只命中一个」的场景，写法与 Java 的 `if - else if - else` 一一对应：
 
@@ -1153,7 +1178,7 @@ List<Map<String,Object>> countEmpJobData();
 > [!NOTE]
 > `<choose>` 遵循「**从上到下只匹配一个**」的规则：这里 `name` 一旦有值，后面的 `deptId` 分支就不会再看。所以它和连续写几个 `<if>` 的效果完全不同——`<if>` 是互不影响的多个条件。
 
-### 3.4.4 sql 片段复用
+### 3.4.5 sql 片段复用
 
 条件查询的 SQL 常常成对出现（员工列表、部门列表……），可以把公共片段抽成 `<sql>`，用 `<include>` 引用，避免复制粘贴后改一处漏一处：
 
@@ -1677,10 +1702,24 @@ public class EmpServiceImpl implements EmpService {
 
 ### 6.2.2 回滚规则 rollbackFor
 
-默认情况下，`@Transactional` 事务仅在抛出**运行时异常**时触发回滚；对于**编译时异常**（受检异常），默认不会执行事务回滚。
+**默认情况下，只有抛出 `RuntimeException`（运行时异常）才会回滚事务**，受检异常（编译期异常）默认不回滚。
 
+如果希望**所有异常都回滚**，需要配置 `@Transactional` 的 `rollbackFor` 属性，指定「出现何种异常类型时回滚事务」。
 
+```java
+@Service
+public class EmpServiceImpl implements EmpService {
 
+    // 无论抛出何种异常都回滚
+    @Transactional(rollbackFor = Exception.class)
+    public void save(Emp emp) {
+        empMapper.save(emp);
+    }
+}
+```
+
+> [!TIP]
+> `RuntimeException` 包含 `NullPointerException`、`IllegalArgumentException` 等；受检异常指 `IOException`、`SQLException` 这类编译期就能发现的异常。日常开发**建议统一写 `rollbackFor = Exception.class`**，免得抛了个受检异常结果数据只写了一半。
 
 
 ### 6.2.3 传播行为 propagation
