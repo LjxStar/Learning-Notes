@@ -807,10 +807,8 @@ public interface DeptMapper {
 注解适合简单 SQL，复杂 SQL（动态拼接、多表关联）建议写在 XML 映射文件中。XML 文件放在 `resources/mapper` 目录下，`namespace` 对应 Mapper 接口的全限定名，`id` 对应方法名：
 
 ```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.itheima.mapper.DeptMapper">
 
     <select id="findAll" resultType="com.itheima.pojo.Dept">
