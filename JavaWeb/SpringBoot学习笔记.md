@@ -366,7 +366,10 @@ public Result save(@RequestBody Dept dept) {
 
 ### 2.4.1 @RequestHeader 接收请求头
 
-`@RequestHeader` 用于获取 HTTP 请求头中的数据，例如 token、Cookie、User-Agent 等。
+`@RequestHeader` 用于获取 HTTP 请求头中的数据，例如 token、User-Agent 等。
+
+> [!NOTE]
+> token 的存放位置有两种常见方式：放在**请求头**里（如 `token: abc`），用 `@RequestHeader` 获取；放在 **Cookie** 里（`Cookie: token=abc`），用 `@CookieValue` 获取（见 2.4.2）。两者存放位置不同，获取方式也不同，不要混淆。
 
 #### （1）指定请求头名称
 
@@ -477,14 +480,35 @@ public Result login(Emp emp) {
 | 提交方式为 POST | `method="post"`                   | 文件通常较大，GET 只能把数据拼在 URL 后面，承载不了二进制数据                        |
 | 编码类型       | `enctype="multipart/form-data"`   | 默认的 `application/x-www-form-urlencoded` 只支持文本键值对，无法传输二进制内容 |
 
+实际开发中，文件表单往往还会带上普通文本字段（如昵称、备注等）。下面这个表单就同时包含一个普通字段 `nickname` 和一个文件字段 `file`：
+
 ```html
 <form action="/upload" method="post" enctype="multipart/form-data">
+    <input type="text" name="nickname" placeholder="昵称" />
     <input type="file" name="file" />
     <button type="submit">上传</button>
 </form>
 ```
 
-#### （2）MultipartFile 常用方法
+#### （2）Controller 接收
+
+`multipart/form-data` 表单提交后，普通字段和文件字段的接收方式不同：
+
+- **普通字段**：和 `application/x-www-form-urlencoded` 表单一样，直接按形参名绑定，不需要任何注解；
+- **文件字段**：用 `MultipartFile` 类型的形参接收，参数名与表单的 `name` 对应。
+
+```java
+@PostMapping("/upload")
+public Result upload(String nickname, MultipartFile file) {
+    log.info("昵称：{}，文件名：{}", nickname, file.getOriginalFilename());
+    return Result.success();
+}
+```
+
+> [!NOTE]
+> 普通字段 `nickname` 和文件字段 `file` 可以写在同一个方法里，Spring MVC 会分别按各自的方式绑定。文件字段也可以加 `@RequestParam` 注解，但通常省略即可。
+
+#### （3）MultipartFile 常用方法
 
 `MultipartFile` 是 Spring 封装的上传文件对象，常用方法如下：
 
@@ -500,19 +524,18 @@ public Result login(Emp emp) {
 > [!TIP]
 > `transferTo(File)` 与 `getBytes()` 都能拿到文件内容，区别在于：文件较大时 `getBytes()` 会把整个文件一次性读进内存，容易 Out Of Memory；`transferTo` 是**边写边读**，更省内存，大文件优先用它。
 
-#### （3）上传大小限制
-
-Spring Boot 默认单文件上限只有 1 MB，超出会抛 `MaxUploadSizeExceededException`（表现为接口直接返回 400）。需要放宽时在 `application.yml` 中配置：
-
-```yaml
-spring:
-  servlet:
-    multipart:
-      max-file-size: 10MB        # 单个文件最大大小
-      max-request-size: 100MB    # 一次请求携带的所有文件的总大小
-```
-
-两者的区别：`max-file-size` 管**单个文件**，`max-request-size` 管**整个请求**。一次上传多个文件时，所有文件的总大小不能超过 `max-request-size`。
+> [!TIP]
+> **上传大小限制**：Spring Boot 默认单文件上限只有 1 MB，超出会抛 `MaxUploadSizeExceededException`（表现为接口直接返回 400）。需要放宽时在 `application.yml` 中配置：
+>
+> ```yaml
+> spring:
+>   servlet:
+>     multipart:
+>       max-file-size: 10MB        # 单个文件最大大小
+>       max-request-size: 100MB    # 一次请求携带的所有文件的总大小
+> ```
+>
+> 两者的区别：`max-file-size` 管**单个文件**，`max-request-size` 管**整个请求**。一次上传多个文件时，所有文件的总大小不能超过 `max-request-size`。
 
 ### 2.6.2 本地存储
 
@@ -684,7 +707,7 @@ public class AliyunOSSOperator {
 }
 ```
 
-Controller 侧调用同样干净：
+Controller 侧的调用同样简洁：
 
 ```java
 @Slf4j
@@ -959,18 +982,18 @@ List<Dept> findAll();
 除了 POJO，`resultType` 还可以放 `java.util.Map` 等类型，例如：
 ```xml
 <select id="countEmpJobData" resultType="java.util.Map">
-    SELECT
-        CASE job
-            WHEN 1 THEN '班主任'
-            WHEN 2 THEN '讲师'
-            WHEN 3 THEN '学工主管'
-            WHEN 4 THEN '教研主管'
-            WHEN 5 THEN '咨询师'
-            ELSE '其他' END pos,
-        COUNT(*) total
-    FROM emp
-    GROUP BY job
-    ORDER BY total
+    select
+        case job
+            when 1 then '班主任'
+            when 2 then '讲师'
+            when 3 then '学工主管'
+            when 4 then '教研主管'
+            when 5 then '咨询师'
+            else '其他' end pos,
+        count(*) total
+    from emp
+    group by job
+    order by total
 </select>
 ```
 此时，我们便可以利用下面的 mapper 接口来接收
