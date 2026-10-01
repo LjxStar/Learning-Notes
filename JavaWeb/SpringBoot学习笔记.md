@@ -890,7 +890,7 @@ mybatis:
     map-underscore-to-camel-case: true
 ```
 
-开启后，SQL 可以直接写 `select *`：
+开启后，MyBatis 会自动把数据库中下划线风格的字段映射到 Java 实体类对应的驼峰属性：
 
 ```java
 @Select("select * from dept")
@@ -920,7 +920,7 @@ List<Dept> findAll();
 ```
 
 > [!TIP]
-> 全局驼峰映射只能解决「下划线 ↔ 驼峰」这一种情况，**列名与属性名毫无规律时**（如 `u_n` ↔ `userName`）只能靠 `as` 别名或 `@Results` 手动映射。三种方式可以叠加使用，建议把（1）常开，作为兜底。
+> 全局驼峰映射只能解决「下划线 ↔ 驼峰」这一种情况，列名与属性名毫无规律时，只能靠 `as` 别名或 `@Results` 手动映射。三种方式可以叠加使用，建议把（1）常开，作为兜底。
 
 ### 3.3.3 resultType
 
@@ -935,6 +935,7 @@ List<Dept> findAll();
 此时 Mapper 方法的返回值写成 `List<Dept>` 即可，查询返回几行，List 里就有几个 `Dept` 对象。
 
 除了 POJO，`resultType` 还可以放 `java.util.Map` 等类型，例如：
+
 ```xml
 <select id="countEmpJobData" resultType="java.util.Map">
     select
