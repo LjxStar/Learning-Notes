@@ -751,11 +751,11 @@ public class UploadController {
 
 # 三、MyBatis
 
-## 3.1 基础注解
+## 3.1 快速入门
 
-### 3.1.1 四种 CRUD 注解
+### 3.1.1 四大基础注解
 
-MyBatis 支持用注解直接在接口方法上编写 SQL。四种 CRUD 注解与 SQL 类型的对应关系如下：
+MyBatis 支持用注解直接在接口方法上编写 SQL，无需 XML。四种 CRUD 注解与 SQL 类型的对应关系如下：
 
 | 注解        | 对应 SQL   | 标注位置         | 作用与常见用法                     |
 | --------- | -------- | ------------ | --------------------------- |
@@ -765,6 +765,13 @@ MyBatis 支持用注解直接在接口方法上编写 SQL。四种 CRUD 注解�
 | `@Delete` | `delete` | Mapper 接口方法上 | 删除数据。执行删除操作。                |
 
 注解名必须与 SQL 类型严格对应。写 `@Select("delete ...")` 会在运行时报 `BadSqlGrammarException`。
+
+> [!WARNING]
+> 注解中的 `#{…}` 是**预编译占位符**，能防 SQL 注入；而 `${…}` 是**字符串直接拼接**，只允许出现在排序字段（`order by ${orderBy}`）这类无法参数化的位置，拼接用户输入会导致注入风险。
+
+### 3.1.2 mapper接口方法
+
+在 Mapper 接口中定义方法，方法上标注对应的 CRUD 注解并编写 SQL。接口需加 `@Mapper` 注解，Spring 启动时会自动扫描并生成代理实现类。
 
 ```java
 @Mapper
@@ -794,8 +801,44 @@ public interface DeptMapper {
 
 > [!WARNING]
 > `@Update` / `@Delete` 漏写 `where` 条件是**删库级别的事故**，且事务也救不回来（没有异常就不会回滚），所以这两个注解的 SQL 一定要逐条检查。
-> 
-> 注解中的 `#{…}` 是**预编译占位符**，能防 SQL 注入；而 `${…}` 是**字符串直接拼接**，只允许出现在排序字段（`order by ${orderBy}`）这类无法参数化的位置，拼接用户输入会导致注入风险。
+
+### 3.1.3 xml注解
+
+注解适合简单 SQL，复杂 SQL（动态拼接、多表关联）建议写在 XML 映射文件中。XML 文件放在 `resources/mapper` 目录下，`namespace` 对应 Mapper 接口的全限定名，`id` 对应方法名：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.mapper.DeptMapper">
+
+    <select id="findAll" resultType="com.itheima.pojo.Dept">
+        select * from dept
+    </select>
+
+    <select id="getById" resultType="com.itheima.pojo.Dept">
+        select * from dept where id = #{id}
+    </select>
+
+    <insert id="save">
+        insert into dept (name, create_time, update_time)
+        values (#{name}, #{createTime}, #{updateTime})
+    </insert>
+
+    <update id="update">
+        update dept set name = #{name}, update_time = #{updateTime} where id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        delete from dept where id = #{id}
+    </delete>
+
+</mapper>
+```
+
+> [!TIP]
+> **注解和 XML 可以在同一个 Mapper 接口中混用**：方法名与 XML 里的 `id` 对应时，XML 中的 SQL 生效，方法上的注解被忽略。**简单 SQL 用注解，复杂的动态 SQL 写 XML**。
 
 
 ## 3.2 参数传递
