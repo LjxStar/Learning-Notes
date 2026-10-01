@@ -343,7 +343,7 @@ public Result getById(@PathVariable Integer id) {
 
 > [!TIP]
 > 当形参名与路径变量名不一致时，必须写明名称，例如 `@PathVariable("id") Integer deptId`。
-> 路径参数是 URL 的一部分，不适合放敏感信息（密码、密钥），也不要放太多——`/depts/1/2/3` 这样的路径可读性差，用查询参数更合适。
+> 路径参数是 URL 的一部分，不适合放敏感信息，也不要放太多—— `/depts/1/2/3` 这样的路径可读性差，用查询参数更合适。
 
 ## 2.3 JSON 请求体
 
