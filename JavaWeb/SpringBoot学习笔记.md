@@ -1677,9 +1677,9 @@ public class EmpServiceImpl implements EmpService {
 
 ### 6.2.2 回滚规则 rollbackFor
 
-**默认情况下，只有抛出 `RuntimeException`（运行时异常）才会回滚事务**，受检异常（编译期异常）默认不回滚。
+默认情况下，只有抛出**运行时异常**才会回滚事务，**编译时异常**默认不回滚。
 
-如果希望**所有异常都回滚**，需要配置 `@Transactional` 的 `rollbackFor` 属性，指定「出现何种异常类型时回滚事务」。
+如果希望指定特定异常回滚，需要配置 `@Transactional` 的 `rollbackFor` 属性，指定「出现何种异常类型时回滚事务」。
 
 ```java
 @Service
