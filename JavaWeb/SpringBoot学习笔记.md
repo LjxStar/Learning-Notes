@@ -484,9 +484,6 @@ public Result login(Emp emp) {
 </form>
 ```
 
-> [!TIP]
-> 实际开发很少手写 `form`，前端多用 Element Plus 的 `<el-upload :auto-upload="false" :http-request="customUpload">`（详见 [[Web开发之前端]]）。但它底层提交的依然是 `multipart/form-data`，**后端的接收写法完全一样**。
-
 #### （2）MultipartFile 常用方法
 
 `MultipartFile` 是 Spring 封装的上传文件对象，常用方法如下：
