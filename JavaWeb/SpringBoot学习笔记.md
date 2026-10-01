@@ -1458,7 +1458,7 @@ Logback 的配置文件固定叫 `logback.xml`，放在 `src/main/resources` 目
 
 ---
 
-# 五、分页解决方案
+# 五、分页
 
 ## 5.1 分页需求分析
 
@@ -1930,4 +1930,7 @@ public class GlobalExceptionHandler {
 > - 完整的异常信息用 `log.error("服务器异常", e)` 打进日志（第二个参数传 `e`，SLF4J 会自动打印堆栈）。
 
 > [!NOTE]
-> Spring MVC 捕获到异常后，会根据异常类型在 Spring 容器中查找匹配的 `@ExceptionHandler` 处理方法，遵循**精确类型优先匹配原则**；如果没有找到对应异常的处理器，最终会匹配 `Exception.class` 通用异常处理方法。
+> Spring MVC 捕获到异常后，会根据异常类型在 bean 容器中查找匹配的 `@ExceptionHandler` 处理方法，遵循**精确类型优先匹配原则**；如果没有找到对应异常的处理器，最终会匹配 `Exception.class` 通用异常处理方法。
+
+
+# 八、登录
