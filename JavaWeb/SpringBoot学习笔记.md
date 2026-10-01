@@ -504,7 +504,7 @@ public Result login(Emp emp) {
 
 #### （3）上传大小限制
 
-Spring Boot 默认单文件上限只有 **1 MB**，超出会抛 `MaxUploadSizeExceededException`（表现为接口直接返回 400）。需要放宽时在 `application.yml` 中配置：
+Spring Boot 默认单文件上限只有 1 MB，超出会抛 `MaxUploadSizeExceededException`（表现为接口直接返回 400）。需要放宽时在 `application.yml` 中配置：
 
 ```yaml
 spring:
@@ -514,7 +514,7 @@ spring:
       max-request-size: 100MB    # 一次请求携带的所有文件的总大小
 ```
 
-两者的区别：`max-file-size` 管**单个文件**，`max-request-size` 管**整个请求**。一次上传多个文件时，总大小先触顶，先撞上的其实是 `max-request-size`。
+两者的区别：`max-file-size` 管**单个文件**，`max-request-size` 管**整个请求**。一次上传多个文件时，所有文件的总大小不能超过 `max-request-size`。
 
 ### 2.6.2 本地存储
 
@@ -971,10 +971,17 @@ List<Dept> findAll();
 
 ### 3.3.3 resultType
 
-resultType 里面除了放我们定义的 pojo 文件（下面介绍）
+`resultType` 用于指定 `<select>` 语句返回值的类型，MyBatis 会按「列名 ↔ 属性名」自动把每行记录封装成该类型的对象。**最常见的用法是直接写实体类（POJO）的全限定名**：
 
-（此处介绍最常见的用法）
-还可以放 java.util.Map 等集合类，例如：
+```xml
+<select id="findAll" resultType="com.itheima.pojo.Dept">
+    select * from dept
+</select>
+```
+
+此时 Mapper 方法的返回值写成 `List<Dept>` 即可，查询返回几行，List 里就有几个 `Dept` 对象。
+
+除了 POJO，`resultType` 还可以放 `java.util.Map` 等类型，例如：
 ```xml
 <select id="countEmpJobData" resultType="java.util.Map">
     SELECT
@@ -993,13 +1000,14 @@ resultType 里面除了放我们定义的 pojo 文件（下面介绍）
 ```
 此时，我们便可以利用下面的 mapper 接口来接收
 
-```Java
+```java
 @MapKey("pos")
 List<Map<String,Object>> countEmpJobData();
 ```
 
-> 如果查询的记录往 Map 中封装，可以通过@MapKey 注解指定返回的 map 中的唯一标识是哪一个字段
-### 3.3.4 resultMap 映射
+> 如果查询的记录往 Map 中封装，可以通过 `@MapKey` 注解指定返回的 Map 中的唯一标识是哪一个字段
+
+### 3.3.4 resultMap
 
 `resultMap` 的设计思想是：简单语句零配置，复杂语句只描述关系。单表查询用 `resultType` 就够了，MyBatis 会自动按属性名映射；而关联查询的「一对多」结构，必须用 `resultMap` 显式声明。
 
@@ -1714,7 +1722,7 @@ public class EmpServiceImpl implements EmpService {
 ```
 
 > [!WARNING]
-> `@Transactional` 常见失效场景：① 方法不是 `public`；② 类未交给 Spring 管理（没加 `@Service` 等注解）；③ 异常被方法内部 `try-catch` 吞掉；④ 抛的是 `Error` 而非 `Exception`；⑤ 在同类内部方法间自调用，绕过代理对象。
+> `@Transactional` 常见失效场景：① 方法不是 `public`；② 类未交给 Spring 管理（没加 `@Service` 等注解）；③ 异常被方法内部 `try-catch` 吞掉；④ 数据库引擎不支持事务（如 MyISAM）；⑤ 在同类内部方法间自调用，绕过代理对象。
 >
 > ⑤ 最隐蔽：如果 `save()` 内部调用了本类的另一个带 `@Transactional` 的方法，调用走的是 `this` 而不是 Spring 代理对象，事务**根本不会开启**。需要自调用生效时，可以注入自己（`@Lazy`）或从容器里 `AopContext.currentProxy()` 取代理。
 
@@ -1906,8 +1914,4 @@ public class GlobalExceptionHandler {
 
 > [!NOTE]
 > Spring MVC 捕获到异常后，会根据异常类型在 Spring 容器中查找匹配的 `@ExceptionHandler` 处理方法，遵循**精确类型优先匹配原则**；如果没有找到对应异常的处理器，最终会匹配 `Exception.class` 通用异常处理方法。
-> 同一个异常类型不要写两个处理方法，否则 Spring 会在启动时报 `Ambiguous @ExceptionHandler method mapped for ...` 并启动失败。
-
-
-
-
+> 同一个异常类型不要写两个处理方法，否则 Spring 会在启动时报 `Ambiguous @ExceptionHandler method mapped for ...` 并启动失败�
