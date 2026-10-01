@@ -735,42 +735,17 @@ public class UploadController {
 | ---------------------------------------- | --------------------------------------------------------------- |
 | `ENDPOINT`                               | 阿里云 OSS 中 Bucket 对应的域名，如 `https://oss-cn-hangzhou.aliyuncs.com` |
 | `REGION`                                 | Bucket 所属区域，如 `cn-hangzhou`，需与 Bucket 实际所在区域一致                  |
-| `BUCKET_NAME`                            | Bucket 名称（控制台上的名字，不是域名）                                         |
-| `objectKey`                              | 文件在 Bucket 中的**对象路径**（含文件名），即上面拼的 `yyyy/MM/UUID.后缀`             |
+| `BUCKET_NAME`                            | Bucket 名称                                                       |
+| `objectKey`                              | 文件在 Bucket 中的对象路径（含文件名），即拼接的对象路径：yyyy/MM/UUID.后缀                |
 | `EnvironmentVariableCredentialsProvider` | 凭证提供者，从环境变量里读取 AccessKey，避免密钥写进代码                               |
 
 > [!TIP]
 > 三个概念分清楚，上传代码就写对了：
 > - **Bucket**：存储空间，相当于一个顶层文件夹；
 > - **Object**：Bucket 里的一个文件，`objectKey` 就是它的完整「路径 + 文件名」；
-> - **Endpoint + Region**：访问域名和所在区域，**换区域就必须同步改这两处**，否则会报 403 / `AccessDenied`。
+> - **Endpoint + Region**：访问域名和所在区域，换区域就必须同步改这两处。
 >
 > 另外别忘了：`<img src="...">` 能直接显示，靠的是 Bucket 的**公共读**权限；返回给前端的 URL 要存进数据库字段（如 `emp.image`），下次查询直接返回。
-
----
-
-## 2.7 常用参数注解补充
-
-| 注解                                        | 作用                                       |
-| ----------------------------------------- | ---------------------------------------- |
-| `@RequestParam(defaultValue = "1")`       | 设置请求参数的默认值，请求参数缺失时生效                     |
-| `@RequestParam(required = false)`         | 参数非必填，`null` 也能通过校验                      |
-| `@RequestBody`                            | 接收 JSON 请求体                              |
-| `@PathVariable`                           | 接收 URL 路径变量                              |
-| `@RequestHeader`                          | 接收请求头                                    |
-| `@CookieValue`                            | 接收 Cookie                                |
-| `@DateTimeFormat(pattern = "yyyy-MM-dd")` | Spring MVC 接收前端提交的字符串日期，自动转为 `LocalDate` |
-
-`@RequestParam(defaultValue = "1")` 的典型用法——前端不传页码时兜底：
-
-```java
-@GetMapping
-public Result page(@RequestParam(defaultValue = "1") Integer page,
-                   @RequestParam(defaultValue = "10") Integer pageSize) {
-    // page 缺省为 1，pageSize 缺省为 10
-    return Result.success();
-}
-```
 
 ---
 
@@ -780,7 +755,7 @@ public Result page(@RequestParam(defaultValue = "1") Integer page,
 
 ### 3.1.1 四种 CRUD 注解
 
-MyBatis 支持用注解直接在接口方法上编写 SQL，无需 XML。四种 CRUD 注解与 SQL 类型的对应关系如下：
+MyBatis 支持用注解直接在接口方法上编写 SQL。四种 CRUD 注解与 SQL 类型的对应关系如下：
 
 | 注解        | 对应 SQL   | 标注位置         | 作用与常见用法                     |
 | --------- | -------- | ------------ | --------------------------- |
@@ -788,6 +763,8 @@ MyBatis 支持用注解直接在接口方法上编写 SQL，无需 XML。四种 
 | `@Insert` | `insert` | Mapper 接口方法上 | 新增数据。可搭配 @Options 实现自增主键回填。 |
 | `@Update` | `update` | Mapper 接口方法上 | 修改数据。执行更新操作。                |
 | `@Delete` | `delete` | Mapper 接口方法上 | 删除数据。执行删除操作。                |
+
+注解名必须与 SQL 类型严格对应。写 `@Select("delete ...")` 会在运行时报 `BadSqlGrammarException`。
 
 ```java
 @Mapper
@@ -816,35 +793,10 @@ public interface DeptMapper {
 ```
 
 > [!WARNING]
-> 注解名必须与 SQL 类型严格对应。写 `@Select("delete ...")` 会在运行时报 `BadSqlGrammarException`。
->
-> 另：`@Update` / `@Delete` 漏写 `where` 条件是**删库级别的事故**，且事务也救不回来（没有异常就不会回滚），所以这两个注解的 SQL 一定要逐条检查。
-
-**注解里也能写动态 SQL**：注解中的 SQL 本质是一个字符串，解析器默认当纯文本处理。把 SQL 包在 `<script>…</script>` 里，MyBatis 就会按 XML 的规则解析，`<if>`、`<foreach>` 都能用：
-
-```java
-@Select("""
-    <script>
-        select * from emp
-        <where>
-            <if test="name != null and name != ''">
-                and name like concat('%', #{name}, '%')
-            </if>
-            <if test="gender != null">
-                and gender = #{gender}
-            </if>
-        </where>
-        order by id desc
-    </script>
-    """)
-List<Emp> list(String name, Integer gender);
-```
-
-> [!TIP]
-> **注解和 XML 可以在同一个 Mapper 接口中混用**：方法名与 XML 里的 `id` 对应时，XML 中的 SQL 生效，方法上的注解被忽略。**简单 SQL 用注解，复杂的动态 SQL 写 XML**。
-
-> [!WARNING]
+> `@Update` / `@Delete` 漏写 `where` 条件是**删库级别的事故**，且事务也救不回来（没有异常就不会回滚），所以这两个注解的 SQL 一定要逐条检查。
+> 
 > 注解中的 `#{…}` 是**预编译占位符**，能防 SQL 注入；而 `${…}` 是**字符串直接拼接**，只允许出现在排序字段（`order by ${orderBy}`）这类无法参数化的位置，拼接用户输入会导致注入风险。
+
 
 ## 3.2 参数传递
 
