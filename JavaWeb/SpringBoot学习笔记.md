@@ -999,11 +999,9 @@ List<Dept> findAll();
 此时，我们便可以利用下面的 mapper 接口来接收
 
 ```java
-@MapKey("pos")
 List<Map<String,Object>> countEmpJobData();
 ```
 
-> 如果查询的记录往 Map 中封装，可以通过 `@MapKey` 注解指定返回的 Map 中的唯一标识是哪一个字段
 
 ### 3.3.4 resultMap
 
