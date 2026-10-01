@@ -346,6 +346,7 @@ public Result getById(@PathVariable Integer id) {
 > 路径参数是 URL 的一部分，因此不适合用于传递敏感信息，也不宜放入过多参数。  
 > 例如 `/depts/1/2/3` 这种路径层级过多，可读性较差。对于需要传递多个条件或参数的场景，使用查询参数会更加合适。
 
+与简单参数相同，前端一次传多个同名的参数时，例如 `DELETE /depts?ids=1&ids=2&ids=3` 或者 `DELETE /depts?ids=1,2,3`，可以用**数组**或**集合**接收。
 ## 2.3 JSON 请求体
 
 ### 2.3.1 @RequestBody 接收 JSON
