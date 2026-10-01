@@ -1677,24 +1677,40 @@ public class EmpServiceImpl implements EmpService {
 
 ### 6.2.2 回滚规则 rollbackFor
 
-默认情况下，只有抛出**运行时异常**才会回滚事务，**编译时异常**默认不回滚。
+默认情况下，`@Transactional` 事务仅在抛出**运行时异常**时触发回滚；对于**编译时异常**（受检异常），默认不会执行事务回滚。
 
-如果希望指定特定异常回滚，需要配置 `@Transactional` 的 `rollbackFor` 属性，指定「出现何种异常类型时回滚事务」。
+如果需要自定义回滚规则，让指定异常也触发事务回滚，可以配置 `@Transactional` 的 `rollbackFor` 属性，声明哪些异常类型发生时需要执行事务回滚。
 
 ```java
-@Service
-public class EmpServiceImpl implements EmpService {
-
-    // 无论抛出何种异常都回滚
-    @Transactional(rollbackFor = Exception.class)
-    public void save(Emp emp) {
-        empMapper.save(emp);
-    }
+@Slf4j  
+@RestControllerAdvice  
+public class GlobalExceptionHandler {  
+  
+    @ExceptionHandler    
+    public Result handleException(Exception e) {  
+        log.error("程序出错啦~", e);  
+        return Result.error("出错啦, 请联系管理员~");  
+    }  
+  
+    @ExceptionHandler  
+    public Result handleDuplicateKeyException(DuplicateKeyException e) {  
+        log.error("程序出错啦~", e);  
+        String message = e.getMessage();  
+        int i = message.indexOf("Duplicate entry");  
+        String errMsg = message.substring(i);  
+        String[] arr = errMsg.split(" ");  
+        return Result.error(arr[2] + " 已存在");  
+    }  
+  
+  	// BusinessException 为自定义异常 extends RuntimeException
+    @ExceptionHandler  
+    public Result handleBusinessException(BusinessException e) {  
+        log.error("程序出错啦~", e);  
+        return Result.error(e.getMessage());  
+    }  
+}
 }
 ```
-
-> [!TIP]
-> `RuntimeException` 包含 `NullPointerException`、`IllegalArgumentException` 等；受检异常指 `IOException`、`SQLException` 这类编译期就能发现的异常。日常开发**建议统一写 `rollbackFor = Exception.class`**，免得抛了个受检异常结果数据只写了一半。
 
 ### 6.2.3 传播行为 propagation
 
@@ -1749,7 +1765,7 @@ public class LogServiceImpl implements LogService {
 ```
 
 > [!NOTE]
-> 上例的含义：订单保存失败要回滚，但**「订单已提交」这条操作日志必须留下来**，否则排查问题时连「用户点了提交」都看不到。两个事务各管各的，语义才清晰。
+> 订单保存失败要回滚，但**「订单已提交」这条操作日志必须留下来**，否则排查问题时连「用户点了提交」都看不到。
 >
 > 注意 `REQUIRES_NEW` 会**挂起**外层事务并新开一个连接，所以大量使用会额外占用数据库连接，高并发场景要评估连接池大小。
 
