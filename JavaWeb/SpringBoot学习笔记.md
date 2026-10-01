@@ -595,7 +595,7 @@ public class UploadController {
 </dependency>
 ```
 
-**创建 AccessKey** → **配置 AccessKey**：在 [RAM 控制台](https://ram.console.aliyun.com/users/create) 创建「使用永久 AccessKey 访问」的 RAM 用户，保存 AccessKey，然后为该用户授予 `AliyunOSSFullAccess` 权限。
+**创建 AccessKey** → **配置 AccessKey**：在**RAM 控制台**创建「使用永久 AccessKey 访问」的 RAM 用户，保存 AccessKey，然后为该用户授予 `AliyunOSSFullAccess` 权限。
 
 将 RAM 用户的 AccessKey 写入环境变量作为凭证：
 
