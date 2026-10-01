@@ -1679,7 +1679,7 @@ public class EmpServiceImpl implements EmpService {
 
 默认情况下，`@Transactional` 事务仅在抛出**运行时异常**时触发回滚；对于**编译时异常**（受检异常），默认不会执行事务回滚。
 
-如果需要自定义回滚规则，让指定异常也触发事务回滚，可以配置 `@Transactional` 的 `rollbackFor` 属性，声明哪些异常类型发生时需要执行事务回滚。
+
 
 
 
@@ -1816,30 +1816,31 @@ public class GlobalExceptionHandler {
 实际开发中，不同异常给用户的提示应该不同：参数填错要提示他改，资源不存在要提示查不到，数据库报错只能吞掉。这类「有业务含义」的异常，建议自己定义：
 
 ```java
-package com.ljxstar.exception;
-
-import com.ljxstar.pojo.Result;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-/**
- * 全局异常处理类
- */
-@Slf4j
-@RestControllerAdvice
-public class GlobalExceptionHandler {
-
-    @ExceptionHandler
-    public Result handleDuplicateKeyException(DuplicateKeyException e) {
-        log.error("程序出错啦~", e);
-        String message = e.getMessage();
-        int i = message.indexOf("Duplicate entry");
-        String errMsg = message.substring(i);
-        String[] arr = errMsg.split(" ");
-        return Result.error(arr[2] + " 已存在");
-    }
+@Slf4j  
+@RestControllerAdvice  
+public class GlobalExceptionHandler {  
+  
+    @ExceptionHandler    
+    public Result handleException(Exception e) {  
+        log.error("程序出错啦~", e);  
+        return Result.error("出错啦, 请联系管理员~");  
+    }  
+  
+    @ExceptionHandler  
+    public Result handleDuplicateKeyException(DuplicateKeyException e) {  
+        log.error("程序出错啦~", e);  
+        String message = e.getMessage();  
+        int i = message.indexOf("Duplicate entry");  
+        String errMsg = message.substring(i);  
+        String[] arr = errMsg.split(" ");  
+        return Result.error(arr[2] + " 已存在");  
+    }  
+  
+    @ExceptionHandler  
+    public Result handleBusinessException(BusinessException e) {  
+        log.error("程序出错啦~", e);  
+        return Result.error(e.getMessage());  
+    }  
 }
 ```
 
@@ -1850,4 +1851,3 @@ public class GlobalExceptionHandler {
 
 > [!NOTE]
 > Spring MVC 捕获到异常后，会根据异常类型在 Spring 容器中查找匹配的 `@ExceptionHandler` 处理方法，遵循**精确类型优先匹配原则**；如果没有找到对应异常的处理器，最终会匹配 `Exception.class` 通用异常处理方法。
-> 同一个异常类型不要写两个处理方法，否则 Spring 会在启动时报 `Ambiguous @ExceptionHandler method mapped for ...` 并启动失败�
