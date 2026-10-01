@@ -1028,11 +1028,11 @@ List<Map<String,Object>> countEmpJobData();
 ```
 
 > [!NOTE]
-> 关联查询时两张表都有 `id` 列，直接 `select e.*, ee.*` 会让两个 `id` 撞车。所以给 `emp_expr` 的列统一加 `ee_` 前缀起别名，再在 `<collection>` 里用 `ee_id`、`ee_company` 等别名一一对应，MyBatis 才能把工作经历正确「塞进」`exprList`。
+> 关联查询时两张表都有 `id` 列，直接 `select e.*, ee.*` 会让两个 `id` 撞车。所以给 `emp_expr` 的列统一加 `ee_` 前缀起别名，再在 `<collection>` 里用 `ee_id`、`ee_company` 等别名一一对应，MyBatis 才能把工作经历正确存入  `exprList`。
 
 ## 3.4 动态 SQL
 
-**动态 SQL**，就是随用户输入或外部条件变化而变化的 SQL 语句。项目中也用 XML 映射文件编写，常用标签见下表。
+**动态 SQL**，就是随用户输入或外部条件变化而变化的 SQL 语句。项目中一般用 XML 映射文件编写，常用标签见下表。
 
 | 标签                                    | 作用                                    |
 | ------------------------------------- | ------------------------------------- |
