@@ -523,21 +523,10 @@ spring:
 
 > [!WARNING]
 > 落盘前一定要用 UUID 之类的随机名重命名，**不要直接拿原始文件名存盘**：
-> - 同名文件会互相覆盖，先传的被后传顶掉；
-> - 扩展名必须保留（用 `substring(lastIndexOf("."))` 截取），否则浏览器无法识别文件类型。
+> 1. 同名文件会互相覆盖，先传的被后传顶掉；
+> 2. 扩展名必须保留（用 `substring(lastIndexOf("."))` 截取），否则浏览器无法识别文件类型。
 
 ```java
-package com.itheima.controller;
-
-import com.itheima.pojo.Result;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
-import java.util.UUID;
-
 @Slf4j
 @RestController
 public class UploadController {
