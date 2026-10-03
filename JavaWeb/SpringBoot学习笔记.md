@@ -2047,11 +2047,11 @@ Session 把数据放在服务端，相对安全。但是集群环境下无法直
 
 ### 8.2.2 JWT 的组成
 
-JWT 由三部分组成，用 `.` 分隔，从左到右依次是 Header、Payload、Signature。
+JSON Web 令牌由三个部分组成，用 `.` 分隔，从左到右依次是 Header、Payload、Signature。
 
 #### （1）Header 头部
 
-固定结构，声明令牌使用的**签名算法**和**令牌类型**（JWT）：
+头部通常由两部分组成：令牌类型（JWT）和所使用的签名算法，如 HMAC SHA 256 或 RSA。
 
 ```json
 {
