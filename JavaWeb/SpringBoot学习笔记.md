@@ -1668,7 +1668,7 @@ begin;
 insert into emp (id, name, username, gender, phone, job, salary, entry_date)
 values (39, 'Tom', '123456', 1, '13300001111', 1, 4000, '2023-11-01');
 
--- 3. 保存该员工的工作经历信息（两条）
+-- 3. 保存该员工的工作经历信息
 insert into emp_expr (emp_id, `begin`, `end`, company, job)
 values (39, '2019-01-01', '2020-01-01', '百度', '开发'),
        (39, '2020-01-10', '2022-02-01', '阿里', '架构');
