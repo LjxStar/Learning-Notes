@@ -1937,23 +1937,28 @@ Spring MVC 捕获到异常后，会根据异常类型在 bean 容器中查找匹
 
 # 八、登录
 
-登录功能有一个绕不开的前提——**HTTP 是无状态协议**，即每一次请求都是独立的，下一次请求并不会携带上一次请求的数据。而浏览器与服务器之间进行交互，基于 HTTP 协议也就意味着现在我们通过浏览器来访问了登陆这个接口，实现了登陆的操作，接下来我们在执行其他业务操作时，服务器也并不知道用户到底登陆了没有。
+登录功能有一个绕不开的前提——**HTTP 是无状态协议**，即每一次请求都是独立的，下一次请求并不会携带上一次请求的数据。浏览器与服务器之间的交互基于 HTTP 协议，这意味着用户登录成功后，后续的业务请求，服务器并不知道用户是否已经登录。
 
-本章分三步走：先弄清楚登录状态该怎么存、怎么带回来（会话跟踪），再落地本项目采用的令牌方案（JWT），最后用过滤器与拦截器把「校验登录状态」做成统一的横切能力。
+本章将分三步讲解登录与会话状态的实现：首先了解会话跟踪技术的原理，再介绍本项目采用的 JWT 令牌方案，最后通过过滤器与拦截器统一实现登录校验逻辑。
 
 ## 8.1 会话跟踪技术
 
 ### 8.1.1 会话跟踪的作用
 
-**会话**指的就是浏览器与服务器之间的一次连接，我们就称为一次会话。在用户打开浏览器第一次访问服务器的时候，这个会话就建立了，直到有任何一方断开连接，此时会话就结束了。在一次会话当中，是可以包含多次请求和响应的。
+**会话**指浏览器与服务器之间的一次连接，从浏览器首次访问服务器开始建立，直到任意一方断开连接时结束。在一次会话中，浏览器可能会向服务器发起多次请求和响应。
 
-**会话跟踪**是一种维护浏览器状态的方法，服务器需要**识别多次请求是否来自于同一浏览器**，以便在同一次会话的多次请求间共享数据。
+**会话跟踪**是一种维护浏览器状态的方法，其目的是让服务器能够**识别多次请求是否来自同一浏览器**，从而在同一会话的多次请求之间共享数据。
 
-> 会话跟踪有三条主流路线：**Cookie、Session、令牌**，它们的差别只在于「数据存哪里」这一件事。
+> [!TIP]
+> 会话跟踪的常见实现方式有三种：**Cookie、Session、JWT 令牌**。它们的核心区别在于「登录状态数据存放在哪一方」（浏览器端还是服务器端）。
 
 ### 8.1.2 Cookie
 
-**Cookie** 是存放在**浏览器**中的一段键值对。服务端通过 `Set‑Cookie` 响应头把 Cookie 返回给浏览器，浏览器收到后自动将 Cookie 保存至本地；后续发起请求时，浏览器会自动在请求头中携带该 `Cookie` 发送到服务端。
+**Cookie** 是存储在**浏览器端**的一段键值对数据。其工作原理如下：
+
+1. 服务端在响应头中通过 `Set-Cookie` 字段，向浏览器返回需要保存的 Cookie 数据。
+2. 浏览器接收到响应后，会自动将 Cookie 保存到本地。
+3. 浏览器在后续向同一域名发起请求时，会自动在请求头中携带该 Cookie，发送给服务端。
 
 ```java
 @Slf4j  
@@ -1983,13 +1988,18 @@ public class ConversationController {
 }
 ```
 
-Cookie 为 HTTP 协议原生支持，Set‑Cookie 响应头解析、Cookie 请求头携带均由浏览器自动完成，开发无需手动处理存储与传递逻辑。但是不适用于移动端 APP；用户可手动禁用 Cookie 导致功能失效；数据存放在客户端易泄露篡改；存在跨域限制，无法直接跨域名访问 Cookie。
+**优缺点**
+
+- **优点**：HTTP 协议原生支持，浏览器自动完成存储与携带，开发成本低。
+- **缺点**：
+  - 不适用于移动端原生 APP；
+  - 用户可以手动禁用 Cookie，导致会话跟踪失效；
+  - 数据存放在客户端，存在泄露和篡改风险；
+  - 跨域访问时存在限制，默认无法跨域名共享 Cookie。
 
 ### 8.1.3 Session
 
-Session 是服务器端会话跟踪技术，所以它是存储在**服务器端**的。而 Session 的底层其实就是基于我们刚才所介绍的 Cookie 来实现的。
-
-浏览器首次请求服务端获取 Session 时，服务端不存在该会话则自动创建 Session 对象并生成唯一 SessionID；服务端通过 `Set‑Cookie` 响应头向浏览器下发名称为 `JSESSIONID` 的 Cookie，浏览器自动保存该 Cookie；后续请求浏览器自动携带 `JSESSIONID`，服务端根据该 ID 查找对应的 Session 对象，从而实现同一会话下多次请求的数据共享。
+**Session** 是存储在**服务器端**的会话数据。它的底层实现依赖于 Cookie：服务端会为每个会话生成一个唯一的 `SessionID`，并通过 `Set-Cookie` 响应头将 `JSESSIONID` 下发给浏览器。浏览器后续请求时会自动携带该 Cookie，服务端根据 `JSESSIONID` 查找对应的 `HttpSession` 对象，从而实现同一会话的数据共享。
 
 ```java
 @Slf4j
@@ -2023,17 +2033,25 @@ public class ConversationController {
 }
 ```
 
-Session 把数据放在服务端，相对安全。但是集群环境下无法直接使用，且依赖 Cookie，会受 Cookie 禁用、移动端不支持 Cookie、不能跨域这些问题影响。，
+**优缺点**
+
+- **优点**：数据存放在服务器端，相对安全；实现简单，适合单体应用。
+- **缺点**：
+  - 集群环境下，若不做 Session 共享（如 Redis），不同服务器间无法共享会话数据，导致负载均衡失效；
+  - 仍然依赖 Cookie，受限于 Cookie 的禁用、跨域等问题；
+  - 移动端 APP 对 Cookie 的支持不够友好。
 
 ### 8.1.4 令牌
 
-用户登录成功后，服务端生成代表用户身份的令牌并返回前端。前端收到令牌后保存到 Cookie 或者 localStorage 中，后续每次请求都把令牌带给服务端。服务端校验令牌有效性判断用户登录状态，此时，如果是在同一次会话的多次请求之间，我们想共享数据，我们就可以将共享的数据存储在令牌当中就可以了。
+**JWT（JSON Web Token）** 是一种基于 JSON 格式的自包含令牌。用户登录成功后，服务端生成 JWT 令牌并返回给前端。前端将令牌保存（如 `localStorage`、`sessionStorage` 或 Cookie），并在后续请求的请求头中携带该令牌。服务端通过校验令牌的签名和有效期来判断用户登录状态。
+
+相比 Cookie 和 Session，JWT 更适合现代 Web 应用（尤其是前后端分离、分布式集群场景）。
 
 ## 8.2 JWT 令牌
 
-### 8.2.1 JWT 简介
+**JWT**（JSON Web Token）是令牌的一种具体格式，用于在通信双方以 json 数据格式安全的传输信息。由于数字签名的存在，这些信息是可靠的。
 
-**JWT**（JSON Web Token）是令牌的一种具体格式，用于在通信双方以 json 数据格式安全的传输信息。由于数字签名的存在，这些信息是可靠的。它的四个特点，正好对应登录功能的需求：
+### 8.2.1 JWT 与特点
 
 | 特点      | 说明             | 对登录的意义                   |
 | ------- | -------------- | ------------------------ |
@@ -2044,7 +2062,7 @@ Session 把数据放在服务端，相对安全。但是集群环境下无法直
 
 ### 8.2.2 JWT 的组成
 
-JSON Web 令牌由三个部分组成，用 `.` 分隔，从左到右依次是 Header、Payload、Signature。
+JWT 由三部分组成，使用 `.` 进行分隔，格式为：`Header.Payload.Signature`
 
 #### （1）Header 头部
 
@@ -2057,11 +2075,19 @@ JSON Web 令牌由三个部分组成，用 `.` 分隔，从左到右依次是 He
 }
 ```
 
-然后，这个 JSON 被编码为 **Base 64 Url**，构成 JWT 的第一部分。
+该 JSON 经 **Base 64 URL** 编码后，构成 JWT 的第一部分。
 
 #### （2）Payload 有效载荷
 
-有效载荷部分存放用户信息，是三段中唯一有业务含义的部分。除了 `iat`（签发时间）、`exp`（过期时间）这些标准字段，还可以自定义任意字段：
+Payload 用于存放自定义的业务数据以及标准声明字段。常用的标准字段有：
+
+| 字段 | 全称 | 含义 |
+| --- | --- | --- |
+| `exp` | expiration | 过期时间，超过后校验必然失败，令牌作废 |
+| `iat` | issued at | 签发时间 |
+| `iss` | issuer | 签发者，用于确认令牌是谁发的 |
+| `sub` | subject | 主题，一般放用户 ID |
+本项目中，Payload 自定义字段如下：
 
 ```json
 {
@@ -2072,14 +2098,7 @@ JSON Web 令牌由三个部分组成，用 `.` 分隔，从左到右依次是 He
 }
 ```
 
-有效载荷随后通过 **Base 64 Url** 编码，形成 JSON Web 令牌的第二部分。常见标准字段：
-
-| 字段 | 全称 | 含义 |
-| --- | --- | --- |
-| `exp` | expiration | 过期时间，超过后校验必然失败，令牌作废 |
-| `iat` | issued at | 签发时间 |
-| `iss` | issuer | 签发者，用于确认令牌是谁发的 |
-| `sub` | subject | 主题，一般放用户 ID |
+有效载荷随后通过 **Base 64 Url** 编码，形成 JSON Web 令牌的第二部分。
 
 > [!TIP]
 > 本项目的有效载荷里放 `id` 和 `username` 两个字段：服务端校验时靠 `id` 判断当前是哪个用户；前端拿到令牌后也可以自行解析出 `username` 来显示用户名。**载荷字段名一旦定下来就不能改**，旧令牌还在用户浏览器里存着，改名会让所有已签发的令牌集体失效。
@@ -2087,10 +2106,13 @@ JSON Web 令牌由三个部分组成，用 `.` 分隔，从左到右依次是 He
 
 #### （3）Signature 签名
 
-签名用于安全地验证令牌。签名的计算方式是先将标头与有效载荷分别使用 Base 64 Url，再通过点将二者连接成字符串。随后将该字符串输入标头中指定的密码学算法中。
+签名用于验证令牌的完整性，防止内容被篡改。签名的计算方式是先将标头与有效载荷分别使用 Base 64 Url，再通过点将二者连接成字符串。随后将该字符串输入标头中指定的密码学算法中。
 
 ```
-签名 = HMACSHA256(Base64URL(Header) + "." + Base64URL(Payload), SECRET_KEY)
+Signature = HMACSHA256(
+  Base64URL(Header) + "." + Base64URL(Payload),
+  SECRET_KEY
+)
 ```
 
 签名通过 **Base 64 Url** 编码，形成 JSON Web 令牌的第三部分。三个 Base 64-URL 字符串，中间用点分隔，构成 JWT。
@@ -2186,13 +2208,14 @@ public class JwtUtils {
 }
 ```
 
-> `SECRET_KEY` 密钥不允许硬编码在源码中，上述演示代码为了方便调试直接写死密钥；实际项目中密钥存放在配置文件、系统环境变量。
+> [!WARNING]
+> 实际生产环境中，**切勿将密钥硬编码在代码里**。应将其存放在配置文件（如 `application.yml`）、环境变量或密钥管理平台中，并通过配置注入使用。
 
 #### （3）登录接口的完整实现
 
-有了工具类，登录接口要做的事就三件：**校验用户名密码 → 生成令牌 → 连同用户信息一起返回**。
+登录接口整体流程分为三步：校验用户名密码、生成 JWT 令牌、返回登录信息。
 
-以用户登录为例，Controller 层仍是普通表单提交，不需要做任何修改：
+**Controller 层：**
 
 ```java
 @Slf4j
@@ -2214,7 +2237,7 @@ public class LoginController {
 }
 ```
 
-Service 层根据用户名和密码校验用户是否存在，如果存在则把用户信息写进 JWT 有效载荷，然后 JwtUtils 会自动生成 JWT token，发送回浏览器端。
+**Service 层** 根据用户名和密码校验用户是否存在，如果存在则把用户信息写进 JWT 有效载荷，然后 JwtUtils 会自动生成 JWT token，发送回浏览器端。
 
 ```java
 @Override
@@ -2233,18 +2256,20 @@ public LoginInfo login(Emp emp) {
 }
 ```
 
-#### （4）前端如何携带令牌
+#### （4）前端携带令牌
 
-登录之后前端要做两件事：把令牌**存起来**，并在每次请求前**自动塞进请求头**。以 axios 为例：
+录成功后，前端需将令牌存储起来，并在每次请求时自动携带到请求头中。以 Axios 为例：
 
 ```js
-// 1. 登录成功后，把令牌存进 localStorage
+// 1. 登录成功后，将令牌存入 localStorage
 localStorage.setItem('token', res.data.data.token);
 
-// 2. 在 axios 请求拦截器中统一携带
+// 2. 在 Axios 请求拦截器中统一添加 token 请求头
 axios.interceptors.request.use(config => {
   const token = localStorage.getItem('token');
-  if (token) config.headers.token = token;
+  if (token) {
+    config.headers.token = token; // 自定义请求头名，可根据后端约定调整
+  }
   return config;
 });
 ```
@@ -2253,14 +2278,15 @@ axios.interceptors.request.use(config => {
 
 ```http
 GET /emps?page=1&pageSize=10 HTTP/1.1
-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsImlhdCI6MTc1ODg2NDAwMCwiZXhwIjoxNzU4OTUwNDAwfQ.A4pD4NQnxSu4N5dqkwTI1ssMyJ7u1CjHBQm_q1KWjgo
+Host: localhost:8080
+token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 服务端不再直接判断当前请求是否来自已登录用户，核心逻辑转变为：**校验传入的令牌是否为本服务签发、以及令牌是否已经过期**。接下来需要解决的问题是“由谁来统一完成这套令牌校验逻辑？”如果在每一个 Controller 接口方法中都重复编写校验代码，会造成大量代码冗余，维护成本也会显著上升。
 
 ## 8.3 过滤器 Filter
 
-令牌要靠后端统一校验，Spring 提供了两种横切机制：**过滤器 Filter** 与**拦截器 Interceptor**。两者都能在请求到达业务代码之前执行校验，
+为了避免在每个 Controller 方法中都重复编写令牌校验代码，需使用**过滤器（Filter）**或**拦截器（Interceptor）**对请求进行统一校验。
 
 **Filter** 是 Servlet 规范定义的**三大组件之一**（Servlet、Filter、Listener），属于 Servlet 层，Tomcat 原生支持：只要配置了过滤器，访问 web 服务器上的任何资源都必须先经过它，处理完才会到达目标资源。
 
@@ -2269,50 +2295,42 @@ token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIs
 
 ### 8.3.1 快速入门
 
-在 `filter` 包下创建 `Filter` 的实现类，并重写它的三个方法：
+创建 Filter 实现类，并使用 `@WebFilter` 声明过滤器及其拦截路径。由于 Spring Boot 默认不扫描 Servlet 组件，需在启动类上添加 `@ServletComponentScan` 注解开启支持。
+
+**过滤器类：**
 
 ```java
 @Slf4j
-@WebFilter(urlPatterns = "/*")   // 配置过滤器要拦截的请求路径
+@WebFilter(urlPatterns = "/*") // 拦截所有请求
 public class DemoFilter implements Filter {
 
-    //初始化方法, web服务器启动, 创建Filter实例时调用, 只调用一次
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        log.info("init ...");
+        log.info("DemoFilter 初始化...");
     }
 
-    //拦截到请求时,调用该方法,可以调用多次
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain)
             throws IOException, ServletException {
-        log.info("拦截到了请求...");
-        //放行
+        log.info("拦截到请求，放行前执行...");
+        // 放行请求
         chain.doFilter(servletRequest, servletResponse);
+        log.info("请求已处理，放行后执行...");
     }
 
-    //销毁方法, web服务器关闭时调用, 只调用一次
     @Override
     public void destroy() {
-        log.info("destroy ...");
+        log.info("DemoFilter 销毁...");
     }
 }
 ```
 
-| 方法 | 调用时机 | 调用次数 | 说明 |
-| --- | --- | --- | --- |
-| `init()` | 服务器启动、创建 Filter 实例时 | 1 次 | 适合做初始化，如读取配置、预热缓存 |
-| `doFilter()` | 每次拦截到请求 | 多次 | **唯一能拦截逻辑的地方**，代码写在这里 |
-| `destroy()` | 服务器关闭时 | 1 次 | 做资源释放 |
-
-`@WebFilter` 用来声明这是一个过滤器，并通过 `urlPatterns` 指定它要拦截哪些路径。Spring Boot 默认并不扫描 Servlet 组件，必须在**启动类**上再加一个 `@ServletComponentScan` 开启支持：
+**启动类：**
 
 ```java
-// 开启 SpringBoot 项目对 Servlet 组件（Filter / Servlet / Listener）的支持
-@ServletComponentScan 
+@ServletComponentScan // 开启对 Servlet 组件的扫描
 @SpringBootApplication
 public class TliasSystemBackEndApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(TliasSystemBackEndApplication.class, args);
     }
@@ -2322,34 +2340,43 @@ public class TliasSystemBackEndApplication {
 > [!WARNING]
 > **没有 `@ServletComponentScan`，`@WebFilter` 就只是一个普通注解，过滤器完全不会生效**，而且启动时没有任何报错。
 
-### 8.3.2 放行 FilterChain
+### 8.3.2 Filter 核心要点
 
-过滤器最核心的概念是**放行**。`doFilter()` 的第三个参数 `chain` 就是 `FilterChain`（过滤器链），只有调用它的 `chain.doFilter()` 才表示「放行」，请求才能继续访问后面的资源。于是 `doFilter()` 里的代码天然分成两段：
+#### （1）Filter 方法说明
+
+| 方法           | 调用时机                | 调用次数 | 说明             |
+| ------------ | ------------------- | ---- | -------------- |
+| `init()`     | 服务器启动时，创建 Filter 实例 | 1 次  | 用于初始化资源（如配置参数） |
+| `doFilter()` | 每次请求被拦截时            | 多次   | 核心方法，用于处理拦截逻辑  |
+| `destroy()`  | 服务器关闭时，销毁 Filter 实例 | 1 次  | 用于释放资源         |
+
+#### （2）放行与中断
+
+`FilterChain` 的 `doFilter()` 方法是放行的关键：
+
+- **调用 `chain.doFilter()`**：放行请求，请求会继续传递给下一个过滤器或目标资源（Controller）。
+- **不调用 `chain.doFilter()`**：中断请求流程，必须手动向客户端响应数据，否则客户端将一直处于等待状态。
 
 ```java
 @Override
 public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
         throws IOException, ServletException {
-    // ===== 放行之前的逻辑 =====
-    log.info("准备放行...");
-    chain.doFilter(req, resp);   // 放行
-    // ===== 放行之后的逻辑 =====
-    log.info("已返回");
+    // 放行前：校验、预处理
+    boolean pass = checkToken(req);
+    if (pass) {
+        // 校验通过，放行
+        chain.doFilter(req, resp);
+        // 放行后：清理、统计等
+    } else {
+        // 校验失败，中断请求并返回响应
+        writeError(resp);
+    }
 }
 ```
 
-| 位置                        | 语义                            |
-| ------------------------- | ----------------------------- |
-| `chain.doFilter()` **之前** | 请求还没到目标资源，可以在这里做校验、拦截         |
-| `chain.doFilter()` **之后** | 目标资源已执行完、响应正在回写，可以在这里做清理、统计耗时 |
-|                           |                               |
-
-> [!IMPORTANT]
-> 过滤器中，拦截请求与放行请求是互斥操作。想要拦截请求，就**不要执行 `chain.doFilter()`**，并且需要手动通过修改 response 向前端返回提示数据。一旦不调用该方法，请求流程就会终止，无法抵达 Controller 目标接口；反过来只要**调用**了 `chain.doFilter()`，请求就会被放行。拦截和放行只能选其一，不可同时执行。
-
 ### 8.3.3 拦截路径
 
-`@WebFilter` 的 `urlPatterns` 用的是 **Servlet 规范的 URL 匹配规则**：
+`@WebFilter` 的 `urlPatterns` 用的是 **Servlet 规范的 URL 匹配规则**，其支持以下匹配方式：
 
 | 拦截路径   | `urlPatterns` 值 | 含义                                  |
 | ------ | --------------- | ----------------------------------- |
@@ -2372,11 +2399,11 @@ public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain
 
 ### 8.3.5 过滤器链
 
-项目中配置多个过滤器时，它们会按先后顺序串成一条**过滤器链**，请求依次穿过每一个过滤器。链上「放行前」的逻辑按注册顺序执行，「放行后」的逻辑则按相反顺序执行（像洋葱一样层层包裹）：
+当配置多个 Filter 时，它们会形成**过滤器链（FilterChain）**。请求依次经过各个过滤器的「放行前」逻辑，目标资源执行完毕后，再按相反顺序执行各个过滤器的「放行后」逻辑。
 
 ![[Filter过滤器链.png]]
 
-对于 `@WebFilter` 注册的过滤器，**执行顺序取决于过滤器类名字符串的自然排序**。所以不要指望靠调整代码位置来控制执行顺序，那是不受控的；需要明确顺序时，用 `FilterRegistrationBean` 显式注册，或者干脆写在同一个过滤器的 `doFilter()` 里。
+对于 `@WebFilter` 声明的过滤器，其执行顺序由**类名的自然排序（字典序）** 决定。若需精确控制顺序，推荐使用 `FilterRegistrationBean` 进行显式注册。
 
 ### 8.3.6 用过滤器做令牌校验
 
@@ -2435,55 +2462,56 @@ public class TokenFilter implements Filter {
 ```
 
 > [!NOTE]
-> `urlPatterns` **只有「拦截哪些路径」，没有「排除哪些路径」**的语法。所以登录接口要么像上面这样在代码里 `if` 判断，要么把 `urlPatterns` 写细成 `/emps/*`。这一点上拦截器有现成的 `excludePathPatterns`，用起来干净得多。
+> `@WebFilter` 的 `urlPatterns` 仅能指定需要拦截的路径，**无法直接排除路径**。因此，对于 `/login` 这种不需要校验的接口，必须在 `doFilter()` 中通过 `if` 判断手动放行。
 
 ## 8.4 拦截器 Interceptor
 
-上一节用过滤器完成了令牌校验，但它毕竟工作在 Servlet 层，有诸多不便：不能注入 bean、不能排除路径、连静态资源都要拦一遍。**拦截器 Interceptor** 是 Spring MVC 提供的机制，专门用来**动态拦截 Controller 方法的执行**，位置更靠内、配置也更灵活，实际项目中的登录校验通常都用它。
+**拦截器（Interceptor）** 是 Spring MVC 框架提供的机制，专门用于拦截 Controller 方法的执行。相比 Filter，拦截器更加贴近业务，具备更强的灵活性：可注入 Spring Bean、可精确排除路径、且只拦截 Spring MVC 管理的请求。
 
 ### 8.4.1 快速入门
 
-在 `interceptor` 包下创建 `HandlerInterceptor` 的实现类，重写它常用的三个方法：
+创建 `HandlerInterceptor` 实现类，并使用 `@Component` 将其交由 Spring 容器管理。然后通过实现 `WebMvcConfigurer` 接口，重写 `addInterceptors()` 方法完成注册。
+
+**拦截器类：**
 
 ```java
 @Slf4j
-@Component   // 交由 Spring 管理，才能在 WebConfig 中注入
+@Component
 public class DemoInterceptor implements HandlerInterceptor {
 
-    //目标资源方法执行前执行。 返回true：放行，返回false：不放行
+    /**
+     * Controller 方法执行前调用
+     * @return true：放行；false：中断请求
+     */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
-        log.info("preHandle ....");
-        return true; //true表示放行
+        log.info("preHandle：请求到达 Controller 之前");
+        return true;
     }
 
-    //目标资源方法执行后执行，此时 Controller 已返回、视图尚未渲染
+    /**
+     * Controller 方法执行后调用（视图渲染前）
+     */
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
                            ModelAndView modelAndView) throws Exception {
-        log.info("postHandle ...");
+        log.info("postHandle：Controller 方法执行之后");
     }
 
-    //视图渲染完毕后执行，最后执行
+    /**
+     * 请求完全处理完毕后调用（视图渲染完毕后）
+     * 无论是否抛异常，该方法都会执行，常用于资源清理
+     */
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
-                                Exception ex) throws Exception {
-        log.info("afterCompletion ....");
+                                 Exception ex) throws Exception {
+        log.info("afterCompletion：请求处理完毕");
     }
 }
 ```
 
-| 方法 | 执行时机 | 返回值 | 说明 |
-| --- | --- | --- | --- |
-| `preHandle()` | Controller 方法执行**前** | `boolean` | 返回 `false` 直接中断请求，Controller 根本不会执行 |
-| `postHandle()` | Controller 方法执行**后** | `void` | 只能拿到 handler 和 `ModelAndView`，响应尚未提交 |
-| `afterCompletion()` | 请求处理**彻底结束**后 | `void` | `ex` 非空说明本次请求抛过异常，常用于清理资源 |
-
-> [!IMPORTANT]
-> `afterCompletion()` 是释放资源的**可靠时机**。`postHandle()` 在 `@RestController` 返回 JSON 的场景下几乎拿不到可用的 `ModelAndView`，而且 Controller 抛异常时它根本不会被执行；只有 `afterCompletion()` 一定会被触发。
-
-写好的拦截器只是「一个类」，还必须在 `config` 包下的配置类 `WebConfig` 中注册才算启用。`WebConfig` 实现 `WebMvcConfigurer` 接口，重写 `addInterceptors` 方法：
+**Web 配置类：**
 
 ```java
 @Configuration
@@ -2494,15 +2522,23 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        //注册自定义拦截器对象
-        registry.addInterceptor(demoInterceptor).addPathPatterns("/**");
+        registry.addInterceptor(demoInterceptor)
+                .addPathPatterns("/**"); // 拦截所有 Spring MVC 请求
     }
 }
 ```
 
-### 8.4.2 令牌校验
+### 8.4.2 Interceptor 核心方法
 
-把登录校验的逻辑搬进 `preHandle()`，步骤与过滤器版本完全一致，只是换成拦截器的写法：
+| 方法                  | 执行时机                       | 返回值       | 说明                                                                                |
+| ------------------- | -------------------------- | --------- | --------------------------------------------------------------------------------- |
+| `preHandle()`       | **Controller 方法执行前**       | `boolean` | 返回 `true` 放行请求，返回 `false` 则直接中断，不再执行 Controller 方法                                |
+| `postHandle()`      | **Controller 方法执行后、视图渲染前** | `void`    | 可对 `ModelAndView` 进行修改。对于 `@RestController` 返回 JSON 的接口，`ModelAndView` 通常为 `null` |
+| `afterCompletion()` | **请求完全处理完毕后**（包括异常场景）      | `void`    | **一定会被执行**。可通过 `ex` 参数判断是否发生异常，适合统一清理资源（如 `ThreadLocal`）                          
+
+### 8.4.3 基于 Interceptor 实现令牌校验
+
+拦截器相较 Filter 最大的优势是：**支持排除路径**（`excludePathPatterns`）和**可注入 Spring Bean**（如 `ObjectMapper` 用于序列化统一响应结果）。
 
 ```java
 @Slf4j
@@ -2510,56 +2546,59 @@ public class WebConfig implements WebMvcConfigurer {
 public class TokenInterceptor implements HandlerInterceptor {
 
     @Autowired
-    private ObjectMapper objectMapper;   // TokenFilter 不是 Spring bean 注入不了；拦截器可以
+    private ObjectMapper objectMapper;
 
     @Override
-    public boolean preHandle(HttpServletRequest req, HttpServletResponse resp, Object handler)
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
-        // 1. 只拦截 Controller 方法，静态资源等直接放行
+        // 1. 对非 HandlerMethod（如静态资源、跨域预检等）直接放行
         if (!(handler instanceof HandlerMethod)) {
             return true;
         }
 
-        // 2. 取出请求头中的令牌
-        String token = req.getHeader("token");
+        // 2. 获取请求头中的 token
+        String token = request.getHeader("token");
         if (token == null || token.isBlank()) {
-            log.info("请求路径：{}，未携带令牌", req.getRequestURI());
-            writeUnauthorized(resp, "未登录，请先登录");
+            log.info("请求路径：{}，未携带令牌", request.getRequestURI());
+            writeUnauthorized(response, "未登录，请先登录");
             return false;
         }
 
-        // 3. 解析并校验令牌：签名不对 / 已过期 / 格式错误 都会抛 JwtException
+        // 3. 校验令牌
         try {
             Claims claims = JwtUtils.parseToken(token);
-            CurrentHolder.setCurrentId(claims.get("id", Integer.class));
-        } catch (JwtException | IllegalArgumentException e) {
-            log.info("请求路径：{}，令牌无效：{}", req.getRequestURI(), e.getMessage());
-            writeUnauthorized(resp, "令牌无效或已过期，请重新登录");
-            return false;
+            // 将当前用户 ID 存入 ThreadLocal
+            Integer userId = claims.get("id", Integer.class);
+            CurrentHolder.setCurrentId(userId);
+            return true; // 校验通过，放行
+        } catch (Exception e) {
+            log.info("请求路径：{}，令牌无效：{}", request.getRequestURI(), e.getMessage());
+            writeUnauthorized(response, "令牌无效或已过期，请重新登录");
+            return false; // 校验失败，中断请求
         }
-
-        // 4. 校验通过，放行请求
-        return true;
     }
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
             throws Exception {
-        // 请求处理完成（包括抛异常的情况），清理当前登录用户
+        // 4. 请求结束后清理 ThreadLocal，确保线程安全
         CurrentHolder.clear();
     }
 
-    /** 以统一的 Result 结构返回 401 */
+    /**
+     * 统一返回 401 未授权响应，响应结构与 Result 保持一致
+     */
     private void writeUnauthorized(HttpServletResponse response, String msg) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json;charset=UTF-8");
-        // 复用第一章的 Result，前端拿到的响应结构与其他接口完全一致
-        response.getWriter().write(objectMapper.writeValueAsString(Result.error(msg)));
+        Result result = Result.error(msg);
+        String json = objectMapper.writeValueAsString(result);
+        response.getWriter().write(json);
     }
 }
 ```
 
-注册时，拦截器比过滤器多出一个很实用的能力——**排除路径**：
+**注册拦截器并排除登录接口：**
 
 ```java
 @Configuration
@@ -2570,31 +2609,28 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        //设置拦截器拦截的请求路径（/** 表示任意级路径），排除登录请求
         registry.addInterceptor(tokenInterceptor)
-                .addPathPatterns("/**")
-                .excludePathPatterns("/login");
+                .addPathPatterns("/**")           // 拦截所有 Spring MVC 请求
+                .excludePathPatterns("/login");   // 排除登录接口
     }
 }
 ```
 
-这样 `/login` 就不必在代码里 `if` 判断，注册时排除即可，校验代码里只剩「取令牌 → 验令牌 → 放行或 401」这条主线。
+### 8.4.4 拦截路径
 
-### 8.4.3 拦截路径
+拦截器使用 **Ant 风格**路径表达式，`*` 和 `**` 的区别需特别注意：
 
-注册时通过 `addPathPatterns("要拦截的路径")` 指定拦截哪些资源，通过 `excludePathPatterns("不拦截的路径")` 指定排除哪些资源。拦截器用的是 **Ant 风格路径表达式**，切记 `*` 与 `**` 的区别：
+| 表达式 | 含义 | 示例说明 |
+|---|---|---|
+| `/*` | 匹配**一级**路径 | 匹配 `/login`、`/depts`，但**不匹配** `/depts/1` |
+| `/**` | 匹配**任意层级**路径 | 匹配 `/login`、`/depts`、`/depts/1`、`/depts/1/2` 等所有路径 |
+| `/depts/*` | 匹配 `/depts` 下的**一级**路径 | 匹配 `/depts/1`，不匹配 `/depts` 本身，也不匹配 `/depts/1/2` |
+| `/depts/**` | 匹配 `/depts` 下的**任意层级**路径 | 匹配 `/depts`、`/depts/1`、`/depts/1/2` 等 |
 
-| 拦截路径 | 含义 | 举例 |
-| --- | --- | --- |
-| `/*` | 一级路径 | 能匹配 `/depts`、`/emps`、`/login`，不能匹配 `/depts/1` |
-| `/**` | 任意级路径 | 能匹配 `/depts`、`/depts/1`、`/depts/1/2` |
-| `/depts/*` | `/depts` 下的一级路径 | 能匹配 `/depts/1`，不能匹配 `/depts`、`/depts/1/2` |
-| `/depts/**` | `/depts` 下的任意级路径 | 能匹配 `/depts`、`/depts/1`、`/depts/1/2`，不能匹配 `/emps/1` |
+> [!IMPORTANT]
+> 若想拦截项目中绝大多数业务接口，通常使用 `/**` 配合 `excludePathPatterns` 排除特定接口（如登录、注册、静态资源等）。
 
-> [!WARNING]
-> **过滤器的 `/*` 匹配所有层级，拦截器的 `/*` 只匹配一级**。在拦截器里想写「全部拦截」，必须是 `/**` 而不是 `/*`。
-
-### 8.4.4 执行流程
+### 8.4.5 执行流程
 
 把过滤器和拦截器串起来看，一次请求的完整链路如下：
 
@@ -2606,32 +2642,45 @@ public class WebConfig implements WebMvcConfigurer {
 
 ![[Filter与Interceptor的执行顺序.png]]
 
-### 8.4.5 拦截器与过滤器的区别
+### 8.4.6 拦截器与过滤器的区别
 
-两者的**执行流程高度相似**——都是「请求到达 → 前置逻辑 → 目标资源 → 后置逻辑 → 响应返回」——但它们属于不同的层，关注点也不同：
+两者都能实现请求前置校验，但所属层级、适用场景有所不同。对比如下：
 
-| 对比项            | 过滤器 Filter                                           | 拦截器 Interceptor                                         |
-| -------------- | ---------------------------------------------------- | ------------------------------------------------------- |
-| 所属规范 / 层次      | Servlet 规范，Tomcat 原生支持                               | Spring MVC 提供，属于 Spring 框架                              |
-| 拦截接口           | `jakarta.servlet.Filter`                             | `HandlerInterceptor`                                    |
-| 拦截范围           | **所有资源**：Controller、静态资源、`/error`、其他 Servlet         | **Spring MVC 管理的资源**：只有 Controller 等 handler 会经过，静态资源不拦 |
-| 放行方式           | 显式调用 `chain.doFilter()`；不调用即不放行                      | `preHandle()` 返回 `true` 放行、`false` 中断                   |
-| 路径配置           | `@WebFilter(urlPatterns = "/*")`，**只能指定拦截哪些，没有排除语法** | `addPathPatterns` / `excludePathPatterns`，**两个都能配**     |
-| 路径匹配规则         | Servlet 规范：`/*` 匹配所有层级                               | Ant 表达式：`/*` 只匹配一级，`/**` 才是任意级                          |
-| 是否 Spring bean | **否**，由 Servlet 容器创建，`@Autowired` 注入不生效              | **是**，加 `@Component` 即可注入任意依赖                           |
-| 后置回调           | 写在 `chain.doFilter()` 之后                             | 有专门的 `postHandle()`、`afterCompletion()` 回调              |
-| 执行顺序           | 类名字符串自然排序                                            | 注册顺序（`addInterceptor` 的调用顺序）                            |
+| 对比项               | **过滤器（Filter）**                                                     | **拦截器（Interceptor）**                                                            |
+| ----------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| 所属规范              | Servlet 规范，由 Tomcat 原生提供                                            | Spring MVC 框架提供                                                                 |
+| 工作层级              | 更靠外，位于 Servlet 容器层面                                                 | 更靠内，位于 Spring MVC 层面（DispatcherServlet 内部）                                      |
+| 拦截范围              | **更广**：拦截所有进入 Web 应用的请求（包括静态资源、`/error`、其他 Servlet 等）               | **更窄**：仅拦截由 Spring MVC 的 `DispatcherServlet` 分发的请求（即 Controller 及相关 handler）    |
+| 是否可注入 Spring Bean | **不支持**。Filter 由 Servlet 容器创建，脱离 Spring 容器上下文，直接 `@Autowired` 通常会失败 | **支持**。可直接注入 `Service`、`ObjectMapper` 等 Spring 容器中的 Bean                        |
+| 路径排除              | **不支持**。只能通过 `urlPatterns` 指定拦截哪些路径，需在代码中用 `if` 手动排除                | **支持**。通过 `excludePathPatterns` 直接排除无需拦截的路径，配置更简洁                               |
+| 路径匹配规则            | Servlet 规范：`/*` 即匹配所有层级路径                                           | Ant 风格：`/*` 仅匹配一级路径，`/**` 才匹配所有层级路径                                             |
+| 核心接口              | `jakarta.servlet.Filter`                                            | `org.springframework.web.servlet.HandlerInterceptor`                            |
+| 后置回调              | 仅能将逻辑写在 `chain.doFilter()` 之后                                       | 提供 `postHandle()` 和 `afterCompletion()` 两个专门的后置回调，且 `afterCompletion()` 保证一定会执行 |
+| 执行顺序              | 先于 Interceptor 执行                                                   | 后于 Filter 执行，且位于请求到达 Controller 的前沿                                             |
 
-> [!IMPORTANT]
-> - **过滤器**工作在最外层，适合处理**编码、跨域、字符集**这类所有请求都要做的通用事情；
-> - **拦截器**工作在 Controller 门口，能排除静态资源、能注入业务组件，适合处理**登录校验、权限控制**这类只针对业务接口的事情。
->
+> [!TIP]
+> **选用建议：**
+> - **Filter 更适合**：编码过滤（字符集设置）、跨域处理（CORS）、请求日志记录等「全局通用」且与业务无关的逻辑。
+> - **Interceptor 更适合**：登录校验、权限控制、接口访问日志等「业务相关」的横切逻辑。本项目的登录校验推荐优先使用 Interceptor。
 
 ## 8.5 CurrentHolder
 
-拦截器校验通过后只做了一件事：把令牌里的用户 id 放进 `CurrentHolder`。它之所以需要存在，是因为**业务层常常要知道「当前操作人是谁」**，例如记录操作日志要记录操作人，而 Controller 方法的形参里只有业务参数，拿不到令牌。
+在登录校验通过后，拦截器（或过滤器）需要将当前登录用户的 ID 暂存起来，供后续的 Service、Mapper 等业务代码使用。例如：记录操作日志时，需要知道「是谁」进行了该操作。
 
-`CurrentHolder` 的实现只用了一个 `ThreadLocal`：一个请求由一个线程处理，用 `ThreadLocal` 存当前线程的用户 id，业务层随时能静态取到，不同请求之间又天然隔离。
+由于 HTTP 是无状态的，Controller 方法的形参中并不包含当前登录用户信息。直接从请求头解析 JWT 再次校验既繁琐又重复。因此，推荐使用 **`ThreadLocal`** 来临时存储当前请求线程下的用户信息。
+
+### 8.5.1 ThreadLocal 原理
+
+`ThreadLocal<T>` 是 Java 提供的线程本地变量。它为每个线程都维护一个独立的变量副本，线程之间互不影响：
+
+- **同一个线程内**：任意方法都可以通过 `ThreadLocal.get()` 获取到同一个值。
+- **不同线程之间**：数据完全隔离，互相不可见。
+
+在 Web 应用中，每个 HTTP 请求通常由 Tomcat 线程池中的一个线程处理。因此，使用 `ThreadLocal` 存储当前用户 ID，既能在整个请求链路中随时获取，又能天然隔离不同请求。
+
+### 8.5.2 使用示例
+
+将 `ThreadLocal` 封装成工具类，统一对外暴露操作方法。
 
 ```java
 public class CurrentHolder {  
@@ -2651,22 +2700,34 @@ public class CurrentHolder {
 }
 ```
 
-业务层只需要通过 CurrentHolder 工具类直接静态调用即可：
+在业务层中，直接静态调用即可获取当前操作人：
 
 ```java
-@Override
-public void save(Emp emp) {
-    // 联调时打印当前操作人，正式项目可换成写入操作日志
-    log.info("当前操作人：{}", CurrentHolder.getCurrentId());
-    empMapper.save(emp);
+@Slf4j
+@Service
+public class EmpServiceImpl implements EmpService {
+
+    @Autowired
+    private EmpMapper empMapper;
+
+    @Override
+    @Transactional
+    public void save(Emp emp) {
+        // 获取当前登录用户 ID，用于记录操作人或校验权限
+        Integer currentId = CurrentHolder.getCurrentId();
+        log.info("当前操作人 ID：{}", currentId);
+        
+        // 执行保存业务
+        empMapper.save(emp);
+    }
 }
 ```
 
 > [!WARNING]
-> ThreadLocal 绑定的数据依附于当前工作线程，而 Web 容器的线程由线程池维护，**线程会被复用**：一次请求处理完毕后，线程并不会销毁，而是归还到线程池，供后续其他请求继续使用。
+> Tomcat 采用**线程池**机制来处理 HTTP 请求。当某个请求处理完毕后，所使用的线程并不会被销毁，而是会被归还到线程池中，等待下一次请求复用。
 > 
-> 因此务必在请求结束时执行 `CurrentHolder.clear()` 清除 ThreadLocal 中存储的用户信息。如果没有清理，当另一个请求复用该线程时，就会读取到上一个请求的用户 ID，造成数据错乱。
+> 如果上一请求在 `ThreadLocal` 中存入了用户 ID，却**没有及时清理**，那么下一次复用该线程的请求就会错误地获取到上一个请求的用户 ID，极有可能导致「越权操作」、「数据错误归属」等严重问题。
 > 
-> `CurrentHolder.clear()` 最佳位置：
-> - 使用拦截器：放在 `afterCompletion()` 方法中，请求处理完成后执行；
-> - 使用过滤器：写在 `doFilter()` 的 `finally` 代码块内，保证无论正常执行还是异常，都一定执行清理。
+> **清理操作必须放在请求结束的「必定执行」时机**
+> - **使用 Interceptor 时**：将 `CurrentHolder.clear()` 放在 `afterCompletion()` 方法中。该方法无论 Controller 是否抛异常，都会被调用。
+> - **使用 Filter 时**：将 `CurrentHolder.clear()` 放在 `doFilter()` 的 `finally` 代码块中。同样能确保无论正常放行还是异常中断，都能执行清理。
