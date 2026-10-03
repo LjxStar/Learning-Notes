@@ -1779,12 +1779,35 @@ Spring 事务传播机制定义了多个事务方法嵌套调用时的行为规�
 | `NEVER` | 必须没有事务，否则抛异常 |
 | `NESTED` | 存在事务则创建嵌套事务（子事务），否则同 `REQUIRED` |
 
-实际开发中`REQUIRED`**、**`REQUIRES_NEW`**：
+实际开发中 `REQUIRED`**、**`REQUIRES_NEW` 比较常用，下面将详解这两种的传播机制
 
+1. **REQUIRED**
+**REQUIRED**是 Spring 默认的传播机制，它的核心原则是"有则加入，无则新建"。当外层方法已存在事务时，内层方法会直接加入该事务，形成共享事务上下文；若外层无事务，则内层会创建新事务独立执行。例如用户注册时同步创建账户和日志记录：
+```java
+@Service 
+public class UserService {
+    @Autowired 
+    private LogService logService;
+    @Transactional // 外层事务 
+    public void register(User user) {
+        userMapper.insert(user); // 保存用户 
+        logService.recordLog(user.getId(), "注册成功"); // 调用日志服务 
+    }
+}
+
+@Service
+public class LogService {
+    @Transactional(propagation = Propagation.REQUIRED) // 内层事务 
+    public void recordLog(Long userId, String action) {
+        logMapper.insert(new Log(userId, action));
+    }
+}
+```
+2. **REQUIRES_NEW**
+**REQUIRES_NEW**与 REQUIRED 完全相反，它会**强制创建新的独立事务**，与外层事务彻底隔离。即使外层已有事务，内层方法也会挂起外层事务，新建物理事务执行，且内层事务的提交/回滚与外层互不影响。例如订单支付失败时，支付记录需要回滚，但失败日志必须留存：
 ```java
 @Service
 public class OrderServiceImpl implements OrderService {
-
     @Autowired
     private OrderMapper orderMapper;
     @Autowired
@@ -1800,9 +1823,7 @@ public class OrderServiceImpl implements OrderService {
         logService.record(order.getId());
     }
 }
-```
 
-```java
 @Service
 public class LogServiceImpl implements LogService {
 
@@ -1816,11 +1837,6 @@ public class LogServiceImpl implements LogService {
     }
 }
 ```
-
-> [!NOTE]
-> 订单保存失败要回滚，但**「订单已提交」这条操作日志必须留下来**，否则排查问题时连「用户点了提交」都看不到。
->
-> 注意 `REQUIRES_NEW` 会**挂起**外层事务并新开一个连接，所以大量使用会额外占用数据库连接，高并发场景要评估连接池大小。
 
 ### 6.2.4 事务日志
 
