@@ -2191,10 +2191,10 @@ public class JwtUtils {
      */
     public static String generateToken(Map<String, Object> claims) {
         return Jwts.builder()
-                .claims(claims)                                                // 直接传入自定义载荷map
-                .issuedAt(new Date())                                          // 签发时间
+                .claims(claims)    // 直接传入自定义载荷map
+                .issuedAt(new Date()) // 签发时间
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION)) // 过期时间
-                .signWith(KEY)                                                 // 签名，算法由密钥长度自动匹配
+                .signWith(KEY)    // 签名，算法由密钥长度自动匹配
                 .compact();                                                    // 拼装成最终令牌
     }
 
