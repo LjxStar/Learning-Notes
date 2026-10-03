@@ -2090,20 +2090,7 @@ JSON Web 令牌由三个部分组成，用 `.` 分隔，从左到右依次是 He
 
 #### （3）Signature 签名
 
-签名是把「Header + Payload 的编码结果」用服务端私有密钥算一遍得到的：
 
-```
-签名 = HMACSHA256(Base64URL(Header) + "." + Base64URL(Payload), SECRET_KEY)
-```
-
-它的作用是**防篡改、防伪造**：Header 或 Payload 被动了一个字节，重算出来的签名就对不上，校验必然失败；攻击者因为拿不到 `SECRET_KEY`，也无法凭空造出一个能通过校验的令牌。
-
-三段合起来，再把每一段都做 Base64URL 编码（把 `+`、`/` 换成 `-`、`_`，去掉结尾的 `=`），就是最终那串令牌。各段的编码结果一一对应：
-
-```
-eyJhbGciOiJIUzI1NiJ9.  eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiJ9.  3nG1H_aG2XhVJt1TkYFvU9oBcS-hAqZ0t7Qp2sLxdc
-    └── Header ──┘        └──────── Payload ────────┘      └──────── Signature ────────┘
-```
 
 > [!IMPORTANT]
 > 记住一句话就够用了：**Payload 负责「装数据」，Signature 负责「保数据不被改」**。至于「能不能解密看内容」——不能加密，只能看。
