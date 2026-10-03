@@ -2256,7 +2256,7 @@ GET /emps?page=1&pageSize=10 HTTP/1.1
 token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsImlhdCI6MTc1ODg2NDAwMCwiZXhwIjoxNzU4OTUwNDAwfQ.A4pD4NQnxSu4N5dqkwTI1ssMyJ7u1CjHBQm_q1KWjgo
 ```
 
-
+服务端不再直接判断当前请求是否来自已登录用户，核心逻辑转变为：**校验传入的令牌是否为本服务签发、以及令牌是否已经过期**。接下来需要解决的问题是“由谁来统一完成这套令牌校验逻辑？”如果在每一个 Controller 接口方法中都重复编写校验代码，会造成大量代码冗余，维护成本也会显著上升。
 
 ## 8.3 过滤器 Filter
 
