@@ -2663,4 +2663,10 @@ public void save(Emp emp) {
 ```
 
 > [!WARNING]
-> `ThreadLocal` 所在的线程是**被复用的**：请求结束后线程不会销毁，而是还给线程池等待下一个请求。所以**必须**在请求结束时调用 `CurrentHolder.clear()`，否则下一个请求复用同一线程时，会读到上一个用户的 id。清理动作放在拦截器的 `afterCompletion()` 里最稳妥（过滤器则放在 `doFilter()` 的 `finally` 中）。
+> ThreadLocal 绑定的数据依附于当前工作线程，而 Web 容器的线程由线程池维护，**线程会被复用**：一次请求处理完毕后，线程并不会销毁，而是归还到线程池，供后续其他请求继续使用。
+> 
+> 因此务必在请求结束时执行 `CurrentHolder.clear()` 清除 ThreadLocal 中存储的用户信息。如果没有清理，当另一个请求复用该线程时，就会读取到上一个请求的用户 ID，造成数据错乱。
+> 
+> `CurrentHolder.clear()` 最佳位置：
+> - 使用拦截器：放在 `afterCompletion()` 方法中，请求处理完成后执行；
+> - 使用过滤器：写在 `doFilter()` 的 `finally` 代码块内，保证无论正常执行还是异常，都一定执行清理。
