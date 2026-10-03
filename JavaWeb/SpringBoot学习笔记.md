@@ -2330,10 +2330,10 @@ public class TliasSystemBackEndApplication {
 @Override
 public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
         throws IOException, ServletException {
-    // ===== 放行之前的逻辑：写在 chain.doFilter() 之前 =====
+    // ===== 放行之前的逻辑 =====
     log.info("准备放行...");
     chain.doFilter(req, resp);   // 放行
-    // ===== 放行之后的逻辑：写在 chain.doFilter() 之后 =====
+    // ===== 放行之后的逻辑 =====
     log.info("已返回");
 }
 ```
@@ -2342,37 +2342,36 @@ public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain
 | ------------------------- | ----------------------------- |
 | `chain.doFilter()` **之前** | 请求还没到目标资源，可以在这里做校验、拦截         |
 | `chain.doFilter()` **之后** | 目标资源已执行完、响应正在回写，可以在这里做清理、统计耗时 |
+|                           |                               |
 
 > [!IMPORTANT]
-> 「不放行」意味着**不调用** `chain.doFilter()`，同时自己往响应里写出内容。少了 `chain.doFilter()` 请求就到不了目标资源，多调一次又等于放行——两者只能二选一。
+> 过滤器中，拦截请求与放行请求是互斥操作。想要拦截请求，就**不要执行 `chain.doFilter()`**，并且需要手动通过修改 response 向前端返回提示数据。一旦不调用该方法，请求流程就会终止，无法抵达 Controller 目标接口；反过来只要**调用**了 `chain.doFilter()`，请求就会被放行。拦截和放行只能选其一，不可同时执行。
 
 ### 8.3.3 拦截路径
 
 `@WebFilter` 的 `urlPatterns` 用的是 **Servlet 规范的 URL 匹配规则**：
 
-| 拦截路径 | `urlPatterns` 值 | 含义 |
-| --- | --- | --- |
-| 拦截具体路径 | `/login` | 只有访问 `/login` 路径时，才会被拦截 |
-| 目录拦截 | `/emps/*` | 访问 `/emps` 下的所有资源，都会被拦截 |
-| 拦截所有 | `/*` | 访问所有资源，都会被拦截，含 `/depts/1/2` 这样的多级路径 |
-| 按扩展名 | `*.jpg` | 拦截所有 jpg 请求，静态资源专属用法 |
+| 拦截路径   | `urlPatterns` 值 | 含义                                  |
+| ------ | --------------- | ----------------------------------- |
+| 拦截具体路径 | `/login`        | 只有访问 `/login` 路径时，才会被拦截             |
+| 目录拦截   | `/emps/*`       | 访问 `/emps` 下的所有资源，都会被拦截             |
+| 拦截所有   | `/*`            | 访问所有资源，都会被拦截，含 `/depts/1/2` 这样的多级路径 |
+| 按扩展名   | `*.jpg`         | 拦截所有 jpg 请求，静态资源专属用法                |
 
 > [!WARNING]
-> 注意过滤器里的 `/*` **匹配的是所有层级**（Servlet 规范如此），这和拦截器的 `/*` 语义完全不同，后者只匹配一级路径。对比见 8.4.3。
+> 注意过滤器里的 `/*` **匹配的是所有层级**（Servlet 规范如此），这和拦截器的 `/*` 语义完全不同，后者只匹配一级路径。
 
 ### 8.3.4 执行流程
 
 一次请求经过过滤器的完整过程如下：
 
-![[Filter执行顺序.png]]
-
-翻译成文字，一共五步：
-
-1. 浏览器发起请求，请求先到达 Tomcat；
+1. 浏览器发起请求，先到达 Tomcat；
 2. `doFilter()` 被调用，先执行放行前的逻辑；
 3. 调用 `chain.doFilter()` 放行，请求进入 Spring 环境，由 `DispatcherServlet` 接收并转给 Controller；
 4. Controller 方法执行完毕，响应沿原路返回，再次回到 `doFilter()` 中执行放行后的逻辑；
 5. 响应最终写回浏览器。
+
+![[Filter执行顺序.png]]
 
 ### 8.3.5 过滤器链
 
