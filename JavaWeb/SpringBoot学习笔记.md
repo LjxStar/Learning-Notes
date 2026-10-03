@@ -2605,21 +2605,22 @@ public class WebConfig implements WebMvcConfigurer {
 5. 最后回到过滤器中放行之后的这一部分逻辑，执行完毕，最终给浏览器响应数据。
 
 ![[Filter与Interceptor的执行顺序.png]]
+
 ### 8.4.5 拦截器与过滤器的区别
 
 两者的**执行流程高度相似**——都是「请求到达 → 前置逻辑 → 目标资源 → 后置逻辑 → 响应返回」——但它们属于不同的层，关注点也不同：
 
-| 对比项 | 过滤器 Filter | 拦截器 Interceptor |
-| --- | --- | --- |
-| 所属规范 / 层次 | Servlet 规范，Tomcat 原生支持 | Spring MVC 提供，属于 Spring 框架 |
-| 拦截接口 | `jakarta.servlet.Filter` | `HandlerInterceptor` |
-| 拦截范围 | **所有资源**：Controller、静态资源、`/error`、其他 Servlet | **Spring MVC 管理的资源**：只有 Controller 等 handler 会经过，静态资源不拦 |
-| 放行方式 | 显式调用 `chain.doFilter()`；不调用即不放行 | `preHandle()` 返回 `true` 放行、`false` 中断 |
-| 路径配置 | `@WebFilter(urlPatterns = "/*")`，**只能指定拦截哪些，没有排除语法** | `addPathPatterns` / `excludePathPatterns`，**两个都能配** |
-| 路径匹配规则 | Servlet 规范：`/*` 匹配所有层级 | Ant 表达式：`/*` 只匹配一级，`/**` 才是任意级 |
-| 是否 Spring bean | **否**，由 Servlet 容器创建，`@Autowired` 注入不生效 | **是**，加 `@Component` 即可注入任意依赖 |
-| 后置回调 | 写在 `chain.doFilter()` 之后，用 `finally` 兜底 | 有专门的 `postHandle()`、`afterCompletion()` 回调 |
-| 执行顺序 | 类名字符串自然排序 | 注册顺序（`addInterceptor` 的调用顺序） |
+| 对比项            | 过滤器 Filter                                           | 拦截器 Interceptor                                         |
+| -------------- | ---------------------------------------------------- | ------------------------------------------------------- |
+| 所属规范 / 层次      | Servlet 规范，Tomcat 原生支持                               | Spring MVC 提供，属于 Spring 框架                              |
+| 拦截接口           | `jakarta.servlet.Filter`                             | `HandlerInterceptor`                                    |
+| 拦截范围           | **所有资源**：Controller、静态资源、`/error`、其他 Servlet         | **Spring MVC 管理的资源**：只有 Controller 等 handler 会经过，静态资源不拦 |
+| 放行方式           | 显式调用 `chain.doFilter()`；不调用即不放行                      | `preHandle()` 返回 `true` 放行、`false` 中断                   |
+| 路径配置           | `@WebFilter(urlPatterns = "/*")`，**只能指定拦截哪些，没有排除语法** | `addPathPatterns` / `excludePathPatterns`，**两个都能配**     |
+| 路径匹配规则         | Servlet 规范：`/*` 匹配所有层级                               | Ant 表达式：`/*` 只匹配一级，`/**` 才是任意级                          |
+| 是否 Spring bean | **否**，由 Servlet 容器创建，`@Autowired` 注入不生效              | **是**，加 `@Component` 即可注入任意依赖                           |
+| 后置回调           | 写在 `chain.doFilter()` 之后，用 `finally` 兜底              | 有专门的 `postHandle()`、`afterCompletion()` 回调              |
+| 执行顺序           | 类名字符串自然排序                                            | 注册顺序（`addInterceptor` 的调用顺序）                            |
 
 一句话总结各自的适用场景：
 
