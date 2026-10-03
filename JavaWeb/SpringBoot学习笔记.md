@@ -2437,12 +2437,6 @@ public class TokenFilter implements Filter {
 }
 ```
 
-这里有三个与后面拦截器版本形成鲜明对比的点，务必留意：
-
-- **放行方式是 `return`**：过滤器没有返回值，「不放行」就是不调用 `chain.doFilter()` 然后 `return`；
-- **清理逻辑写在 `doFilter()` 的 `finally` 里**，而拦截器有专门的 `afterCompletion()` 回调（见 8.4.1）；
-- **`TokenFilter` 不是 Spring 管理的 bean**，所以无法用 `@Autowired` 注入 `ObjectMapper` 来序列化 JSON，只能自己拼字符串。
-
 > [!NOTE]
 > `urlPatterns` **只有「拦截哪些路径」，没有「排除哪些路径」**的语法。所以登录接口要么像上面这样在代码里 `if` 判断，要么把 `urlPatterns` 写细成 `/emps/*`。这一点上拦截器有现成的 `excludePathPatterns`，用起来干净得多。
 
