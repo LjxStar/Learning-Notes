@@ -2033,15 +2033,7 @@ Session 把数据放在服务端，相对安全。但是集群环境下无法直
 
 ### 8.2.1 JWT 简介
 
-**JWT**（JSON Web Token）是令牌的一种具体格式，可以理解为「**用 JSON 表达、用签名保证没被改过的登录凭证**」。
-
-一个 JWT 令牌长这样，由三段 Base64URL 编码的字符串用 `.` 连起来（示例值，仅用于说明结构）：
-
-```
-eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiJ9.3nG1H_aG2XhVJt1TkYFvU9oBcS-hAqZ0t7Qp2sLxdc
-```
-
-它的四个特点，正好对应登录功能的需求：
+**JWT**（JSON Web Token）是令牌的一种具体格式，用于在通信双方以 json 数据格式安全的传输信息。由于数字签名的存在，这些信息是可靠的。它的四个特点，正好对应登录功能的需求：
 
 | 特点 | 说明 | 对登录的意义 |
 | --- | --- | --- |
