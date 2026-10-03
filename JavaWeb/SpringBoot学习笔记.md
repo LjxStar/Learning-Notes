@@ -1765,7 +1765,9 @@ public class EmpServiceImpl implements EmpService {
 
 ### 6.2.3 传播行为 propagation
 
-**事务传播行为**指的是：当一个事务方法被另一个事务方法调用时，这个事务方法应该如何进行事务控制。
+在 Spring 事务管理中，**事务传播机制**是针对事务嵌套场景的核心解决方案，它定义了**多个事务方法嵌套调用时事务边界的控制规则**——当一个事务方法（如用户注册）调用另一个事务方法（如日志记录）时，被调用方法如何处理现有事务上下文（如加入已有事务、创建新事务或不使用事务）
+
+Spring 事务传播机制定义了多个事务方法嵌套调用时的行为规则，共包含七种类型：
 
 | 属性值 | 含义 |
 | --- | --- |
@@ -1777,7 +1779,7 @@ public class EmpServiceImpl implements EmpService {
 | `NEVER` | 必须没有事务，否则抛异常 |
 | `NESTED` | 存在事务则创建嵌套事务（子事务），否则同 `REQUIRED` |
 
-实际开发中**只需重点关注两个**：**`REQUIRED`**、**`REQUIRES_NEW`**：
+实际开发中`REQUIRED`**、**`REQUIRES_NEW`**：
 
 ```java
 @Service
