@@ -2634,24 +2634,20 @@ public class WebConfig implements WebMvcConfigurer {
 `CurrentHolder` 的实现只用了一个 `ThreadLocal`：一个请求由一个线程处理，用 `ThreadLocal` 存「当前线程的用户 id」，业务层随时能静态取到，不同请求之间又天然隔离。
 
 ```java
-public class CurrentHolder {
-
-    private static final ThreadLocal<Integer> CURRENT_ID = new ThreadLocal<>();
-
-    /** 保存当前登录用户的 id */
-    public static void setCurrentId(Integer id) {
-        CURRENT_ID.set(id);
-    }
-
-    /** 获取当前登录用户的 id */
-    public static Integer getCurrentId() {
-        return CURRENT_ID.get();
-    }
-
-    /** 清除 */
-    public static void clear() {
-        CURRENT_ID.remove();
-    }
+public class CurrentHolder {  
+    private static final ThreadLocal<Integer> THREAD_LOCAL = new ThreadLocal<>();  
+  
+    public static void setCurrentId(Integer userId) {  
+        THREAD_LOCAL.set(userId);  
+    }  
+  
+    public static Integer getCurrentId() {  
+        return THREAD_LOCAL.get();  
+    }  
+  
+    public static void clear() {  
+        THREAD_LOCAL.remove();  
+    }  
 }
 ```
 
