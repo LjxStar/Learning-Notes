@@ -2165,10 +2165,10 @@ public class JwtUtils {
     public static String generateToken(Map<String, Object> claims) {
         return Jwts.builder()
                 .claims(claims)    // 直接传入自定义载荷map
-                .issuedAt(new Date()) // 签发时间
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION)) // 过期时间
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + EXPIRATION))
                 .signWith(KEY)    // 签名，算法由密钥长度自动匹配
-                .compact();                                                    // 拼装成最终令牌
+                .compact();       // 拼装成最终令牌
     }
 
     /**
@@ -2180,17 +2180,12 @@ public class JwtUtils {
         Jws<Claims> jws = Jwts.parser()
                 .verifyWith(KEY)          // 用同一把密钥验签
                 .build()
-                .parseSignedClaims(token); // 签名不符 / 已过期 / 格式错误 都会抛 JwtException
+                .parseSignedClaims(token);
         return jws.getPayload();
     }
 }
 ```
 
-几个关键点：
-
-- `.signWith(KEY)` 不显式指定算法时，JJWT 会按密钥长度自动匹配合适的算法；需要固定算法就写成 `.signWith(KEY, Jwts.SIG.HS256)`；
-- `parseToken` 不用自己判断有效性，「签名不对」「令牌过期」「格式错误」三类问题都会以 `JwtException` 的子类抛出，调用方 catch 住即可；
-- `getBytes(StandardCharsets.UTF_8)` 显式指定编码，避免不同机器默认编码不一致导致密钥字节不同、令牌互相验不过。
 
 > [!WARNING]
 > - **密钥绝不能硬编码在代码里**，上线等于把钥匙挂在门上。至少要挪到 `application.yml`，生产环境再换成环境变量（做法同 2.6.3 的 AccessKey）；
