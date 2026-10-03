@@ -2098,7 +2098,7 @@ JSON Web 令牌由三个部分组成，用 `.` 分隔，从左到右依次是 He
 
 签名通过 **Base 64 Url** 编码，形成 JSON Web 令牌的第三部分。三个 Base 64-URL 字符串，中间用点分隔，构成 JWT。
 
-![[Pasted image 20261003160636.png]]
+![[Pasted image 20261003160839.png]]
 
 ### 8.2.3 JWT 的使用
 
@@ -2662,7 +2662,7 @@ public class WebConfig implements WebMvcConfigurer {
 
 把过滤器和拦截器串起来看，一次请求的完整链路如下：
 
-![[Pasted image 20261003110138.png]]
+![[Filter与Interceptor的执行顺序.png]]
 
 用文字走一遍：
 
