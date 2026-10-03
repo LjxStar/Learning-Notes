@@ -2097,7 +2097,8 @@ JSON Web 令牌由三个部分组成，用 `.` 分隔，从左到右依次是 He
 ```
 
 签名通过 **Base 64 Url** 编码，形成 JSON Web 令牌的第三部分。三个 Base 64-URL 字符串，中间用点分隔，构成 JWT。
-![[Pasted image 20261003160534.png]]
+
+![[Pasted image 20261003160636.png]]
 
 ### 8.2.3 JWT 的使用
 
@@ -2413,7 +2414,7 @@ public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain
 
 一次请求经过过滤器的完整过程如下：
 
-![[Pasted image 20261003104118.png]]
+![[Filter执行顺序.png]]
 
 翻译成文字，一共五步：
 
@@ -2427,7 +2428,7 @@ public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain
 
 项目中配置多个过滤器时，它们会按先后顺序串成一条**过滤器链**，请求依次穿过每一个过滤器。链上「放行前」的逻辑按注册顺序执行，「放行后」的逻辑则按相反顺序执行（像洋葱一样层层包裹）：
 
-![[Pasted image 20261003104358.png]]
+![[Filter过滤器链.png]]
 
 对于 `@WebFilter` 注册的过滤器，**执行顺序取决于过滤器类名字符串的自然排序**。所以不要指望靠调整代码位置来控制执行顺序，那是不受控的；需要明确顺序时，用 `FilterRegistrationBean` 显式注册，或者干脆写在同一个过滤器的 `doFilter()` 里。
 
