@@ -2626,7 +2626,7 @@ public class WebConfig implements WebMvcConfigurer {
 > - **过滤器**工作在最外层，适合处理**编码、跨域、字符集**这类所有请求都要做的通用事情；
 > - **拦截器**工作在 Controller 门口，能排除静态资源、能注入业务组件，适合处理**登录校验、权限控制**这类只针对业务接口的事情。
 >
-> **SSM 项目的登录校验用拦截器实现**，原因就落在最后两行：它能直接 `excludePathPatterns("/login")`，还能注入 `ObjectMapper` 复用统一的 `Result` 结构；换成过滤器既要在代码里手写 JSON 字符串，又要自己判断 `/login`。
+> **SSM 项目的登录校验用拦截器实现**，原因在于它能直接 `excludePathPatterns("/login")`，还能注入 `ObjectMapper` 复用统一的 `Result` 结构；换成过滤器既要在代码里手写 JSON 字符串，又要自己判断 `/login`。
 
 ## 8.5 CurrentHolder：把当前登录用户传给业务层
 
