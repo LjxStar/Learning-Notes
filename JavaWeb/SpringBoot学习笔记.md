@@ -2047,8 +2047,9 @@ public LoginInfo login(Emp emp) {
 Filter 表示过滤器，是 JavaWeb 三大组件(Servlet、Filter、Listener)之一。
 使用了过滤器之后，要想访问 web 服务器上的资源，必须先经过滤器，过滤器处理完毕之后，才可以访问对应的资源。
 8.3.1 快速入门
+我们一般在 filter 包下创建以 Filter实现类 并重写其所有方法
 ```java
-// @WebFilter(urlPatterns = "/*") //配置过滤器要拦截的请求路径（ /* 表示拦截浏览器的所有请求 ）  
+@WebFilter(urlPatterns = "/*") //配置过滤器要拦截的请求路径
 public class DemoFilter implements Filter {  
     //初始化方法, web服务器启动, 创建Filter实例时调用, 只调用一次  
     public void init(FilterConfig filterConfig) throws ServletException {  
@@ -2076,6 +2077,7 @@ public class DemoFilter implements Filter {
 > destroy 方法： 是销毁的方法。当我们关闭服务器的时候，它会自动的调用销毁方法 destroy，而这个销毁方法也只会被调用一次。
 
 `@WebFilter`，并指定属性 `urlPatterns`，通过这个属性指定过滤器要拦截哪些请求
+
 当我们在 Filter 类上面加了@WebFilter 注解之后，接下来我们还需要在启动类上面加上一个注解 `@ServletComponentScan`，通过这个 `@ServletComponentScan` 注解来开启 SpringBoot 项目对于 Servlet 组件的支持。
 
 ```java
@@ -2090,7 +2092,133 @@ public class TliasSystemBackEndApplication {
 }
 ```
 
-8.3.1 登录校验
+8.3.2 登录校验
+```java
+@Slf4j  
+@Component  
+public class TokenInterceptor implements HandlerInterceptor {  
+    //目标资源方法执行前执行。 返回true：放行，返回false：不放行  
+    @Override  
+    public boolean preHandle(HttpServletRequest req, HttpServletResponse res, Object handler) throws Exception {  
+        // 获取请求路径  
+        String path = req.getRequestURI();  
+        if (path.contains("/login")) {  
+            // 如果是登录请求，直接放行  
+            return true;  
+        }  
+  
+        // 非登录请求，检查token  
+        String token = req.getHeader("token");  
+        if (token == null || token.isEmpty()) {  
+            log.info("请求路径: {}, 没有token，返回401未授权", path);  
+            // 如果没有token，返回401未授权  
+            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);  
+  
+            return false;  
+        }  
+  
+        try {  
+            Claims claims = JwtUtils.parseToken(token);  
+            // 从token中获取用户ID，并存储到CurrentHolder中  
+            Integer userId = claims.get("userId", Integer.class);  
+            CurrentHolder.setCurrentId(userId);  
+        } catch (Exception e) {  
+            log.info("请求路径: {}, token验证失败，返回401未授权", path);  
+            // 如果token验证失败，返回401未授权  
+            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);  
+            return false;  
+        }  
+  
+        // 如果验证通过，放行请求  
+        log.info("请求路径: {}, token验证通过，放行请求", path);  
+        return true; //true表示放行  
+    }  
+  
+    @Override  
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {  
+        // 请求处理完成后，清理CurrentHolder中的用户ID  
+        CurrentHolder.clear();  
+    }  
+  
+}
+```
+8.3.3 拦截路径
+|   |   |   |
+|---|---|---|
+|拦截路径|urlPatterns 值|含义|
+|拦截具体路径|/login|只有访问 /login 路径时，才会被拦截|
+|目录拦截|/emps/*|访问/emps 下的所有资源，都会被拦截|
+|拦截所有|/*|访问所有资源，都会被拦截|
+
+8.3.4 执行流程
+
+![[Pasted image 20261003104118.png]]
+
+过滤器当中我们拦截到了请求之后，如果希望继续访问后面的 web 资源，就要执行放行操作，放行就是调用 FilterChain 对象当中的 doFilter()方法，在调用 doFilter()这个方法之前所编写的代码属于放行之前的逻辑。
+
+在放行后访问完 web 资源之后还会回到过滤器当中，回到过滤器之后如有需求还可以执行放行之后的逻辑，放行之后的逻辑我们写在 doFilter()这行代码之后。
+
+如果项目中配置多个 Filter，多个过滤器就形成了过滤器链
+![[Pasted image 20261003104358.png]]
+
+过滤器链上过滤器的执行顺序：注解配置的 Filter，优先级是按照过滤器类名（字符串）的自然排序。
+
+
+
+
+## 8 .4 拦截器 Interceptor
+拦截器是 Spring 框架中提供的，用来动态拦截控制器方法的执行。
+8.4.1 快速入门
+我们一般在 interceptor 包下创建 HandlerInterceptor 实现类并重写其所有方法
+```java
+@Component  
+public class DemoInterceptor implements HandlerInterceptor {  
+    //目标资源方法执行前执行。 返回true：放行，返回false：不放行  
+    @Override  
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {  
+        System.out.println("preHandle .... ");  
+          
+        return true; //true表示放行  
+    }  
+  
+    //目标资源方法执行后执行  
+    @Override  
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {  
+        System.out.println("postHandle ... ");  
+    }  
+  
+    //视图渲染完毕后执行，最后执行  
+    @Override  
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {  
+        System.out.println("afterCompletion .... ");  
+    }  
+}
+```
+
+> [!TIP]
+> - preHandle方法：目标资源方法执行前执行。返回true：放行返回false：不放行
+> - postHandle方法：目标资源方法执行后执行
+> - afterCompletion方法：视图渲染完毕后执行，最后执行
+
+在 config包下创建一个配置类 `WebConfig`，实现 `WebMvcConfigurer` 接口，并重写 `addInterceptors` 方法
+
+```java
+@Configuration  
+public class WebConfig implements WebMvcConfigurer {  
+    @Autowired    private DemoInterceptor demoInterceptor;  
+  
+    @Autowired  
+    private TokenInterceptor tokenInterceptor;  
+  
+    @Override  
+    public void addInterceptors(InterceptorRegistry registry) {  
+        //注册自定义拦截器对象  
+        registry.addInterceptor(demoInterceptor).addPathPatterns("/**");  
+    }  
+}
+```
+
+8.4.2 令牌校验
 ```java
 @Slf4j  
 @Component  
@@ -2141,57 +2269,48 @@ public class TokenInterceptor implements HandlerInterceptor {
 }
 ```
 
-8.3.1 执行流程
-
-![[Pasted image 20261003104118.png]]
-
-过滤器当中我们拦截到了请求之后，如果希望继续访问后面的 web 资源，就要执行放行操作，放行就是调用 FilterChain 对象当中的 doFilter()方法，在调用 doFilter()这个方法之前所编写的代码属于放行之前的逻辑。
-
-在放行后访问完 web 资源之后还会回到过滤器当中，回到过滤器之后如有需求还可以执行放行之后的逻辑，放行之后的逻辑我们写在 doFilter()这行代码之后。
-
-如果项目中配置多个 Filter，多个过滤器就形成了过滤器链
-![[Pasted image 20261003104358.png]]
-
-过滤器链上过滤器的执行顺序：注解配置的 Filter，优先级是按照过滤器类名（字符串）的自然排序。
-
-8.3.1 拦截路径
-|   |   |   |
-|---|---|---|
-|拦截路径|urlPatterns 值|含义|
-|拦截具体路径|/login|只有访问 /login 路径时，才会被拦截|
-|目录拦截|/emps/*|访问/emps 下的所有资源，都会被拦截|
-|拦截所有|/*|访问所有资源，都会被拦截|
-
-
-## 8 .4 拦截器 Interceptor
-拦截器是 Spring 框架中提供的，用来动态拦截控制器方法的执行。
-快速入门
+配置拦截器
 ```java
-@Component  
-public class DemoInterceptor implements HandlerInterceptor {  
-    //目标资源方法执行前执行。 返回true：放行，返回false：不放行  
-    @Override  
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {  
-        System.out.println("preHandle .... ");  
-          
-        return true; //true表示放行  
-    }  
+@Configuration  
+public class WebConfig implements WebMvcConfigurer {  
+    @Autowired    private DemoInterceptor demoInterceptor;  
   
-    //目标资源方法执行后执行  
-    @Override  
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {  
-        System.out.println("postHandle ... ");  
-    }  
+    @Autowired  
+    private TokenInterceptor tokenInterceptor;  
   
-    //视图渲染完毕后执行，最后执行  
     @Override  
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {  
-        System.out.println("afterCompletion .... ");  
+    public void addInterceptors(InterceptorRegistry registry) {    
+        //设置拦截器拦截的请求路径（ /** 表示拦截所有请求），排除登录请求
+        registry.addInterceptor(tokenInterceptor).addPathPatterns("/**").excludePathPatterns("/login");  
     }  
 }
 ```
 
-> [!TIP]
-> - preHandle方法：目标资源方法执行前执行。返回true：放行返回false：不放行
-> - postHandle方法：目标资源方法执行后执行
-> - afterCompletion方法：视图渲染完毕后执行，最后执行
+8.4.3 拦截路径
+  在注册配置拦截器的时候，我们要指定拦截器的拦截路径，通过 `addPathPatterns("要拦截路径")` 方法，就可以指定要拦截哪些资源。
+
+在入门程序中我们配置的是 `/**`，表示拦截所有资源，而在配置拦截器时，不仅可以指定要拦截哪些资源，还可以指定不拦截哪些资源，只需要调用 `excludePathPatterns("不拦截路径")` 方法，指定哪些资源不需要拦截。
+|   |   |   |
+|---|---|---|
+|拦截路径|含义|举例|
+|/*|一级路径|能匹配/depts，/emps，/login，不能匹配 /depts/1|
+|/**|任意级路径|能匹配/depts，/depts/1，/depts/1/2|
+|/depts/*|/depts 下的一级路径|能匹配/depts/1，不能匹配/depts/1/2，/depts|
+|/depts/**|/depts 下的任意级路径|能匹配/depts，/depts/1，/depts/1/2，不能匹配/emps/1|
+
+
+8.4.4 执行流程
+![[Pasted image 20261003110138.png]]
+
+- 当我们打开浏览器来访问部署在 web 服务器当中的 web 应用时，此时我们所定义的过滤器会拦截到这次请求。拦截到这次请求之后，它会先执行放行前的逻辑，然后再执行放行操作。而由于我们当前是基于 springboot 开发的，所以放行之后是进入到了 spring 的环境当中，也就是要来访问我们所定义的 controller 当中的接口方法。
+    
+- Tomcat 并不识别所编写的 Controller 程序，但是它识别 Servlet 程序，所以在 Spring 的 Web 环境中提供了一个非常核心的 Servlet：DispatcherServlet（前端控制器），所有请求都会先进行到 DispatcherServlet，再将请求转给 Controller。
+    
+- 当我们定义了拦截器后，会在执行 Controller 的方法之前，请求被拦截器拦截住。执行 `preHandle()` 方法，这个方法执行完成后需要返回一个布尔类型的值，如果返回 true，就表示放行本次操作，才会继续访问 controller 中的方法；如果返回 false，则不会放行（controller 中的方法也不会执行）。
+    
+- 在 controller 当中的方法执行完毕之后，再回过来执行 `postHandle()` 这个方法以及 `afterCompletion()` 方法，然后再返回给 DispatcherServlet，最终再来执行过滤器当中放行后的这一部分逻辑的逻辑。执行完毕之后，最终给浏览器响应数据。
+
+8.4.5 拦截器与过滤器的区别
+- **接口规范不同：过滤器需要实现 Filter 接口，而拦截器需要实现 HandlerInterceptor 接口。**
+    
+- **拦截范围不同：****过滤器 Filter 会拦截所有的资源，而 Interceptor 只会拦截 Spring 环境中的资源****。**
