@@ -2260,12 +2260,12 @@ token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIs
 
 ## 8.3 过滤器 Filter
 
-令牌要靠后端统一校验，Spring 提供了两种横切机制：**过滤器 Filter** 与**拦截器 Interceptor**。两者都能在请求到达业务代码之前执行校验，本节先讲过滤器，下一节再讲拦截器，最后对比二者差异。
+令牌要靠后端统一校验，Spring 提供了两种横切机制：**过滤器 Filter** 与**拦截器 Interceptor**。两者都能在请求到达业务代码之前执行校验，
 
 **Filter** 是 Servlet 规范定义的**三大组件之一**（Servlet、Filter、Listener），属于 Servlet 层，Tomcat 原生支持：只要配置了过滤器，访问 web 服务器上的任何资源都必须先经过它，处理完才会到达目标资源。
 
 > [!IMPORTANT]
-> 因为 Filter 属于 Servlet 层，**它拦截的范围比 Spring 的 Controller 广得多**：静态资源、`/error` 错误页、其他 Servlet 都会经过它。这是它和拦截器最本质的区别之一，8.4.5 会详细对比。
+> 因为 Filter 属于 Servlet 层，**它拦截的范围比 Spring 的 Controller 广得多**：静态资源、`/error` 错误页、其他 Servlet 都会经过它。这是它和拦截器最本质的区别之一。
 
 ### 8.3.1 快速入门
 
@@ -2305,10 +2305,11 @@ public class DemoFilter implements Filter {
 | `doFilter()` | 每次拦截到请求 | 多次 | **唯一能拦截逻辑的地方**，代码写在这里 |
 | `destroy()` | 服务器关闭时 | 1 次 | 做资源释放 |
 
-`@WebFilter` 用来声明这是一个过滤器，并通过 `urlPatterns` 指定它要拦截哪些路径。不过光加 `@WebFilter` 还不够——Spring Boot 默认并不扫描 Servlet 组件，必须在**启动类**上再加一个 `@ServletComponentScan` 开启支持：
+`@WebFilter` 用来声明这是一个过滤器，并通过 `urlPatterns` 指定它要拦截哪些路径。Spring Boot 默认并不扫描 Servlet 组件，必须在**启动类**上再加一个 `@ServletComponentScan` 开启支持：
 
 ```java
-@ServletComponentScan     // 开启 SpringBoot 项目对 Servlet 组件（Filter / Servlet / Listener）的支持
+// 开启 SpringBoot 项目对 Servlet 组件（Filter / Servlet / Listener）的支持
+@ServletComponentScan 
 @SpringBootApplication
 public class TliasSystemBackEndApplication {
 
@@ -2319,9 +2320,9 @@ public class TliasSystemBackEndApplication {
 ```
 
 > [!WARNING]
-> **没有 `@ServletComponentScan`，`@WebFilter` 就只是一个普通注解，过滤器完全不会生效**，而且启动时没有任何报错——这是排查「过滤器怎么没拦住」时最常见的原因。
+> **没有 `@ServletComponentScan`，`@WebFilter` 就只是一个普通注解，过滤器完全不会生效**，而且启动时没有任何报错。
 
-### 8.3.2 放行：FilterChain
+### 8.3.2 放行 FilterChain
 
 过滤器最核心的概念是**放行**。`doFilter()` 的第三个参数 `chain` 就是 `FilterChain`（过滤器链），只有调用它的 `chain.doFilter()` 才表示「放行」，请求才能继续访问后面的资源。于是 `doFilter()` 里的代码天然分成两段：
 
@@ -2337,9 +2338,9 @@ public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain
 }
 ```
 
-| 位置 | 语义 |
-| --- | --- |
-| `chain.doFilter()` **之前** | 请求还没到目标资源，可以在这里做校验、拦截 |
+| 位置                        | 语义                            |
+| ------------------------- | ----------------------------- |
+| `chain.doFilter()` **之前** | 请求还没到目标资源，可以在这里做校验、拦截         |
 | `chain.doFilter()` **之后** | 目标资源已执行完、响应正在回写，可以在这里做清理、统计耗时 |
 
 > [!IMPORTANT]
