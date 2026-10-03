@@ -25,7 +25,7 @@ Maven 是 Apache 基金会推出的 Java 项目自动化构建工具，也是目
 > - **核心配置文件**：`D:\apache-maven-3.9.9\conf\settings.xml`
 > - **本地仓库目录**：`D:\apache-maven-3.9.9\mvn_repo`
 
-## 2.1 配置环境变量
+## 2.1 环境变量
 
 Maven 环境变量的配置方式与 JDK 完全一致，都是两步：先声明一个「主目录」变量，再把它的 `bin` 目录追加到 `Path` 中。
 
@@ -44,7 +44,7 @@ Java version: 17.0.x, vendor: ..., runtime: ...
 OS name: "windows 11", version: ..., arch: "amd64", family: "windows"
 ```
 
-## 2.2 配置本地仓库
+## 2.2 本地仓库
 
 Maven 从远程仓库下载下来的所有 jar 包与插件，都会**缓存到本地仓库**中，之后再使用同一个依赖时就无需联网下载，直接从本地读取，速度极快。
 
@@ -73,7 +73,7 @@ Maven 从远程仓库下载下来的所有 jar 包与插件，都会**缓存到�
 
 ![[Maven配置本地仓库.png]]
 
-## 2.3 配置仓库镜像
+## 2.3 仓库镜像
 
 Maven 官方提供的**中央仓库**（Central Repository）服务器位于国外，国内直连下载通常比较慢，甚至会超时。为了解决这个问题，阿里巴巴提供了公共的 Maven 仓库镜像，其中基本涵盖了主流开源项目的 jar 包，且国内访问速度很快。
 
@@ -197,7 +197,7 @@ POM 是 Project Object Model（项目对象模型）的缩写，`pom.xml` 就是
 - `war`：Web 项目，产出 `.war` 文件，交给 Tomcat 等容器运行
 - `pom`：不产出实际构件，专门用于**父工程**（`packaging` 为 `pom` 且含 `<modules>`）或**依赖包聚合**，常用于管理多模块项目和统一版本号
 
-## 3.3 properties：把重复的版本号收进一处
+## 3.3 把重复的版本号收进一处
 
 依赖多了以后，同一个第三方库的版本号会在 `<dependencies>` 中反复出现，一旦升级就要改很多处。把它抽到 `<properties>` 中就可以只改一处：
 
