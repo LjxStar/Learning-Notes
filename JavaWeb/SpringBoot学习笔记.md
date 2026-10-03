@@ -2192,7 +2192,7 @@ public class JwtUtils {
 
 有了工具类，登录接口要做的事就三件：**校验用户名密码 → 生成令牌 → 连同用户信息一起返回**。
 
-Controller 侧仍是普通表单提交，形参名与表单的 `name` 一致、不需要任何注解（见 2.5）：
+以用户登录为例，Controller 层仍是普通表单提交，不需要做任何修改：
 
 ```java
 @Slf4j
@@ -2214,60 +2214,24 @@ public class LoginController {
 }
 ```
 
-Service 层把校验、生成令牌、组装返回值串起来：
+Service 层根据用户名和密码校验用户是否存在，如果存在则把用户信息写进 JWT 有效载荷，然后 JwtUtils 会自动生成 JWT token，发送回浏览器端。
 
 ```java
 @Override
 public LoginInfo login(Emp emp) {
-    // 1. 用户名与密码一起交给数据库匹配，匹配不上就查不出数据
     Emp empLogin = empMapper.selectUserByUsername(emp);
     if (empLogin == null) {
-        // 2. 校验失败：抛业务异常，由第七章的全局异常处理器统一转成 Result.error 返回
         throw new BusinessException("用户名或密码错误");
     }
 
-    // 3. 校验通过，把用户信息写进 JWT 载荷
     Map<String, Object> claims = new HashMap<>();
     claims.put("id", empLogin.getId());
     claims.put("username", empLogin.getUsername());
 
-    // 4. 生成令牌，与令牌一起返回给前端
     String token = JwtUtils.generateToken(claims);
     return new LoginInfo(empLogin.getId(), empLogin.getUsername(), empLogin.getName(), token);
 }
 ```
-
-对应的 Mapper 查询——密码不写在校验代码里，而是**作为查询条件直接交给数据库匹配**：
-
-```java
-@Mapper
-public interface EmpMapper {
-
-    /** 根据用户名和密码查询员工，用于登录校验 */
-    @Select("select * from emp where username = #{username} and password = #{password}")
-    Emp selectUserByUsername(Emp emp);
-}
-```
-
-`#{username}`、`#{password}` 取的都是 `Emp` 对象的属性（见 3.2.2）。方法名叫 `selectUserByUsername` 却带着密码条件，实现与命名略有出入，按语义更贴切的名字是 `login`。
-
-登录成功后返回的对象是 `LoginInfo`，除了基本资料，重点是 `token`：
-
-```java
-@Data
-public class LoginInfo {
-
-    private Integer id;
-    private String username;
-    private String name;
-    private String token;   // 后续所有请求都要带上它
-}
-```
-
-> [!WARNING]
-> - **失败时不要 `return null`**。Controller 拿到 `null` 会返回一个 HTTP 200 + 空响应体，前端按 `code` 判断就彻底懵了。正确做法是抛出业务异常（这里的 `BusinessException`），由[[#七、全局异常处理器|全局异常处理器]]统一转成 `Result.error`，前端拿到的结构与其他接口完全一致；
-> - **载荷字段名要和校验端一致**。这里放的是 `id`，那么 8.4 的拦截器里就必须用 `claims.get("id", Integer.class)` 取值。写成 `userId` 会得到 `null`，而 `null` 又会被当成合法用户 id 继续放行——这种 bug 排查起来特别费时间；
-> - **别让密码跟着 `select *` 跑到前端去**。上面这条 SQL 查出的 `Emp` 里带着 `password`，一旦被 Controller 直接返回，密码就明文发到了浏览器。数据库里存的也应该是**哈希值**而非明文（且不要用 MD5 这种能被彩虹表反查的算法）。给 `Emp` 的 `password` 加 `@JsonIgnore`，或另定义一个不含密码的 VO 再返回。
 
 #### （4）前端如何携带令牌
 
