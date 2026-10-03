@@ -1949,6 +1949,7 @@ Spring MVC 捕获到异常后，会根据异常类型在 bean 容器中查找匹
 8.1.4令牌
 
 ## 8.2 JWT令牌
+8.2.1 JWT 简介
 8.2.1 JWT 标准结构组成
 
 （1）Header 头部：算法与令牌类型说明
@@ -1991,12 +1992,12 @@ Spring MVC 捕获到异常后，会根据异常类型在 bean 容器中查找匹
   
     private static final String SECRET_KEY = "mySecretKey123456789012345678901234567890";  
     private static final SecretKey KEY = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());  
-    private static final long EXPIRATION = 86400000L;  
+    private static final long EXPIRATION = 24 * 60 * 60 * 1000L; // 24小时
   
   
     /**  
      * 生成token，传入自定义claim集合  
-     * @param claims 自定义载荷，例如 map.put("id",1); map.put("role","admin")  
+     * @param claims 自定义载荷，例如 map.put("id",1); map.put("username","admin")  
      * @return token字符串  
      */  
     public static String generateToken(Map<String, Object> claims) {  
@@ -2012,7 +2013,8 @@ Spring MVC 捕获到异常后，会根据异常类型在 bean 容器中查找匹
      * 解析token，签名错误、过期、格式错误直接抛出异常  
      * @param token jwt令牌  
      * @return Claims  
-     */    public static Claims parseToken(String token) {  
+     */    
+     public static Claims parseToken(String token) {  
         Jws<Claims> jws = Jwts.parser()  
                 .verifyWith(KEY)  
                 .build()  
@@ -2038,3 +2040,158 @@ public LoginInfo login(Emp emp) {
     return null;
 }
 ```
+## 8.3 过滤器 Filter
+当实现 JWT 令牌技术后，前端后续的请求都会在请求头中携带 JWT 令牌到服务端，而服务端需要统一拦截所有的请求，从而判断是否携带的有合法的 JWT 令牌。
+
+
+Filter 表示过滤器，是 JavaWeb 三大组件(Servlet、Filter、Listener)之一。
+使用了过滤器之后，要想访问 web 服务器上的资源，必须先经过滤器，过滤器处理完毕之后，才可以访问对应的资源。
+8.3.1 快速入门
+```java
+// @WebFilter(urlPatterns = "/*") //配置过滤器要拦截的请求路径（ /* 表示拦截浏览器的所有请求 ）  
+public class DemoFilter implements Filter {  
+    //初始化方法, web服务器启动, 创建Filter实例时调用, 只调用一次  
+    public void init(FilterConfig filterConfig) throws ServletException {  
+        System.out.println("init ...");  
+    }  
+  
+    //拦截到请求时,调用该方法,可以调用多次  
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) throws IOException, ServletException {  
+        System.out.println("拦截到了请求...");  
+        //放行  
+        chain.doFilter(servletRequest, servletResponse);  
+    }  
+  
+    //销毁方法, web服务器关闭时调用, 只调用一次  
+    public void destroy() {  
+        System.out.println("destroy ... ");  
+    }  
+}
+```
+
+
+> [!TIP]
+> init 方法：过滤器的初始化方法。在 web 服务器启动的时候会自动的创建 Filter 过滤器对象，在创建过滤器对象的时候会自动调用 init 初始化方法，这个方法只会被调用一次。
+> doFilter 方法：这个方法是在每一次拦截到请求之后都会被调用，所以这个方法是会被调用多次的，每拦截到一次请求就会调用一次 doFilter()方法。
+> destroy 方法： 是销毁的方法。当我们关闭服务器的时候，它会自动的调用销毁方法 destroy，而这个销毁方法也只会被调用一次。
+
+`@WebFilter`，并指定属性 `urlPatterns`，通过这个属性指定过滤器要拦截哪些请求
+当我们在 Filter 类上面加了@WebFilter 注解之后，接下来我们还需要在启动类上面加上一个注解 `@ServletComponentScan`，通过这个 `@ServletComponentScan` 注解来开启 SpringBoot 项目对于 Servlet 组件的支持。
+
+```java
+@ServletComponentScan  
+@SpringBootApplication  
+public class TliasSystemBackEndApplication {  
+  
+    public static void main(String[] args) {  
+        SpringApplication.run(TliasSystemBackEndApplication.class, args);  
+    }  
+  
+}
+```
+
+8.3.1 登录校验
+```java
+@Slf4j  
+@Component  
+public class TokenInterceptor implements HandlerInterceptor {  
+    //目标资源方法执行前执行。 返回true：放行，返回false：不放行  
+    @Override  
+    public boolean preHandle(HttpServletRequest req, HttpServletResponse res, Object handler) throws Exception {  
+        // 获取请求路径  
+        String path = req.getRequestURI();  
+        if (path.contains("/login")) {  
+            // 如果是登录请求，直接放行  
+            return true;  
+        }  
+  
+        // 非登录请求，检查token  
+        String token = req.getHeader("token");  
+        if (token == null || token.isEmpty()) {  
+            log.info("请求路径: {}, 没有token，返回401未授权", path);  
+            // 如果没有token，返回401未授权  
+            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);  
+  
+            return false;  
+        }  
+  
+        try {  
+            Claims claims = JwtUtils.parseToken(token);  
+            // 从token中获取用户ID，并存储到CurrentHolder中  
+            Integer userId = claims.get("userId", Integer.class);  
+            CurrentHolder.setCurrentId(userId);  
+        } catch (Exception e) {  
+            log.info("请求路径: {}, token验证失败，返回401未授权", path);  
+            // 如果token验证失败，返回401未授权  
+            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);  
+            return false;  
+        }  
+  
+        // 如果验证通过，放行请求  
+        log.info("请求路径: {}, token验证通过，放行请求", path);  
+        return true; //true表示放行  
+    }  
+  
+    @Override  
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {  
+        // 请求处理完成后，清理CurrentHolder中的用户ID  
+        CurrentHolder.clear();  
+    }  
+  
+}
+```
+
+8.3.1 执行流程
+
+![[Pasted image 20261003104118.png]]
+
+过滤器当中我们拦截到了请求之后，如果希望继续访问后面的 web 资源，就要执行放行操作，放行就是调用 FilterChain 对象当中的 doFilter()方法，在调用 doFilter()这个方法之前所编写的代码属于放行之前的逻辑。
+
+在放行后访问完 web 资源之后还会回到过滤器当中，回到过滤器之后如有需求还可以执行放行之后的逻辑，放行之后的逻辑我们写在 doFilter()这行代码之后。
+
+如果项目中配置多个 Filter，多个过滤器就形成了过滤器链
+![[Pasted image 20261003104358.png]]
+
+过滤器链上过滤器的执行顺序：注解配置的 Filter，优先级是按照过滤器类名（字符串）的自然排序。
+
+8.3.1 拦截路径
+|   |   |   |
+|---|---|---|
+|拦截路径|urlPatterns 值|含义|
+|拦截具体路径|/login|只有访问 /login 路径时，才会被拦截|
+|目录拦截|/emps/*|访问/emps 下的所有资源，都会被拦截|
+|拦截所有|/*|访问所有资源，都会被拦截|
+
+
+## 8 .4 拦截器 Interceptor
+拦截器是 Spring 框架中提供的，用来动态拦截控制器方法的执行。
+快速入门
+```java
+@Component  
+public class DemoInterceptor implements HandlerInterceptor {  
+    //目标资源方法执行前执行。 返回true：放行，返回false：不放行  
+    @Override  
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {  
+        System.out.println("preHandle .... ");  
+          
+        return true; //true表示放行  
+    }  
+  
+    //目标资源方法执行后执行  
+    @Override  
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {  
+        System.out.println("postHandle ... ");  
+    }  
+  
+    //视图渲染完毕后执行，最后执行  
+    @Override  
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {  
+        System.out.println("afterCompletion .... ");  
+    }  
+}
+```
+
+> [!TIP]
+> - preHandle方法：目标资源方法执行前执行。返回true：放行返回false：不放行
+> - postHandle方法：目标资源方法执行后执行
+> - afterCompletion方法：视图渲染完毕后执行，最后执行
