@@ -1953,7 +1953,7 @@ Spring MVC 捕获到异常后，会根据异常类型在 bean 容器中查找匹
 
 ### 8.1.2 Cookie
 
-**Cookie** 是存放在浏览器中的一段键值对。服务端通过 `Set‑Cookie` 响应头把 Cookie 返回给浏览器，浏览器收到后自动将 Cookie 保存至本地；后续发起请求时，浏览器会自动在请求头中携带该 `Cookie` 发送到服务端。
+**Cookie** 是存放在**浏览器**中的一段键值对。服务端通过 `Set‑Cookie` 响应头把 Cookie 返回给浏览器，浏览器收到后自动将 Cookie 保存至本地；后续发起请求时，浏览器会自动在请求头中携带该 `Cookie` 发送到服务端。
 
 ```java
 @Slf4j  
@@ -1987,16 +1987,35 @@ Cookie 为 HTTP 协议原生支持，Set‑Cookie 响应头解析、Cookie 请�
 
 ### 8.1.3 Session
 
-Session 是服务器端会话跟踪技术，所以它是存储在服务器端的。而 Session 的底层其实就是基于我们刚才所介绍的 Cookie 来实现的。
+Session 是服务器端会话跟踪技术，所以它是存储在**服务器端**的。而 Session 的底层其实就是基于我们刚才所介绍的 Cookie 来实现的。
+
+浏览器首次请求服务端获取 Session 时，服务端不存在该会话则自动创建 Session 对象并生成唯一 SessionID；服务端通过 `Set‑Cookie` 响应头向浏览器下发名称为 `JSESSIONID` 的 Cookie，浏览器自动保存该 Cookie；后续请求浏览器自动携带 `JSESSIONID`，服务端根据该 ID 查找对应的 Session 对象，从而实现同一会话下多次请求的数据共享。
 
 ```java
-// 1. 登录成功后，把登录用户存进 Session
-HttpSession session = req.getSession();     // 没有就新建
-session.setAttribute("loginUser", loginUser);
-
-// 2. 后续请求，从中取出登录用户
-HttpSession session = req.getSession();
-Object loginUser = session.getAttribute("loginUser");
+@Slf4j  
+@RestController  
+public class ConversationController {  
+  
+    @GetMapping("/session/sets")  
+    public Result session1(HttpServletRequest request){  
+        HttpSession session = request.getSession();  
+        log.info("HttpSession-sets: {}", session.hashCode());  
+  
+        session.setAttribute("loginUser", "hehe"); //往session中存储数据  
+        return Result.success();  
+    }  
+  
+    @GetMapping("/session/gets")  
+    public Result session2(HttpServletRequest request){  
+        HttpSession session = request.getSession();  
+        log.info("HttpSession-gets: {}", session.hashCode());  
+  
+        Object loginUser = session.getAttribute("loginUser"); //从session中获取数据  
+        log.info("loginUser: {}", loginUser);  
+        return Result.success(loginUser);  
+    }  
+  
+}
 ```
 
 Session 把数据放在服务端，比 Cookie 安全得多，但它有两个绕不开的短板：
