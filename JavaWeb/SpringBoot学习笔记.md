@@ -1992,29 +1992,34 @@ Session 是服务器端会话跟踪技术，所以它是存储在**服务器端*
 浏览器首次请求服务端获取 Session 时，服务端不存在该会话则自动创建 Session 对象并生成唯一 SessionID；服务端通过 `Set‑Cookie` 响应头向浏览器下发名称为 `JSESSIONID` 的 Cookie，浏览器自动保存该 Cookie；后续请求浏览器自动携带 `JSESSIONID`，服务端根据该 ID 查找对应的 Session 对象，从而实现同一会话下多次请求的数据共享。
 
 ```java
-@Slf4j  
-@RestController  
-public class ConversationController {  
-  
-    @GetMapping("/session/sets")  
-    public Result session1(HttpServletRequest request){  
-        HttpSession session = request.getSession();  
-        log.info("HttpSession-sets: {}", session.hashCode());  
-  
-        session.setAttribute("loginUser", "hehe"); //往session中存储数据  
-        return Result.success();  
-    }  
-  
-    @GetMapping("/session/gets")  
-    public Result session2(HttpServletRequest request){  
-        HttpSession session = request.getSession();  
-        log.info("HttpSession-gets: {}", session.hashCode());  
-  
-        Object loginUser = session.getAttribute("loginUser"); //从session中获取数据  
-        log.info("loginUser: {}", loginUser);  
-        return Result.success(loginUser);  
-    }  
-  
+@Slf4j
+@RestController
+public class ConversationController {
+
+    /**
+     * 获取/创建Session，存入会话数据
+     * 首次请求无Session时服务端自动创建Session对象，生成SessionID，通过Set‑Cookie下发JSESSIONID给浏览器
+     */
+    @GetMapping("/session/sets")
+    public Result session1(HttpServletRequest request){
+        HttpSession session = request.getSession();
+        log.info("HttpSession-sets: {}", session.hashCode());
+        session.setAttribute("loginUser", "hehe"); //往session中存储会话数据
+        return Result.success();
+    }
+
+    /**
+     * 获取Session中的会话数据
+     * 浏览器请求自动携带JSESSIONID，服务端根据该ID查找对应的Session对象，读取共享数据
+     */
+    @GetMapping("/session/gets")
+    public Result session2(HttpServletRequest request){
+        HttpSession session = request.getSession();
+        log.info("HttpSession-gets: {}", session.hashCode());
+        Object loginUser = session.getAttribute("loginUser"); //从session中读取会话数据
+        log.info("loginUser: {}", loginUser);
+        return Result.success(loginUser);
+    }
 }
 ```
 
