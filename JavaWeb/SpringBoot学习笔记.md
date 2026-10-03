@@ -1908,13 +1908,15 @@ public class GlobalExceptionHandler {
 }
 ```
 
+Spring MVC 捕获到异常后，会根据异常类型在 bean 容器中查找匹配的 `@ExceptionHandler` 处理方法，遵循精确类型优先匹配原则；如果没有找到对应异常的处理器，最终会匹配 `Exception.class` 通用异常处理方法。
+
 > [!IMPORTANT]
 > **给前端看的 `msg` 和给排查用的日志，是两回事**：
 > - `Result.error(...)` 的内容会直接返回给用户，绝不能包含异常堆栈、SQL、文件路径；
 > - 完整的异常信息用 `log.error("服务器异常", e)` 打进日志（第二个参数传 `e`，SLF4J 会自动打印堆栈）。
 
-> [!NOTE]
-> Spring MVC 捕获到异常后，会根据异常类型在 bean 容器中查找匹配的 `@ExceptionHandler` 处理方法，遵循**精确类型优先匹配原则**；如果没有找到对应异常的处理器，最终会匹配 `Exception.class` 通用异常处理方法。
+
+
 
 
 # 八、登录
