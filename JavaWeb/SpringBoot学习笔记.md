@@ -2256,10 +2256,7 @@ GET /emps?page=1&pageSize=10 HTTP/1.1
 token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsImlhdCI6MTc1ODg2NDAwMCwiZXhwIjoxNzU4OTUwNDAwfQ.A4pD4NQnxSu4N5dqkwTI1ssMyJ7u1CjHBQm_q1KWjgo
 ```
 
-服务端不再是「判断这次请求是不是来自一个已登录的人」，而是「判断这个令牌是不是我签发的、还有没有过期」。这正是接下来两小节要解决的问题——**谁来统一做这个校验**？如果每个 Controller 方法里各写一遍，早晚会有人漏掉。
 
-> [!TIP]
-> 前端与后端分属不同端口，属于跨域请求，还需要后端开启 CORS（在 `WebConfig` 中重写 `addCorsMappings`）并把 `token` 加入允许的请求头，否则浏览器会直接把请求拦下来。
 
 ## 8.3 过滤器 Filter
 
