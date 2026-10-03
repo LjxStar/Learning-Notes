@@ -1956,31 +1956,32 @@ Spring MVC 捕获到异常后，会根据异常类型在 bean 容器中查找匹
 **Cookie** 是存放在浏览器中的一段键值对。服务端通过 `Set‑Cookie` 响应头把 Cookie 返回给浏览器，浏览器收到后自动将 Cookie 保存至本地；后续发起请求时，浏览器会自动在请求头中携带该 `Cookie` 发送到服务端。
 
 ```java
-// 1. 服务端把 Cookie 写进响应，浏览器收到后保存到本地
-Cookie cookie = new Cookie("username", "Tom");
-cookie.setPath("/");        // 生效路径，"/" 表示全站
-cookie.setMaxAge(3600);     // 存活时间，单位秒；不设置则浏览器关闭即失效
-resp.addCookie(cookie);
-
-// 2. 之后每次请求，浏览器自动带上：Cookie: username=Tom
-Cookie[] cookies = req.getCookies();
-String username = null;
-if (cookies != null) {
-    for (Cookie c : cookies) {
-        if ("username".equals(c.getName())) {
-            username = c.getValue();
-            break;
-        }
-    }
+@Slf4j  
+@RestController  
+public class ConversationController {  
+  
+    // 设置Cookie  
+    @GetMapping("/cookie/setc")  
+    public Result add(HttpServletResponse response){  
+        response.addCookie(new Cookie("login_username","ljxstar"));  
+        return Result.success();  
+    }  
+  
+    // 获取Cookie  
+    @GetMapping("/cookie/getc")  
+    public Result get(HttpServletRequest request){  
+        Cookie[] cookies = request.getCookies();  
+        if(cookies != null){  
+            for (Cookie cookie : cookies) {  
+                if(cookie.getName().equals("login_username")) {  
+                    return Result.success(cookie.getValue());  
+                }  
+            }  
+        }  
+        return Result.error("没有找到指定的Cookie");  
+    }  
 }
 ```
-
-`setMaxAge` 的取值决定 Cookie 的生命周期：正数是存活秒数，`0` 表示**立即删除**（常用于「退出登录」时清掉凭证），不设置则是会话级 Cookie，浏览器一关就没了。
-
-Cookie 的特点是**数据在客户端**，服务端要什么就得让客户端自己带回来。问题也就出在这里：
-
-> [!WARNING]
-> Cookie 里的内容**可以被用户随意修改**（打开浏览器开发者工具就能改），格式改、签名改都随你。所以 Cookie 只能存「非敏感、便于读取」的东西，如主题、语言偏好、是否记住用户名，**绝不能存登录凭证**，否则伪造一个 Cookie 就能冒充任意用户。
 
 ### 8.1.3 Session
 
