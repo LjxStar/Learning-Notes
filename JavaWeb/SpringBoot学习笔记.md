@@ -2090,10 +2090,14 @@ JSON Web 令牌由三个部分组成，用 `.` 分隔，从左到右依次是 He
 
 #### （3）Signature 签名
 
+签名用于安全地验证令牌。签名的计算方式是先将标头与有效载荷分别使用 Base 64 Url，再通过点将二者连接成字符串。随后将该字符串输入标头中指定的密码学算法中。
 
+```
+签名 = HMACSHA256(Base64URL(Header) + "." + Base64URL(Payload), SECRET_KEY)
+```
 
-> [!IMPORTANT]
-> 记住一句话就够用了：**Payload 负责「装数据」，Signature 负责「保数据不被改」**。至于「能不能解密看内容」——不能加密，只能看。
+签名通过 **Base 64 Url** 编码，形成 JSON Web 令牌的第三部分。三个 Base 64-URL 字符串，中间用点分隔，构成 JWT。
+![[Pasted image 20261003160534.png]]
 
 ### 8.2.3 JWT 的使用
 
