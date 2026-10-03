@@ -1737,9 +1737,9 @@ public class EmpServiceImpl implements EmpService {
 ```
 
 > [!WARNING]
-> `@Transactional` 常见失效场景：① 方法不是 `public`；② 类未交给 Spring 管理（没加 `@Service` 等注解）；③ 异常被方法内部 `try-catch` 吞掉；④ 数据库引擎不支持事务（如 MyISAM）；⑤ 在同类内部方法间自调用，绕过代理对象。
+> `@Transactional` 常见失效场景：① 方法不是 `public`；② 类未交给 Spring 管理；③ 异常被方法内部 `try-catch` 吞掉；④ 在同类内部方法间自调用，绕过代理对象。
 >
-> ⑤ 最隐蔽：如果 `save()` 内部调用了本类的另一个带 `@Transactional` 的方法，调用走的是 `this` 而不是 Spring 代理对象，事务**根本不会开启**。需要自调用生效时，可以注入自己（`@Lazy`）或从容器里 `AopContext.currentProxy()` 取代理。
+> ④ 最隐蔽：如果 `save()` 内部调用了本类的另一个带 `@Transactional` 的方法，调用走的是 `this` 而不是 Spring 代理对象，事务**根本不会开启**。需要自调用生效时，可以注入自己（`@Lazy`）或从容器里 `AopContext.currentProxy()` 取代理。
 
 ### 6.2.2 回滚规则 rollbackFor
 
