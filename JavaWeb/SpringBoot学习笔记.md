@@ -2629,9 +2629,9 @@ public class WebConfig implements WebMvcConfigurer {
 
 ## 8.5 CurrentHolder
 
-拦截器校验通过后只做了一件事：把令牌里的用户 id 放进 `CurrentHolder`。它之所以需要存在，是因为**业务层常常要知道「当前操作人是谁」**（比如新增员工要记录创建人、更新时要防止越权），而 Controller 方法的形参里只有业务参数，拿不到令牌。
+拦截器校验通过后只做了一件事：把令牌里的用户 id 放进 `CurrentHolder`。它之所以需要存在，是因为**业务层常常要知道「当前操作人是谁」**，例如记录操作日志要记录操作人，而 Controller 方法的形参里只有业务参数，拿不到令牌。
 
-`CurrentHolder` 的实现只用了一个 `ThreadLocal`：一个请求由一个线程处理，用 `ThreadLocal` 存「当前线程的用户 id」，业务层随时能静态取到，不同请求之间又天然隔离。
+`CurrentHolder` 的实现只用了一个 `ThreadLocal`：一个请求由一个线程处理，用 `ThreadLocal` 存当前线程的用户 id，业务层随时能静态取到，不同请求之间又天然隔离。
 
 ```java
 public class CurrentHolder {  
@@ -2651,7 +2651,7 @@ public class CurrentHolder {
 }
 ```
 
-业务层直接静态调用即可：
+业务层只需要通过 CurrentHolder 工具类直接静态调用即可：
 
 ```java
 @Override
