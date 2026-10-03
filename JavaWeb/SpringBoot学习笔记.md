@@ -1942,8 +1942,99 @@ Spring MVC 捕获到异常后，会根据异常类型在 bean 容器中查找匹
 
 ## 8.1 会话跟踪技术
 
-### 8.1.1 Cookie
+8.1.1会话跟踪的作用与业务场景
 
-### 8.1.2 Session
+8.1.2Cookie 
+ 8.1.3Session
+8.1.4令牌
 
-### 8.1.3 令牌
+## 8.2 JWT令牌
+8.2.1 JWT 标准结构组成
+
+（1）Header 头部：算法与令牌类型说明
+
+（2）Payload 载荷：自定义业务数据与过期规则
+
+（3）Signature 签名：防篡改、防伪造原理
+
+8.2.2 JWT实现
+
+（此处我给你一些代码，请基于代码来撰写笔记）
+```xml
+<!--jwt-->  
+<!-- 核心 API 依赖（编译时必需） -->  
+<dependency>  
+    <groupId>io.jsonwebtoken</groupId>  
+    <artifactId>jjwt-api</artifactId>  
+    <version>0.13.0</version>  
+</dependency>  
+<!-- 具体实现（运行时必需） -->  
+<dependency>  
+    <groupId>io.jsonwebtoken</groupId>  
+    <artifactId>jjwt-impl</artifactId>  
+    <version>0.13.0</version>  
+    <scope>runtime</scope>  
+</dependency>  
+<!-- Jackson JSON 处理（运行时必需） -->  
+<dependency>  
+    <groupId>io.jsonwebtoken</groupId>  
+    <artifactId>jjwt-jackson</artifactId>  
+    <version>0.13.0</version>  
+    <scope>runtime</scope>  
+</dependency>
+```
+注意连贯性
+```java
+/**  
+ * JWT工具类，仅生成、解析 JJWT 0.13.0  
+ */public class JwtUtils {  
+  
+    private static final String SECRET_KEY = "mySecretKey123456789012345678901234567890";  
+    private static final SecretKey KEY = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());  
+    private static final long EXPIRATION = 86400000L;  
+  
+  
+    /**  
+     * 生成token，传入自定义claim集合  
+     * @param claims 自定义载荷，例如 map.put("id",1); map.put("role","admin")  
+     * @return token字符串  
+     */  
+    public static String generateToken(Map<String, Object> claims) {  
+        return Jwts.builder()  
+                .claims(claims)          // 直接传入自定义载荷map  
+                .issuedAt(new Date())  
+                .expiration(new Date(System.currentTimeMillis() + EXPIRATION))  
+                .signWith(KEY)  
+                .compact();  
+    }  
+  
+    /**  
+     * 解析token，签名错误、过期、格式错误直接抛出异常  
+     * @param token jwt令牌  
+     * @return Claims  
+     */    public static Claims parseToken(String token) {  
+        Jws<Claims> jws = Jwts.parser()  
+                .verifyWith(KEY)  
+                .build()  
+                .parseSignedClaims(token);  
+        return jws.getPayload();  
+    }  
+}
+```
+
+```java
+@Override  
+public LoginInfo login(Emp emp) {  
+    Emp empLogin = empMapper.selectUserByUsername(emp);  
+    if(empLogin != null){  
+        Map<String, Object> map = new HashMap<>();  
+        map.put("id", empLogin.getId());  
+  
+        map.put("username", empLogin.getUsername());  
+  
+        String token = JwtUtils.generateToken(map);  
+        return new LoginInfo(empLogin.getId(), empLogin.getUsername(), empLogin.getName(), token);  
+    }  
+    return null;
+}
+```
