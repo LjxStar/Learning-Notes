@@ -1983,14 +1983,11 @@ public class ConversationController {
 }
 ```
 
+Cookie 为 HTTP 协议原生支持，Set‑Cookie 响应头解析、Cookie 请求头携带均由浏览器自动完成，开发无需手动处理存储与传递逻辑。但是不适用于移动端 APP；用户可手动禁用 Cookie 导致功能失效；数据存放在客户端易泄露篡改；存在跨域限制，无法直接跨域名访问 Cookie。
+
 ### 8.1.3 Session
 
-**Session** 换了个思路：数据不让浏览器拿，浏览器只拿一个**编号**。
-
-1. 第一次访问时，服务端创建一个 Session 对象（默认存在内存里），生成唯一标识 `JSESSIONID`；
-2. 服务端通过响应头 `Set-Cookie: JSESSIONID=xxx` 把这个编号发给浏览器；
-3. 之后每次请求，浏览器自动带上 `Cookie: JSESSIONID=xxx`；
-4. 服务端拿这个编号找到对应的 Session，取出登录用户等信息。
+Session 是服务器端会话跟踪技术，所以它是存储在服务器端的。而 Session 的底层其实就是基于我们刚才所介绍的 Cookie 来实现的。
 
 ```java
 // 1. 登录成功后，把登录用户存进 Session
