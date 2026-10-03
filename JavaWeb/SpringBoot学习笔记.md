@@ -1481,8 +1481,15 @@ public class EmpQueryParam {
 
 - **后端需要响应给前端两组数据：**
 
-1. 所查询到的数据列表（存储到 `List` 集合中）
-2. 总记录数
+```java
+@Data  
+@NoArgsConstructor  
+@AllArgsConstructor
+public class PageResult<T> {  
+    private Long total; //总记录数  
+    private List<T> rows; //当前页数据列表  
+}
+```
 
 响应结构为「`Result` 外层 + `PageResult` 内层」的嵌套：
 
