@@ -2619,16 +2619,14 @@ public class WebConfig implements WebMvcConfigurer {
 | 路径配置           | `@WebFilter(urlPatterns = "/*")`，**只能指定拦截哪些，没有排除语法** | `addPathPatterns` / `excludePathPatterns`，**两个都能配**     |
 | 路径匹配规则         | Servlet 规范：`/*` 匹配所有层级                               | Ant 表达式：`/*` 只匹配一级，`/**` 才是任意级                          |
 | 是否 Spring bean | **否**，由 Servlet 容器创建，`@Autowired` 注入不生效              | **是**，加 `@Component` 即可注入任意依赖                           |
-| 后置回调           | 写在 `chain.doFilter()` 之后，用 `finally` 兜底              | 有专门的 `postHandle()`、`afterCompletion()` 回调              |
+| 后置回调           | 写在 `chain.doFilter()` 之后                             | 有专门的 `postHandle()`、`afterCompletion()` 回调              |
 | 执行顺序           | 类名字符串自然排序                                            | 注册顺序（`addInterceptor` 的调用顺序）                            |
-
-一句话总结各自的适用场景：
 
 > [!IMPORTANT]
 > - **过滤器**工作在最外层，适合处理**编码、跨域、字符集**这类所有请求都要做的通用事情；
 > - **拦截器**工作在 Controller 门口，能排除静态资源、能注入业务组件，适合处理**登录校验、权限控制**这类只针对业务接口的事情。
 >
-> **本项目的登录校验用拦截器实现**，原因就落在最后两行：它能直接 `excludePathPatterns("/login")`，还能注入 `ObjectMapper` 复用统一的 `Result` 结构；换成过滤器既要在代码里手写 JSON 字符串，又要自己判断 `/login`。
+> **SSM 项目的登录校验用拦截器实现**，原因就落在最后两行：它能直接 `excludePathPatterns("/login")`，还能注入 `ObjectMapper` 复用统一的 `Result` 结构；换成过滤器既要在代码里手写 JSON 字符串，又要自己判断 `/login`。
 
 ## 8.5 CurrentHolder：把当前登录用户传给业务层
 
