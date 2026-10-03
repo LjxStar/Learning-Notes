@@ -2186,10 +2186,7 @@ public class JwtUtils {
 }
 ```
 
-
-
-> - SECRET_KEY**密钥绝不能硬编码在代码里**，上线等于把钥匙挂在门上。至少要挪到 `application.yml`，生产环境再换成环境变量（做法同 2.6.3 的 AccessKey）；
-
+SECRET_KEY 不能硬编码在代码里，本文只是为了演示而放入 JwtUtils 类中，
 
 #### （3）登录接口的完整实现
 
