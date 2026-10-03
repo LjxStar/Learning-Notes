@@ -1506,21 +1506,6 @@ public class PageResult<T> {
 }
 ```
 
-**为什么前端非要 `total` 不可？** Element Plus 的 `<el-pagination>` 是受控组件，自己并不知道一共有多少条数据，只有拿到 `total` 才能算出总页数、渲染出页码栏。
-
-因此需要一个分页结果对象把两者封装起来：
-
-```java
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class PageResult<T> {
-
-    private Long total;      // 总记录数
-    private List<T> rows;    // 当前页数据列表
-}
-```
-
 > [!TIP]
 > 字段名属于**约定的一部分**，一旦确定前后端都不能随意改动。后端少返回 `total`、或把它命名成 `count`，前端分页组件就拿不到数据——这类联调问题，十有八九出在约定没对齐，而不是代码写错。
 >
