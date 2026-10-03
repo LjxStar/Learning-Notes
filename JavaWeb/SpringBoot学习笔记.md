@@ -1853,7 +1853,7 @@ Spring MVC 提供两个注解用于定义全局异常处理器：
 | `@RestControllerAdvice` | 声明这是一个**全局**异常处理类，相当于 `@ControllerAdvice` + `@ResponseBody`，方法返回值会自动序列化为 JSON |
 | `@ExceptionHandler`     | 声明该方法处理哪种异常；同一个方法也可以处理多种，写成 `{异常1.class, 异常2.class}`                          |
 
-最简实现仅需一个类、一个方法，即可拦截项目中抛出的全部异常：
+创建全局异常处理器最简单的实现仅需一个类、一个方法，即可拦截项目中抛出的全部异常：
 
 ```java
 @Slf4j
@@ -1874,7 +1874,6 @@ public class GlobalExceptionHandler {
 > 2. 方法上加 `@ExceptionHandler(Exception.class)` ，返回 `Result.error(...)`；
 > 3. 每个方法里先 `log` 记录，再返回统一响应结果。
 >
-> 这样 Controller 里就只剩下「接收参数 → 调 Service → 返回结果」，异常处理完全不用写。
 
 ## 7.3 处理特定异常
 
