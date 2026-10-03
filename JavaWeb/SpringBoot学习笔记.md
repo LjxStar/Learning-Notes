@@ -1604,14 +1604,23 @@ public class EmpServiceImpl implements EmpService {
 }
 ```
 
-此时 Mapper 恢复成最朴素的样子：
+此时 Mapper只需要：
 
 ```xml
-<select id="list" resultType="com.itheima.pojo.Emp">
-    select e.*, d.name as deptName
-    from emp as e
-    left join dept as d on e.dept_id = d.id
-    order by e.id desc
+<select id="list" resultType="com.ljxstar.pojo.Emp">  
+    select e.*, d.name as deptName from emp as e left join dept as d on e.dept_id = d.id  
+    <where>  
+        <if test="name != null and name != ''">  
+            e.name like concat('%',#{name},'%')  
+        </if>  
+        <if test="gender != null">  
+            and e.gender = #{gender}  
+        </if>  
+        <if test="begin != null and end != null">  
+            and e.entry_date between #{begin} and #{end}  
+        </if>  
+    </where>  
+    order by update_time desc  
 </select>
 ```
 
