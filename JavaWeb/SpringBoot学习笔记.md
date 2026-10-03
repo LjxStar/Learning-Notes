@@ -1340,7 +1340,7 @@ log.info("新增部门：{}，创建时间：{}", dept.getName(), dept.getCreate
 
 ### 4.3.1 最简 logback.xml
 
-Logback 的配置文件固定叫 `logback.xml`，放在 `src/main/resources` 目录下，**文件名 或放错位置都会导致配置不生效**。该文件用于控制日志的输出格式、输出位置与日志开关。
+Logback 的配置文件固定叫 `logback.xml`，放在 `src/main/resources` 目录下，**文件名错误或放错位置都会导致配置不生效**。该文件用于控制日志的输出格式、输出位置与日志开关。
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
