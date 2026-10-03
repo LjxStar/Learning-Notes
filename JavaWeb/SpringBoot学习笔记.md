@@ -2099,6 +2099,7 @@ JSON Web 令牌由三个部分组成，用 `.` 分隔，从左到右依次是 He
 
 > [!WARNING]
 > JWT 的三段内容中，**只有签名是防篡改的，Header 和 Payload 只是 Base 64 URL 编码，任何人拿到令牌都能解开看内容**。所以 Payload 里只能放 `id`、`username` 这类用于识别的信息，**密码、身份证号等敏感数据一律不能放进去**。
+
 ### 8.2.3 JWT 的使用
 
 #### （1）引入依赖
@@ -2129,9 +2130,6 @@ JJWT 从 0.12.0 起把 API 拆成了三个依赖：核心 API（编译时必需�
 </dependency>
 ```
 
-> [!TIP]
-> 少写任何一个，`compile` 阶段都看不出问题，只有运行时才会抛 `NoClassDefFoundError` / `ClassNotFoundException`。看到这类报错，先回头检查这三个依赖是否齐全、版本是否一致。
-
 #### （2）封装 JWT 工具类
 
 生成令牌和解析令牌是固定套路，封装成一个工具类，全项目共用一把密钥：
@@ -2154,7 +2152,7 @@ import java.util.Map;
  */
 public class JwtUtils {
 
-    // 签名密钥；HS256 要求密钥长度不少于 256 位（32 字节），否则运行时报 WeakKeyException
+    // 签名密钥；HS256 要求密钥长度不少于 256 位（32 字节）
     private static final String SECRET_KEY = "mySecretKey123456789012345678901234567890";
     private static final SecretKey KEY = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
     private static final long EXPIRATION = 24 * 60 * 60 * 1000L; // 有效期 24 小时
