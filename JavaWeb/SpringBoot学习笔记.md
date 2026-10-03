@@ -2663,4 +2663,4 @@ public void save(Emp emp) {
 ```
 
 > [!WARNING]
-> `ThreadLocal` 所在的线程是**被复用的**：请求结束后线程不会销毁，而是还给线程池等待下一个请求。所以**必须**在请求结束时调用 `CurrentHolder.clear()`，否则下一个请求复用同一线程时，会读到上一个用户的 id——这是越权，比不校验还危险。清理动作放在拦截器的 `afterCompletion()` 里最稳妥（过滤器则放在 `doFilter()` 的 `finally` 中）。
+> `ThreadLocal` 所在的线程是**被复用的**：请求结束后线程不会销毁，而是还给线程池等待下一个请求。所以**必须**在请求结束时调用 `CurrentHolder.clear()`，否则下一个请求复用同一线程时，会读到上一个用户的 id。清理动作放在拦截器的 `afterCompletion()` 里最稳妥（过滤器则放在 `doFilter()` 的 `finally` 中）。
