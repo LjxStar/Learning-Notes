@@ -2358,9 +2358,6 @@ public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain
 | 拦截所有   | `/*`            | 访问所有资源，都会被拦截，含 `/depts/1/2` 这样的多级路径 |
 | 按扩展名   | `*.jpg`         | 拦截所有 jpg 请求，静态资源专属用法                |
 
-> [!WARNING]
-> 注意过滤器里的 `/*` **匹配的是所有层级**（Servlet 规范如此），这和拦截器的 `/*` 语义完全不同，后者只匹配一级路径。
-
 ### 8.3.4 执行流程
 
 一次请求经过过滤器的完整过程如下：
@@ -2484,7 +2481,7 @@ public class DemoInterceptor implements HandlerInterceptor {
 | `afterCompletion()` | 请求处理**彻底结束**后 | `void` | `ex` 非空说明本次请求抛过异常，常用于清理资源 |
 
 > [!IMPORTANT]
-> `afterCompletion()` 是释放资源的**可靠时机**。`postHandle()` 在 `@RestController` 返回 JSON 的场景下几乎拿不到可用的 `ModelAndView`，而且 Controller 抛异常时它根本不会被执行；只有 `afterCompletion()` 一定会被触发（前提是 `preHandle()` 返回了 `true`）。
+> `afterCompletion()` 是释放资源的**可靠时机**。`postHandle()` 在 `@RestController` 返回 JSON 的场景下几乎拿不到可用的 `ModelAndView`，而且 Controller 抛异常时它根本不会被执行；只有 `afterCompletion()` 一定会被触发。
 
 写好的拦截器只是「一个类」，还必须在 `config` 包下的配置类 `WebConfig` 中注册才算启用。`WebConfig` 实现 `WebMvcConfigurer` 接口，重写 `addInterceptors` 方法：
 
@@ -2505,7 +2502,7 @@ public class WebConfig implements WebMvcConfigurer {
 
 ### 8.4.2 令牌校验
 
-把登录校验的逻辑搬进 `preHandle()`，步骤与 8.3.6 的过滤器版本完全一致，只是换成拦截器的写法：
+把登录校验的逻辑搬进 `preHandle()`，步骤与过滤器版本完全一致，只是换成拦截器的写法：
 
 ```java
 @Slf4j
@@ -2583,10 +2580,6 @@ public class WebConfig implements WebMvcConfigurer {
 
 这样 `/login` 就不必在代码里 `if` 判断，注册时排除即可，校验代码里只剩「取令牌 → 验令牌 → 放行或 401」这条主线。
 
-> [!TIP]
-> - 使用 Knife4j / OpenAPI 文档时，除了 `/login`，`/doc.html`、`/swagger-ui/**`、`/v3/api-docs/**` 也要加进 `excludePathPatterns`，否则接口文档页面自己先被 401 拦住了；
-> - `TokenInterceptor` 类上有 `@Component` 却没有在 `WebConfig` 里注册，是不会被执行的——**创建了 bean ≠ 启用了拦截器**。
-
 ### 8.4.3 拦截路径
 
 注册时通过 `addPathPatterns("要拦截的路径")` 指定拦截哪些资源，通过 `excludePathPatterns("不拦截的路径")` 指定排除哪些资源。拦截器用的是 **Ant 风格路径表达式**，切记 `*` 与 `**` 的区别：
@@ -2599,15 +2592,11 @@ public class WebConfig implements WebMvcConfigurer {
 | `/depts/**` | `/depts` 下的任意级路径 | 能匹配 `/depts`、`/depts/1`、`/depts/1/2`，不能匹配 `/emps/1` |
 
 > [!WARNING]
-> 这是本节最容易踩的坑：**过滤器的 `/*` 匹配所有层级，拦截器的 `/*` 只匹配一级**。在拦截器里想写「全部拦截」，必须是 `/**` 而不是 `/*`。对比 8.3.3 的过滤器路径表。
+> **过滤器的 `/*` 匹配所有层级，拦截器的 `/*` 只匹配一级**。在拦截器里想写「全部拦截」，必须是 `/**` 而不是 `/*`。
 
 ### 8.4.4 执行流程
 
 把过滤器和拦截器串起来看，一次请求的完整链路如下：
-
-![[Filter与Interceptor的执行顺序.png]]
-
-用文字走一遍：
 
 1. 浏览器访问部署在 web 服务器上的应用，请求先被**过滤器**拦截，执行放行前的逻辑；
 2. 过滤器放行后，请求进入 Spring 环境。由于 Tomcat 并不认识我们编写的 Controller 程序，只认识 Servlet 程序，所以 Spring Web 环境中提供了一个非常核心的 Servlet：**DispatcherServlet（前端控制器）**，所有请求都会先到 DispatcherServlet，再由它转给 Controller；
@@ -2615,6 +2604,7 @@ public class WebConfig implements WebMvcConfigurer {
 4. Controller 中的方法执行完毕后，再回过来执行 `postHandle()` 与 `afterCompletion()`，然后返回 DispatcherServlet；
 5. 最后回到过滤器中放行之后的这一部分逻辑，执行完毕，最终给浏览器响应数据。
 
+![[Filter与Interceptor的执行顺序.png]]
 ### 8.4.5 拦截器与过滤器的区别
 
 两者的**执行流程高度相似**——都是「请求到达 → 前置逻辑 → 目标资源 → 后置逻辑 → 响应返回」——但它们属于不同的层，关注点也不同：
