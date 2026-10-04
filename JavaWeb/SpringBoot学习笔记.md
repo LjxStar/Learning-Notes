@@ -2405,7 +2405,7 @@ public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain
 
 对于 `@WebFilter` 声明的过滤器，其执行顺序由**类名的自然排序（字典序）** 决定。若需精确控制顺序，推荐使用 `FilterRegistrationBean` 进行显式注册。
 
-### 8.3.6 用过滤器做令牌校验
+### 8.3.6 基于 Filter 实现令牌校验
 
 现在把本章的主线接上：令牌校验就写在 `doFilter()` 的放行之前，校验不通过就**不调用 `chain.doFilter()`**，直接返回 401，请求永远到不了 Controller。
 
@@ -2536,7 +2536,33 @@ public class WebConfig implements WebMvcConfigurer {
 | `postHandle()`      | **Controller 方法执行后、视图渲染前** | `void`    | 可对 `ModelAndView` 进行修改。对于 `@RestController` 返回 JSON 的接口，`ModelAndView` 通常为 `null` |
 | `afterCompletion()` | **请求完全处理完毕后**（包括异常场景）      | `void`    | **一定会被执行**。可通过 `ex` 参数判断是否发生异常，适合统一清理资源（如 `ThreadLocal`）                          
 
-### 8.4.3 基于 Interceptor 实现令牌校验
+### 8.4.3 拦截路径
+
+拦截器使用 **Ant 风格**路径表达式，`*` 和 `**` 的区别需特别注意：
+
+| 表达式 | 含义 | 示例说明 |
+|---|---|---|
+| `/*` | 匹配**一级**路径 | 匹配 `/login`、`/depts`，但**不匹配** `/depts/1` |
+| `/**` | 匹配**任意层级**路径 | 匹配 `/login`、`/depts`、`/depts/1`、`/depts/1/2` 等所有路径 |
+| `/depts/*` | 匹配 `/depts` 下的**一级**路径 | 匹配 `/depts/1`，不匹配 `/depts` 本身，也不匹配 `/depts/1/2` |
+| `/depts/**` | 匹配 `/depts` 下的**任意层级**路径 | 匹配 `/depts`、`/depts/1`、`/depts/1/2` 等 |
+
+> [!IMPORTANT]
+> 若想拦截项目中绝大多数业务接口，通常使用 `/**` 配合 `excludePathPatterns` 排除特定接口（如登录、注册、静态资源等）。
+
+### 8.4.4 执行流程
+
+把过滤器和拦截器串起来看，一次请求的完整链路如下：
+
+1. 浏览器访问部署在 web 服务器上的应用，请求先被**过滤器**拦截，执行放行前的逻辑；
+2. 过滤器放行后，请求进入 Spring 环境。由于 Tomcat 并不认识我们编写的 Controller 程序，只认识 Servlet 程序，所以 Spring Web 环境中提供了一个非常核心的 Servlet：**DispatcherServlet（前端控制器）**，所有请求都会先到 DispatcherServlet，再由它转给 Controller；
+3. 定义了拦截器后，请求在执行 Controller 方法**之前**被拦截器拦下，执行 `preHandle()`：返回 `true` 才继续访问 Controller 中的方法，返回 `false` 则不放行，Controller 中的方法也不会执行；
+4. Controller 中的方法执行完毕后，再回过来执行 `postHandle()` 与 `afterCompletion()`，然后返回 DispatcherServlet；
+5. 最后回到过滤器中放行之后的这一部分逻辑，执行完毕，最终给浏览器响应数据。
+
+![[Filter与Interceptor的执行顺序.png]]
+
+### 8.4.5 基于 Interceptor 实现令牌校验
 
 拦截器相较 Filter 最大的优势是：**支持排除路径**（`excludePathPatterns`）和**可注入 Spring Bean**（如 `ObjectMapper` 用于序列化统一响应结果）。
 
@@ -2615,32 +2641,6 @@ public class WebConfig implements WebMvcConfigurer {
     }
 }
 ```
-
-### 8.4.4 拦截路径
-
-拦截器使用 **Ant 风格**路径表达式，`*` 和 `**` 的区别需特别注意：
-
-| 表达式 | 含义 | 示例说明 |
-|---|---|---|
-| `/*` | 匹配**一级**路径 | 匹配 `/login`、`/depts`，但**不匹配** `/depts/1` |
-| `/**` | 匹配**任意层级**路径 | 匹配 `/login`、`/depts`、`/depts/1`、`/depts/1/2` 等所有路径 |
-| `/depts/*` | 匹配 `/depts` 下的**一级**路径 | 匹配 `/depts/1`，不匹配 `/depts` 本身，也不匹配 `/depts/1/2` |
-| `/depts/**` | 匹配 `/depts` 下的**任意层级**路径 | 匹配 `/depts`、`/depts/1`、`/depts/1/2` 等 |
-
-> [!IMPORTANT]
-> 若想拦截项目中绝大多数业务接口，通常使用 `/**` 配合 `excludePathPatterns` 排除特定接口（如登录、注册、静态资源等）。
-
-### 8.4.5 执行流程
-
-把过滤器和拦截器串起来看，一次请求的完整链路如下：
-
-1. 浏览器访问部署在 web 服务器上的应用，请求先被**过滤器**拦截，执行放行前的逻辑；
-2. 过滤器放行后，请求进入 Spring 环境。由于 Tomcat 并不认识我们编写的 Controller 程序，只认识 Servlet 程序，所以 Spring Web 环境中提供了一个非常核心的 Servlet：**DispatcherServlet（前端控制器）**，所有请求都会先到 DispatcherServlet，再由它转给 Controller；
-3. 定义了拦截器后，请求在执行 Controller 方法**之前**被拦截器拦下，执行 `preHandle()`：返回 `true` 才继续访问 Controller 中的方法，返回 `false` 则不放行，Controller 中的方法也不会执行；
-4. Controller 中的方法执行完毕后，再回过来执行 `postHandle()` 与 `afterCompletion()`，然后返回 DispatcherServlet；
-5. 最后回到过滤器中放行之后的这一部分逻辑，执行完毕，最终给浏览器响应数据。
-
-![[Filter与Interceptor的执行顺序.png]]
 
 ### 8.4.6 拦截器与过滤器的区别
 
