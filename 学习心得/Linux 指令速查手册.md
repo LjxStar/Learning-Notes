@@ -11,17 +11,17 @@
 
 ## 〇、Ubuntu 与 CentOS 的核心差异
 
-| 方面 | Ubuntu（Debian 系） | CentOS（RHEL 系） |
-| --- | --- | --- |
-| 软件包格式 | `.deb` | `.rpm` |
-| 包管理工具 | `apt` / `apt-get` / `dpkg` | `yum`（CentOS 7）/ `dnf`（CentOS 8+）/ `rpm` |
-| 装包 / 卸包 | `apt install` / `apt remove` | `yum install` / `yum remove` |
-| 防火墙 | `ufw`（默认**未启用**） | `firewalld`（默认**开启**，CentOS 7+）；CentOS 6 用 `iptables` |
-| root 使用习惯 | 默认**禁用 root 登录**，日常操作靠 `sudo` | 默认允许 root 登录，习惯直接以 root 操作 |
-| 本地包安装 | `dpkg -i xxx.deb` | `rpm -ivh xxx.rpm` |
-| 网卡 / IP | `ip addr`；`ifconfig` 需自行装 net-tools | 同左 |
-| 服务管理 | `systemctl`（Ubuntu 15.04+） | `systemctl`（CentOS 7+）；CentOS 6 用 `service` / `chkconfig` |
-| 依赖处理 | `apt` / `yum` / `dnf` 都会自动处理依赖 | 同左 |
+| 方面        | Ubuntu（Debian 系）                    | CentOS（RHEL 系）                                            |
+| --------- | ----------------------------------- | --------------------------------------------------------- |
+| 软件包格式     | `.deb`                              | `.rpm`                                                    |
+| 包管理工具     | `apt` / `apt-get` / `dpkg`          | `yum`（CentOS 7）/ `dnf`（CentOS 8+）/ `rpm`                  |
+| 装包 / 卸包   | `apt install` / `apt remove`        | `yum install` / `yum remove`                              |
+| 防火墙       | `ufw`（默认**未启用**）                    | `firewalld`（默认**开启**，CentOS 7+）；CentOS 6 用 `iptables`     |
+| root 使用习惯 | 默认**禁用 root 登录**，日常操作靠 `sudo`       | 默认允许 root 登录，习惯直接以 root 操作                                |
+| 本地包安装     | `dpkg -i xxx.deb`                   | `rpm -ivh xxx.rpm`                                        |
+| 网卡 / IP   | `ip addr`；`ifconfig` 需自行装 net-tools | 同左                                                        |
+| 服务管理      | `systemctl`（Ubuntu 15.04+）          | `systemctl`（CentOS 7+）；CentOS 6 用 `service` / `chkconfig` |
+| 依赖处理      | `apt` / `yum` / `dnf` 都会自动处理依赖      | 同左                                                        |
 
 ### 为什么 Ubuntu 要用 sudo，而 CentOS 直接操作？
 
