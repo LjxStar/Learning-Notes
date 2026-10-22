@@ -2895,6 +2895,8 @@ execution(* com.ljxstar.service.DeptService.insert(..)) || execution(* com.ljxst
 
 ## 9.4 通知
 
+### 9.4.1 通知类型
+
 **通知（Advice）** 就是切面里真正干活的那段逻辑。Spring AOP 按「执行的时机」提供了 5 种通知：
 
 | 通知类型 | 注解 | 执行时机 |
@@ -2905,77 +2907,9 @@ execution(* com.ljxstar.service.DeptService.insert(..)) || execution(* com.ljxst
 | 后置异常通知 | `@AfterThrowing` | 目标方法**抛出异常后**执行 |
 | 环绕通知 | `@Around` | 目标方法**执行前后**，需要自己调用 `proceed()` 放行 |
 
-把 9.1 的切面继续扩展，5 种通知写在同一个切面里就是这样：
-
-```java
-/**
- * 操作日志切面：演示 5 种通知
- */
-@Slf4j
-@Component
-@Aspect
-public class LogAspect {
-
-    /**
-     * 切入点：匹配所有标注了 @Log 注解的方法
-     */
-    @Pointcut("@annotation(com.ljxstar.annotation.Log)")
-    public void logPointcut() {
-    }
-
-    /**
-     * 前置通知：目标方法执行前
-     */
-    @Before("logPointcut()")
-    public void before(JoinPoint joinPoint) {
-        log.info("【前置通知】方法：{}，开始执行", joinPoint.getSignature().toShortString());
-    }
-
-    /**
-     * 后置通知：目标方法执行后，无论成功还是抛异常都会执行
-     */
-    @After("logPointcut()")
-    public void after(JoinPoint joinPoint) {
-        log.info("【后置通知】方法：{}，执行结束", joinPoint.getSignature().toShortString());
-    }
-
-    /**
-     * 后置返回通知：目标方法正常返回后执行
-     */
-    @AfterReturning("logPointcut()")
-    public void afterReturning(JoinPoint joinPoint, Object result) {
-        log.info("【后置返回通知】方法：{}，正常返回", joinPoint.getSignature().toShortString());
-    }
-
-    /**
-     * 后置异常通知：目标方法抛出异常后执行
-     */
-    @AfterThrowing("logPointcut()")
-    public void afterThrowing(JoinPoint joinPoint, Exception e) {
-        log.error("【后置异常通知】方法：{}，执行异常", joinPoint.getSignature().toShortString(), e);
-    }
-
-    /**
-     * 环绕通知：由自己控制目标方法的执行
-     */
-    @Around("logPointcut()")
-    public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
-        log.info("【环绕通知】方法：{}，执行前", joinPoint.getSignature().toShortString());
-        Object result = joinPoint.proceed();   // 放行目标方法
-        log.info("【环绕通知】方法：{}，执行后", joinPoint.getSignature().toShortString());
-        return result;
-    }
-}
-```
-
-### 9.4.1 多个通知的执行顺序
+### 9.4.2 多个通知的执行顺序
 
 同一个切面里可以写多个通知，它们共用同一个切入点。目标方法被调用时，各通知按下面的顺序依次执行：
-
-> @Around 前置 → @Before → 目标方法 → @AfterReturning / @AfterThrowing → @After → @Around 后置
-
-
-拆开来看一共 6 步：
 
 1. **`@Around` 的前置逻辑**：`proceed()` 之前执行；
 2. **`@Before`**：目标方法执行**前**执行；
@@ -2985,21 +2919,16 @@ public class LogAspect {
 6. **`@Around` 的后置逻辑**：`proceed()` 之后执行。
 
 > [!IMPORTANT]
-> - `@After` 与 `@AfterReturning` 的区别：`@After` 相当于 `finally`，**无论**目标方法成功还是抛异常都会执行；`@AfterReturning` 只在**正常返回**时执行。同理，`@AfterThrowing` 只在**抛异常**时执行。
 > - 一个切面里可以写多个通知方法，它们共用同一个切入点；通知方法的参数用 `JoinPoint` 即可拿到连接点信息，只有 `@Around` 需要用它的子类 `ProceedingJoinPoint`（因为要调用 `proceed()`）。
-> - 同一个切面里写了**多个同类型**的通知（如两个 `@After`）时，它们的先后顺序是**未定义**的（javac 编译的 class 反射不出方法声明顺序），要么合并成一个，要么拆成不同的切面用 `@Order` 控制。
-
-> [!TIP]
-> 多个**切面**都命中同一个方法时，默认的执行顺序同样是**未定义**的，用 `@Order` 明确指定：值越小优先级越高。
->
+> - 多个**切面**都命中同一个方法时，**默认情况下通知的执行顺序**与切面类的自然排序相关联的，也可用 `@Order` 明确指定：值越小优先级越高。
 > ```java
-> @Order(1)   // 优先级高，先执行
-> @Aspect
-> @Component
-> public class LogAspect { ... }
->
-> @Order(2)   // 优先级低，后执行
-> @Aspect
-> @Component
-> public class AuthAspect { ... }
+> > @Order(1)   // 优先级高，先执行
+> > @Aspect
+> > @Component
+> > public class LogAspect { ... }
+> >
+> > @Order(2)   // 优先级低，后执行
+> > @Aspect
+> > @Component
+> > public class AuthAspect { ... }
 > ```
