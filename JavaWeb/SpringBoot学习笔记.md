@@ -2740,68 +2740,44 @@ public class EmpServiceImpl implements EmpService {
 以日志记录为例进行介绍，假如我们需要对某些方法进行统一格式的日志记录，没有使用 AOP 技术之前，我们需要挨个写日志记录的逻辑代码，全是重复的逻辑。
 
 ```java
-public CommonResponse<Object> method1() {
-      // 业务逻辑
-      xxService.method1();
-      // 省略具体的业务处理逻辑
-      // 日志记录
-      ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-      HttpServletRequest request = attributes.getRequest();
-      // 省略记录日志的具体逻辑 如：获取各种信息，写入数据库等操作...
-      return CommonResponse.success();
+public Result<Object> method1() {
+    // 业务逻辑
+    xxService.method1();
+    Log.info("日志信息")
+    return Result.success();
 }
-
-public CommonResponse<Object> method2() {
-      // 业务逻辑
-      xxService.method2();
-      // 省略具体的业务处理逻辑
-      // 日志记录
-      ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-      HttpServletRequest request = attributes.getRequest();
-      // 省略记录日志的具体逻辑 如：获取各种信息，写入数据库等操作...
-      return CommonResponse.success();
+public Result<Object> method2() {
+    // 业务逻辑
+    xxService.method2();
+    Log.info("日志信息")
+    return Result.success();
 }
 ```
 
 使用 AOP 技术之后，我们可以将日志记录的逻辑封装成一个切面，然后通过切入点和通知来指定在哪些方法需要执行日志记录的操作。
 
 ```java
-
-// 日志注解
+// 日志标记注解
 @Target({ElementType.PARAMETER,ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@Documented
 public @interface Log {
-
-    /**
-     * 描述
-     */
     String description() default "";
-
-    /**
-     * 方法类型 INSERT DELETE UPDATE OTHER
-     */
     MethodType methodType() default MethodType.OTHER;
 }
 
-// 日志切面
+// 日志切面类
 @Component
 @Aspect
 public class LogAspect {
-  // 切入点，所有被 Log 注解标注的方法
-  @Pointcut("@annotation(cn.javaguide.annotation.Log)")
-  public void webLog() {
-  }
+    // 切入点：匹配加了@Log注解的方法
+    @Pointcut("@annotation(com.ljxstar.annotation.Log)")
+    public void webLog() {}
 
-   /**
-   * 环绕通知
-   */
-  @Around("webLog()")
-  public Object doAround(ProceedingJoinPoint joinPoint) throws Throwable {
-    // 省略具体的处理逻辑
-  }
-
-  // 省略其他代码
+    // 环绕通知，在目标方法前后执行日志逻辑
+    @Around("webLog()")
+    public Object doAround(ProceedingJoinPoint joinPoint) throws Throwable {
+        // 日志处理
+    }
 }
 ```
 
@@ -2809,10 +2785,9 @@ public class LogAspect {
 
 ```java
 @Log(description = "method1",methodType = MethodType.INSERT)
-public CommonResponse<Object> method1() {
-      // 业务逻辑
-      xxService.method1();
-      // 省略具体的业务处理逻辑
-      return CommonResponse.success();
+public Result<Object> method1() {
+    // 业务逻辑
+    xxService.method1();
+    return Result.success();
 }
 ```
