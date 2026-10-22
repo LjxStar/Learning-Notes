@@ -2899,36 +2899,43 @@ execution(访问修饰符? 返回值 包名.类名.?方法名(方法参数) thro
 常见示例：
 ```java
 // 1. 匹配 cn.ljxstar.controller 包下所有类的所有方法
-@Pointcut("execution(* cn.ljxstar.controller.*.*(..))")
+execution(* cn.ljxstar.controller.*.*(..))
 
 // 2. 匹配 cn.ljxstar.controller 包及其所有子包下所有类所有方法
-@Pointcut("execution(* cn.ljxstar.controller..*.*(..))")
+execution(* cn.ljxstar.controller..*.*(..))
 
 // 3. 返回值为 Result，controller包下任意类任意方法
-@Pointcut("execution(Result cn.ljxstar.controller.*.*(..))")
+execution(Result cn.ljxstar.controller.*.*(..))
 
 // 4. 第一个参数是String，第二个参数任意
-@Pointcut("execution(* cn.ljxstar.controller.*.*(String, ..))")
+execution(* cn.ljxstar.controller.*.*(String, ..))
 
 // 5. 匹配所有以 save 开头的方法
-@Pointcut("execution(* cn.ljxstar.service..*.save*(..))")
+execution(* cn.ljxstar.service..*.save*(..))
 
 // 6. 匹配所有无参方法
-@Pointcut("execution(* cn.ljxstar.service..*.*())")
+execution(* cn.ljxstar.service..*.*())
+```
+ 根据业务需要，可以使用且（&&）、或（||）、非（!） 来组合比较复杂的切入点表达式。
+```Java
+execution(* com.itheima.service.DeptService.insert(..)) || execution(* com.itheima.service.DeptService.update(..))
 ```
 
 9.3.2 @annotation
+基于注解的方式来匹配切入点方法。这种方式虽然多一步操作，我们需要自定义一个注解，但是相对来比较灵活。我们需要匹配哪个方法，就在方法上加上对应的注解就可以了
+快速入门为 annotation
+
 ## 9. 通知
 
 **通知（Advice）** 就是切面里真正干活的那段逻辑。Spring AOP 按「执行的时机」提供了 5 种通知：
 
-| 通知类型 | 注解 | 执行时机 |
-| --- | --- | --- |
-| 前置通知 | `@Before` | 目标方法**执行前** |
-| 后置通知 | `@After` | 目标方法**执行后**，无论成功还是抛异常都会执行 |
-| 后置返回通知 | `@AfterReturning` | 目标方法**正常返回后**执行，抛异常则不执行 |
-| 后置异常通知 | `@AfterThrowing` | 目标方法**抛出异常后**执行 |
-| 环绕通知 | `@Around` | 目标方法**执行前后**，需要自己调用 `proceed()` 放行 |
+| 通知类型   | 注解                | 执行时机                               |
+| ------ | ----------------- | ---------------------------------- |
+| 前置通知   | `@Before`         | 目标方法**执行前**                        |
+| 后置通知   | `@After`          | 目标方法**执行后**，无论成功还是抛异常都会执行          |
+| 后置返回通知 | `@AfterReturning` | 目标方法**正常返回后**执行，抛异常则不执行            |
+| 后置异常通知 | `@AfterThrowing`  | 目标方法**抛出异常后**执行                    |
+| 环绕通知   | `@Around`         | 目标方法**执行前后**，需要自己调用 `proceed()` 放行 |
 
 
 > [!IMPORTANT]
