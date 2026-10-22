@@ -288,7 +288,7 @@ public Result delete(@RequestParam List<Integer> ids) {
 分页条件查询的请求参数很多（页码、姓名、性别、入职时间区间……），直接堆在方法形参上既冗长又难维护。正确做法是**定义一个实体类统一封装**，并保证**前端传递的请求参数名与实体类属性名完全一致**，Spring MVC 会自动完成绑定。
 
 ```java
-package com.itheima.pojo;
+package com.ljxstar.pojo;
 
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -642,7 +642,7 @@ echo %OSS_ACCESS_KEY_SECRET%
 以文件上传为例，把上传逻辑封装成一个 `@Component` 组件，对外只暴露一个「传字节数组 + 原始文件名 → 返回 URL」的方法，Controller 只需调用方法即可完成上传。
 
 ```java
-package com.itheima.utils;
+package com.ljxstar.utils;
 
 import com.aliyun.sdk.service.oss2.OSSClient;
 import com.aliyun.sdk.service.oss2.credentials.CredentialsProvider;
@@ -809,13 +809,13 @@ public interface DeptMapper {
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>  
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.itheima.mapper.DeptMapper">
+<mapper namespace="com.ljxstar.mapper.DeptMapper">
 
-    <select id="findAll" resultType="com.itheima.pojo.Dept">
+    <select id="findAll" resultType="com.ljxstar.pojo.Dept">
         select * from dept
     </select>
 
-    <select id="getById" resultType="com.itheima.pojo.Dept">
+    <select id="getById" resultType="com.ljxstar.pojo.Dept">
         select * from dept where id = #{id}
     </select>
 
@@ -968,7 +968,7 @@ List<Dept> findAll();
 `resultType` 用于指定 `<select>` 语句返回值的类型，MyBatis 会按「列名 ↔ 属性名」自动把每行记录封装成该类型的对象。**最常见的用法是直接写实体类（POJO）的全限定名**：
 
 ```xml
-<select id="findAll" resultType="com.itheima.pojo.Dept">
+<select id="findAll" resultType="com.ljxstar.pojo.Dept">
     select * from dept
 </select>
 ```
@@ -1008,7 +1008,7 @@ List<Map<String,Object>> countEmpJobData();
 
 ```xml
 <!-- id：resultMap 唯一标识；type：对应 POJO 类全限定名 -->
-<resultMap id="empResultMap" type="com.itheima.pojo.Emp">
+<resultMap id="empResultMap" type="com.ljxstar.pojo.Emp">
     <!-- id 标签：主键列 -->
     <id column="id" property="id"/>
     <!-- result 标签：普通字段
@@ -1034,7 +1034,7 @@ List<Map<String,Object>> countEmpJobData();
 员工与工作经历是一对多关系：一个 `Emp` 对应多条 `EmpExpr`。在 `resultMap` 里用 `<collection>` 声明这个集合，`ofType` 指定集合元素的类型：
 
 ```xml
-<resultMap id="empResultMap" type="com.itheima.pojo.Emp">
+<resultMap id="empResultMap" type="com.ljxstar.pojo.Emp">
     <id column="id" property="id"/>
     <result column="name" property="name"/>
     <result column="entry_date" property="entryDate"/>
@@ -1043,7 +1043,7 @@ List<Map<String,Object>> countEmpJobData();
     <result column="update_time" property="updateTime"/>
 
     <!-- 封装 exprList：ofType 指定集合元素的类型 -->
-    <collection property="exprList" ofType="com.itheima.pojo.EmpExpr">
+    <collection property="exprList" ofType="com.ljxstar.pojo.EmpExpr">
         <id column="ee_id" property="id"/>
         <result column="ee_company" property="company"/>
         <result column="ee_job" property="job"/>
@@ -1094,9 +1094,9 @@ List<Map<String,Object>> countEmpJobData();
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.itheima.mapper.EmpMapper">
+<mapper namespace="com.ljxstar.mapper.EmpMapper">
 
-    <select id="list" resultType="com.itheima.pojo.Emp">
+    <select id="list" resultType="com.ljxstar.pojo.Emp">
         select e.*, d.name as deptName
         from emp as e
         left join dept as d on e.dept_id = d.id
@@ -1198,7 +1198,7 @@ List<Map<String,Object>> countEmpJobData();
 `<choose>` 用于「多个条件互斥、只命中一个」的场景，写法与 Java 的 `if - else if - else` 一一对应：
 
 ```xml
-<select id="listByCondition" resultType="com.itheima.pojo.Emp">
+<select id="listByCondition" resultType="com.ljxstar.pojo.Emp">
     select * from emp
     <where>
         <choose>
@@ -1230,7 +1230,7 @@ List<Map<String,Object>> countEmpJobData();
     e.entry_date, e.dept_id, e.create_time, e.update_time
 </sql>
 
-<select id="list" resultType="com.itheima.pojo.Emp">
+<select id="list" resultType="com.ljxstar.pojo.Emp">
     select <include refid="empCommon"/>, d.name as deptName
     from emp as e
     left join dept as d on e.dept_id = d.id
@@ -1453,7 +1453,7 @@ Logback 的配置文件固定叫 `logback.xml`，放在 `src/main/resources` 目
 > logging:
 >   level:
 >     root: info
->     com.itheima.mapper: debug   # 只把 Mapper 层打成 debug
+>     com.ljxstar.mapper: debug   # 只把 Mapper 层打成 debug
 > ```
 
 ---
@@ -2155,7 +2155,7 @@ JJWT 从 0.12.0 起把 API 拆成了三个依赖：核心 API（编译时必需�
 生成令牌和解析令牌是固定套路，封装成一个工具类，全项目共用一把密钥：
 
 ```java
-package com.itheima.utils;
+package com.ljxstar.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -2804,7 +2804,7 @@ public class LogAspect {
     /**
      * 切入点：匹配所有标注了 @Log 注解的方法
      */
-    @Pointcut("@annotation(com.itheima.annotation.Log)")
+    @Pointcut("@annotation(com.ljxstar.annotation.Log)")
     public void logPointcut() {
     }
 
@@ -2847,47 +2847,36 @@ public Result save(Emp emp) {
 > [!IMPORTANT]
 > - `@Aspect` 把这个类标记为**切面**；`@Pointcut` 声明「切哪些方法」；`@Around` 声明「在目标方法前后织入」，三者配合才构成一个完整的切面。
 > - `joinPoint.proceed()` 是**放行目标方法**的关键：不调用它，目标方法根本不会执行；它同时也是切面拿到方法返回值的地方。
-> - 切点表达式里的 `com.itheima.annotation.Log` 必须与注解的**全限定名**完全一致，写错就匹配不到任何方法。
+> - 切点表达式里的 `com.ljxstar.annotation.Log` 必须与注解的**全限定名**完全一致，写错就匹配不到任何方法。
 
 ## 9.2 AOP 核心概念
 
 - **横切关注点（cross-cutting concerns）**：多个类或对象中的公共行为（如日志记录、事务管理、权限控制、接口限流、接口幂等等）。
-- **连接点（JoinPoint）**：可以被 AOP 控制的方法（暗含方法执行时的相关信息）
-- **通知（Advice）**：指哪些重复的逻辑，也就是共性功能，最终体现为一个方法
+- **连接点（JoinPoint）**：可以被 AOP 控制的方法（暗含方法执行时的相关信息）。
+- **通知（Advice）**：指哪些重复的逻辑，也就是共性功能，最终体现为一个方法。
 - **切入点（PointCut）**：一个切点是一个表达式，它用来匹配哪些连接点需要被切面所增强。
 - **切面（Aspect）**：对横切关注点进行封装的类，一个切面是一个类。切面可以定义多个通知，用来实现具体的功能。
 - **目标对象（Target）**：通知所应用的对象
-
-这些概念在 9.1 示例中的对应关系如下：
-
-| 概念 | 在 9.1 示例中的体现 |
-| --- | --- |
-| 横切关注点 | 「记录操作日志」这件事本身 |
-| 切面 | `LogAspect` 类 |
-| 连接点 | 被 `@Log` 标注的方法，如 `save(...)` |
-| 切入点 | `@Pointcut("@annotation(com.itheima.annotation.Log)")` |
-| 通知 | `@Around` 标注的 `doAround(...)` 方法 |
-| 目标对象 | 被增强的 `EmpServiceImpl` 等由 Spring 管理的 bean |
 
 ### 9.2.1 常用切入点表达式
 
 切入点表达式用来说明「切哪些方法」，常用写法如下：
 
-| 表达式 | 含义 |
-| --- | --- |
-| `@annotation(com.itheima.annotation.Log)` | 匹配所有标注了指定注解的方法 |
-| `execution(* com.itheima.service.impl.EmpServiceImpl.save(..))` | 匹配 `EmpServiceImpl` 的 `save` 方法 |
-| `execution(* com.itheima.service..*.*(..))` | 匹配 `service` 包及其子包下所有类的所有方法 |
-| `within(com.itheima.service..*)` | 匹配 `service` 包及其子包下所有类的方法 |
-| `this(com.itheima.service.impl.EmpServiceImpl)` | 代理对象是 `EmpServiceImpl` 类型 |
-| `target(com.itheima.service.impl.EmpServiceImpl)` | 目标对象是 `EmpServiceImpl` 类型 |
+| 表达式                                                             | 含义                              |
+| --------------------------------------------------------------- | ------------------------------- |
+| `@annotation(com.ljxstar.annotation.Log)`                       | 匹配所有标注了指定注解的方法                  |
+| `execution(* com.ljxstar.service.impl.EmpServiceImpl.save(..))` | 匹配 `EmpServiceImpl` 的 `save` 方法 |
+| `execution(* com.ljxstar.service..*.*(..))`                     | 匹配 `service` 包及其子包下所有类的所有方法     |
+| `within(com.ljxstar.service..*)`                                | 匹配 `service` 包及其子包下所有类的方法       |
+| `this(com.ljxstar.service.impl.EmpServiceImpl)`                 | 代理对象是 `EmpServiceImpl` 类型       |
+| `target(com.ljxstar.service.impl.EmpServiceImpl)`               | 目标对象是 `EmpServiceImpl` 类型       |
 
 > [!TIP]
 > 通配符只有两个，记住它们就够了：
 > - `*`：匹配**任意一个**（一个包名段、一层类名、一个方法名、一个参数类型）；
 > - `..`：匹配**任意多个**（包名可以是多级、方法参数可以是任意个）。
 >
-> 完整格式是 `execution(修饰符? 返回类型 声明类型? 方法名(参数) 异常?)`，例如 `execution(public * com.itheima.service..*.*(..))`。
+> 完整格式是 `execution(修饰符? 返回类型 声明类型? 方法名(参数) 异常?)`，例如 `execution(public * com.ljxstar.service..*.*(..))`。
 
 ## 9.3 通知
 
@@ -2901,82 +2890,6 @@ public Result save(Emp emp) {
 | 后置异常通知 | `@AfterThrowing` | 目标方法**抛出异常后**执行 |
 | 环绕通知 | `@Around` | 目标方法**执行前后**，需要自己调用 `proceed()` 放行 |
 
-把 9.1 的切面继续扩展，5 种通知写在同一个切面里就是这样：
-
-```java
-package com.itheima.aspect;
-
-import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.After;
-import org.aspectj.lang.annotation.AfterReturning;
-import org.aspectj.lang.annotation.AfterThrowing;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.annotation.Pointcut;
-import org.springframework.stereotype.Component;
-
-/**
- * 操作日志切面：演示 5 种通知
- */
-@Slf4j
-@Component
-@Aspect
-public class LogAspect {
-
-    /**
-     * 切入点：匹配所有标注了 @Log 注解的方法
-     */
-    @Pointcut("@annotation(com.itheima.annotation.Log)")
-    public void logPointcut() {
-    }
-
-    /**
-     * 前置通知：目标方法执行前
-     */
-    @Before("logPointcut()")
-    public void before(JoinPoint joinPoint) {
-        log.info("【前置通知】方法：{}，开始执行", joinPoint.getSignature().toShortString());
-    }
-
-    /**
-     * 后置通知：目标方法执行后，无论成功还是抛异常都会执行
-     */
-    @After("logPointcut()")
-    public void after(JoinPoint joinPoint) {
-        log.info("【后置通知】方法：{}，执行结束", joinPoint.getSignature().toShortString());
-    }
-
-    /**
-     * 后置返回通知：目标方法正常返回后执行
-     */
-    @AfterReturning("logPointcut()")
-    public void afterReturning(JoinPoint joinPoint, Object result) {
-        log.info("【后置返回通知】方法：{}，正常返回", joinPoint.getSignature().toShortString());
-    }
-
-    /**
-     * 后置异常通知：目标方法抛出异常后执行
-     */
-    @AfterThrowing("logPointcut()")
-    public void afterThrowing(JoinPoint joinPoint, Exception e) {
-        log.error("【后置异常通知】方法：{}，执行异常", joinPoint.getSignature().toShortString(), e);
-    }
-
-    /**
-     * 环绕通知：由自己控制目标方法的执行
-     */
-    @Around("logPointcut()")
-    public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
-        log.info("【环绕通知】方法：{}，执行前", joinPoint.getSignature().toShortString());
-        Object result = joinPoint.proceed();   // 放行目标方法
-        log.info("【环绕通知】方法：{}，执行后", joinPoint.getSignature().toShortString());
-        return result;
-    }
-}
-```
 
 > [!IMPORTANT]
 > - `@After` 与 `@AfterReturning` 的区别：`@After` 相当于 `finally`，**无论**目标方法成功还是抛异常都会执行；`@AfterReturning` 只在**正常返回**时执行。同理，`@AfterThrowing` 只在**抛异常**时执行。
