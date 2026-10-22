@@ -129,7 +129,7 @@ public class DeptServiceImpl implements DeptService {
 
 **匹配规则：先按类型，再按名称。** 容器里只有一个 `DeptMapper` 类型的 bean 时直接注入；若存在多个同类型 bean，Spring 会用**字段名 / 参数名**去匹配 bean 的名字（`deptMapper` → 找名为 `deptMapper` 的 bean），两者都对不上就会抛 `NoUniqueBeanDefinitionException`。
 
-同类型存在多个实现类时，用 `@Primary` 标记默认实现的那个：
+同类型存在多个实现类时，用 `@Primary` 标记**默认实现**的那个：
 
 ```java
 @Service
@@ -138,7 +138,7 @@ public class DeptServiceImpl implements DeptService {
 }
 ```
 
-也可以用 `@Qualifier` 精确指定要注入的 bean：
+也可以用 `@Qualifier` **精确指定**要注入的 bean：
 
 ```java
 @Autowired
@@ -202,9 +202,6 @@ public DeptServiceImpl(DeptMapper deptMapper) {
 >
 > 字段可以声明成 `final`，保证注入后不再被修改。
 
-> [!WARNING]
-> 字段注入（`@Autowired` / `@Resource` 直接标字段）有个隐蔽的坑：**构造方法里用不到被注入的字段**，因为 Spring 的顺序是「先调用构造方法创建对象 → 再反射给字段赋值」。如果某个类在构造方法中就调用了 `deptMapper`，那时它还是 `null`，会抛 `NullPointerException`。改用构造器注入即可彻底避免。
-
 #### （3）Setter 注入
 
 把依赖通过 set 方法传入：在 set 方法上标注 `@Autowired`，Spring 创建好对象后，再回调这个方法把依赖送进来。
@@ -226,13 +223,6 @@ public class DeptServiceImpl implements DeptService {
     }
 }
 ```
-
-它的特点与适用场景：
-
-- **依赖可变**：注入完成后仍能再次调用 set 方法替换依赖，适合「运行期需要动态更换实现」的场景（策略模式、多实现类切换）；
-- **创建与赋值分离**：对象先创建、依赖后赋值，中间存在一个「依赖还没就位」的窗口期，因此构造方法里同样拿不到注入的字段；
-- **字段不能声明为 `final`**：值在创建之后还会被改写，语义上不再是不可变依赖；
-- **依赖可选**：写成 `@Autowired(required = false)` 时，容器中找不到对应 bean 不会报错，该 set 方法不会被调用，字段保持 `null`。
 
 > [!TIP]
 > Setter 注入与字段注入本质相同，都是「先创建对象、后赋值依赖」。**依赖固定不变时一律用构造器注入**；只有确实需要在运行期替换依赖时，才考虑 Setter 注入。
@@ -259,22 +249,6 @@ private DeptMapper deptMapper;
 
 > [!TIP]
 > `@Resource` 无需额外引入依赖，`spring-boot-starter` 已经把 `jakarta.annotation-api` 带进来了；JDK 11 起 `javax.annotation` 已从 JDK 中移除，老项目需自行引入 `javax.annotation-api` 依赖。
-
-#### `@Autowired` 与 `@Resource` 对比
-
-| 对比项    | `@Autowired`                                        | `@Resource`                                            |
-| ------ | ------------------------------------------------- | ----------------------------------------------------- |
-| 所属   | Spring 自带注解                                        | JSR 250 / Jakarta 标准注解                                  |
-| 包名   | `org.springframework.beans.factory.annotation.Autowired` | `jakarta.annotation.Resource`（Boot 2 为 `javax.annotation.Resource`） |
-| 匹配顺序  | **先 byType，再 byName**                                | **先 byName，再 byType**                                      |
-| 指定 bean | 用 `@Qualifier("beanName")`                             | 用 `@Resource(name = "beanName")`                           |
-| 可选依赖  | 支持 `required = false`                                 | 不支持，找不到直接抛异常                                        |
-| 可标注位置 | 字段、set 方法、构造方法                                    | 字段、set 方法                                              |
-| 使用场景  | 新项目首选                                               | 老项目（尤其是 SSH/SSM 老代码）中大量存在                         |
-
-> [!IMPORTANT]
-> **实际开发怎么选**：新项目一律用**构造器注入**；需要「按名称精确查找」或维护老代码时用 `@Resource`；`@Autowired` 字段注入和 Setter 注入了解原理即可，日常不推荐。
-
 
 ## 1.2 统一响应结果 Result
 
@@ -3111,3 +3085,5 @@ execution(* com.ljxstar.service.DeptService.insert(..)) || execution(* com.ljxst
 > > @Component
 > > public class AuthAspect { ... }
 > ```
+
+**截止至 2026 年 10 月 22 日**
