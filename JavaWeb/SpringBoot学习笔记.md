@@ -2873,7 +2873,12 @@ public Result save(Emp emp) {
 
 9.3.1 execution
 
-`execution(修饰符? 返回类型 声明类型? 方法名(参数) 异常?)`，例如 `execution(public * com.ljxstar.service..*.*(..))`。
+execution 主要根据方法的返回值、包名、类名、方法名、方法参数等信息来匹配，语法为：
+
+```Java
+execution(访问修饰符?  返回值  包名.类名.?方法名(方法参数) throws 异常?)
+```
+
 > [!TIP]
 > 通配符只有两个，记住它们就够了：
 > - `*`：匹配**任意一个**（一个包名段、一层类名、一个方法名、一个参数类型）；
