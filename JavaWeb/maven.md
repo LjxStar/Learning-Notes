@@ -1,13 +1,4 @@
 # 一、Maven 入门
-## 1.1 Maven 介绍
-
-Maven 是 Apache 基金会推出的 Java 项目自动化构建工具，也是目前 Java 生态中事实上的标准构建工具。它把「**下载依赖**」和「**构建打包**」这两件最烦琐的事情统一到了一条命令里：
-
-- **依赖管理**：只需在 `pom.xml` 中声明依赖坐标，Maven 就会自动从远程仓库下载对应的 jar 包到本地仓库，项目中无需再手动复制 jar 包。
-- **构建与打包**：通过执行 `mvn clean`、`mvn compile`、`mvn package` 等标准命令，完成清理、编译、测试、打包、安装等整个流程。
-- **约定优于配置**：目录结构和 POM 文件的写法有统一的约定，配置量少，团队协作也更规范。
-
-因此，安装 Maven 并完成基本配置，是 Java 后端开发的第一步。
 
 本文脉络：
 
@@ -17,35 +8,45 @@ Maven 是 Apache 基金会推出的 Java 项目自动化构建工具，也是目
 4. **Maven 坐标与依赖管理** —— 怎么找依赖、怎么引依赖、怎么排依赖、怎么看依赖
 5. **生命周期与构建命令** —— 打包的各个阶段，以及在终端与 IDEA 中分别怎么执行
 
-## 1.2 Maven 的安装与配置
+## 1.1 Maven 介绍
 
-从官网下载到的 Maven 是一个 zip 压缩文件，解压后即可使用，整体配置分三步：配置环境变量 → 指定本地仓库 → 指定远程仓库镜像。
+Maven 是 Apache 基金会推出的 Java 项目自动化构建工具，也是目前 Java 生态中事实上的标准构建工具。它把「**下载依赖**」和「**构建打包**」这两件最烦琐的事情统一到了一条命令里：
+
+- **依赖管理**：只需在 `pom.xml` 中声明依赖坐标，Maven 就会自动从远程仓库下载对应的 jar 包到本地仓库，项目中无需再手动复制 jar 包。
+- **构建与打包**：通过执行 `mvn clean`、`mvn compile`、`mvn package` 等标准命令，完成清理、编译、测试、打包、安装等整个流程。
+- **约定优于配置**：目录结构和 POM 文件的写法有统一的约定，配置量少，团队协作也更规范。
+
+Maven 的核心思想可以概括成两句话：**用坐标找到构件，用生命周期组织构建**。围绕这两点，本篇依次介绍它的安装配置、目录规范、依赖管理与构建命令。
+
+> [!tip] Maven 与 Gradle
+> 二者都是 Java 主流的构建工具。Maven 以「约定优于配置」、完善的中央仓库生态和低上手成本见长；Gradle 以脚本化、灵活的 DSL 见长，构建速度通常更快。目前 Java 后端（尤其是 Spring Boot 项目）仍以 Maven 为主。
+
+# 二、Maven 的安装与配置
+
+Maven 本身是一个用 Java 编写的命令行工具，**运行它必须先装好 JDK**（Maven 会通过 `JAVA_HOME`，或 `Path` 中的 `java` 命令来定位 JDK）。从官网下载到的 Maven 是一个 zip 压缩文件，解压后即可使用，整体配置分三步：配置环境变量 → 指定本地仓库 → 指定远程仓库镜像。
 
 > [!note] 本文路径约定
 > - **Maven 安装目录**：`D:\apache-maven-3.9.9`（即 `MAVEN_HOME`）
 > - **核心配置文件**：`D:\apache-maven-3.9.9\conf\settings.xml`
 > - **本地仓库目录**：`D:\apache-maven-3.9.9\mvn_repo`
 
-### 1.1.1 环境变量
+## 2.1 配置环境变量
 
 Maven 环境变量的配置方式与 JDK 完全一致，都是两步：先声明一个「主目录」变量，再把它的 `bin` 目录追加到 `Path` 中。
 
 1. 打开「此电脑 → 右键属性 → 高级系统设置 → 环境变量」，在**系统变量**中新建一个变量：
-    - 变量名：`MAVEN_HOME`
-    - 变量值：`D:\apache-maven-3.9.9`，即包含 `bin`、`conf`、`lib` 这几个文件夹的那一层目录
+   - 变量名：`MAVEN_HOME`
+   - 变量值：`D:\apache-maven-3.9.9`，即包含 `bin`、`conf`、`lib` 这几个文件夹的那一层目录
 2. 选中**系统变量**中的 `Path`，点击「编辑」，在变量值**末尾**追加：`%MAVEN_HOME%\bin`
-    - 注意要用英文分号 `;` 与原有内容隔开，且是追加而不是覆盖，否则会破坏已有的 `Path` 配置
+   - 注意要用英文分号 `;` 与原有内容隔开，且是追加而不是覆盖，否则会破坏已有的 `Path` 配置
 3. 点击「确定」保存。为了让新环境变量生效，建议**重新打开**一个终端窗口。
 4. 在终端中执行 `mvn -v`，出现下面所示的信息即表示配置成功：
 
-```
-Apache Maven 3.9.9 (...)
-Maven home: D:\apache-maven-3.9.9
-Java version: 17.0.x, vendor: ..., runtime: ...
-OS name: "windows 11", version: ..., arch: "amd64", family: "windows"
-```
+![[mvn -v 执行结果.png]]
 
-### 1.1.2 本地仓库
+其中 `Maven home` 指向自己的安装目录、`Java version` 显示当前使用的 JDK 版本，两项都正确就说明环境变量与 JDK 都已就绪。
+
+## 2.2 指定本地仓库
 
 Maven 从远程仓库下载下来的所有 jar 包与插件，都会**缓存到本地仓库**中，之后再使用同一个依赖时就无需联网下载，直接从本地读取，速度极快。
 
@@ -67,16 +68,16 @@ Maven 从远程仓库下载下来的所有 jar 包与插件，都会**缓存到�
 具体操作分三步：
 
 1. 把被 `<!--` 和 `-->` 包住的整段注释**删除**，让 `<localRepository>` 标签真正生效；
-2. 将标签体内容替换为**上一步新建的存放 jar 包的目录路径** `D:\apache-maven-3.9.9\mvn_repo`；
+2. 将标签体内容内容替换为**上一步新建的存放 jar 包的目录路径** `D:\apache-maven-3.9.9\mvn_repo`；
 3. 注意该标签必须直接写在根标签 `<settings>` 之下，且**只允许出现一次**。
 
 修改完成后保存，配置结果如下图所示：
 
 ![[Maven配置本地仓库.png]]
 
-### 1.1.3 仓库镜像
+## 2.3 配置仓库镜像
 
-Maven 官方提供的**中央仓库**（Central Repository）服务器位于国外，国内直连下载通常比较慢，甚至会超时。为了解决这个问题，阿里巴巴提供了公共的 Maven 仓库镜像，其中基本涵盖了主流开源项目的 jar 包，且国内访问速度很快。
+Maven 官方提供的**中央仓库**（Central Repository，地址为 `https://repo.maven.apache.org/maven2/`）服务器位于国外，国内直连下载通常比较慢，甚至会超时。为了解决这个问题，阿里巴巴提供了公共的 Maven 仓库镜像，其中基本涵盖了主流开源项目的 jar 包，且国内访问速度很快。
 
 配置方式与本地仓库类似：进入 `D:\apache-maven-3.9.9\conf` 目录打开 `settings.xml`，找到 `<mirrors>` 标签，在 `<mirrors>` 与 `</mirrors>` **之间**为其添加如下子标签：
 
@@ -93,18 +94,29 @@ Maven 官方提供的**中央仓库**（Central Repository）服务器位于国�
 
 各子标签的含义如下：
 
-| 标签          | 含义                                                                       |
-| ----------- | ------------------------------------------------------------------------ |
-| `<id>`       | 镜像的唯一标识，配置多个镜像时不能重复                                             |
+| 标签          | 含义                                                                        |
+| ----------- | ------------------------------------------------------------------------- |
+| `<id>`       | 镜像的唯一标识，配置多个镜像时不能重复                                              |
 | `<mirrorOf>` | 指定哪些仓库使用该镜像，`*` 表示**所有**仓库（中央仓库与第三方仓库）都走这个镜像                 |
-| `<name>`     | 镜像的描述，仅用于阅读 `settings.xml`，方便识别                                             |
-| `<url>`      | 镜像仓库的地址，`public` 仓库是中央仓库的聚合，包含了绝大部分常用依赖                        |
+| `<name>`     | 镜像的描述，仅用于阅读 `settings.xml`，方便识别                                              |
+| `<url>`      | 镜像仓库的地址，`public` 仓库是中央仓库的聚合，包含了绝大部分常用依赖                             |
 
 配置完成后保存，效果如下图所示：
 
 ![[Maven配置镜像.png]]
 
 至此 Maven 的三项基础配置就完成了。此后只要执行任意一条 Maven 命令，它都会按下面的规则工作：需要依赖时到远程仓库下载并缓存到 `D:\apache-maven-3.9.9\mvn_repo`，需要构建时按固定的阶段顺序完成编译、测试与打包。
+
+## 2.4 全局配置与用户配置
+
+`settings.xml` 有两个位置，Maven 会把两份配置**合并**使用，同名元素以**用户级**的为准：
+
+| 配置文件           | 位置                                | 作用范围                       |
+| -------------- | --------------------------------- | --------------------------- |
+| 全局 `settings.xml` | `D:\apache-maven-3.9.9\conf\settings.xml` | 对这台电脑上所有的用户与项目都生效   |
+| 用户 `settings.xml` | `%USERPROFILE%\.m2\settings.xml`      | 只对当前用户的所有项目生效            |
+
+本篇示例统一写在全局的 `conf\settings.xml` 中；若这台电脑有多个用户，把只属于自己的配置（如私服账号）改写到用户级 `settings.xml` 里更稳妥，不会影响别人。
 
 # 三、标准目录结构与 pom 文件
 
@@ -114,18 +126,19 @@ Maven 遵循「约定优于配置」的设计：目录名和文件位置都有�
 
 ```
 项目根目录
-├── pom.xml                    项目对象模型
+├── pom.xml                     项目对象模型
 ├── src
 │   ├── main
-│   │   ├── java               主程序代码
-│   │   ├── resources          主程序资源文件（yml 配置、mapper、静态资源等）
+│   │   ├── java                主程序代码
+│   │   ├── resources           主程序资源文件（yml 配置、mapper 映射文件等）
+│   │   └── webapp              传统 war 项目的静态资源（html、js、css、图片等）
 │   └── test
-│       ├── java               测试代码
-│       └── resources          测试用资源文件
-└── target                     构建产物目录，由 Maven 自动生成
-    ├── classes                编译后的主程序 class 文件
-    ├── test-classes           编译后的测试 class 文件
-    └── 项目名-版本号.jar        package 阶段生成的 jar 包
+│       ├── java                测试代码
+│       └── resources           测试用资源文件
+└── target                      构建产物目录，由 Maven 自动生成
+    ├── classes                 编译后的主程序 class 文件
+    ├── test-classes            编译后的测试 class 文件
+    └── artifactId-版本号.jar     package 阶段生成的 jar 包
 ```
 
 其中 `src` 目录是写代码的地方，而 `target` 目录纯粹是产物，可以随时删除，每次构建都会重新生成。
@@ -198,7 +211,7 @@ POM 是 Project Object Model（项目对象模型）的缩写，`pom.xml` 就是
 - `war`：Web 项目，产出 `.war` 文件，交给 Tomcat 等容器运行
 - `pom`：不产出实际构件，专门用于**父工程**（`packaging` 为 `pom` 且含 `<modules>`）或**依赖包聚合**，常用于管理多模块项目和统一版本号
 
-## 3.3 把重复的版本号收进一处
+## 3.3 用属性统一管理版本号
 
 依赖多了以后，同一个第三方库的版本号会在 `<dependencies>` 中反复出现，一旦升级就要改很多处。把它抽到 `<properties>` 中就可以只改一处：
 
@@ -266,15 +279,15 @@ org.springframework:spring-webmvc:6.1.4
 
 `<scope>` 决定依赖在编译期、测试期、运行期分别是否可见，也决定它会不会被打进最终产物：
 
-| `scope`    | 主程序编译 | 测试编译 | 打包/运行 | 典型场景                                     |
-| ---------- | ----- | ---- | ----- | ---------------------------------------- |
-| `compile`  | ✅     | ✅    | ✅     | 默认值，绝大多数依赖都是它                            |
-| `provided` | ✅     | ✅    | ❌     | 由运行环境提供，打包时不带。如 `servlet-api`            |
-| `runtime`  | ❌     | ✅    | ✅     | 编译用不到、运行时才需要。如 MySQL 驱动                  |
-| `test`     | ❌     | ✅    | ❌     | 只在测试中使用，不进产物。如 `junit-jupiter`、`mockito` |
-| `import`   | —     | —    | —     | 仅在 `<dependencyManagement>` 中使用，导入一份版本清单 |
+| `scope`    | 主程序编译 | 测试编译 | 运行时 | 打包进产物 | 典型场景                                     |
+| ---------- | ----- | ---- | --- | ---- | ---------------------------------------- |
+| `compile`  | ✅     | ✅    | ✅  | ✅   | 默认值，绝大多数依赖都是它                            |
+| `provided` | ✅     | ✅    | ✅  | ❌   | 由运行环境提供，打包时不带。如 `servlet-api`            |
+| `runtime`  | ❌     | ✅    | ✅  | ✅   | 编译用不到、运行时才需要。如 MySQL 驱动                  |
+| `test`     | ❌     | ✅    | ❌  | ❌   | 只在测试中使用，不进产物。如 `junit-jupiter`、`mockito` |
+| `import`   | —     | —    | —   | —    | 仅在 `<dependencyManagement>` 中使用，导入一份版本清单 |
 
-最需要留意的是 `provided`：**它的依赖会参与编译，却不会被打进 jar 包**，这正是它存在的意义。例如传统 Web 工程里的写法：
+最需要留意的是 `provided`：**它会参与编译，也会出现在运行时的类路径上，但不会被打进 jar 包**，最终由运行环境（容器）提供，这才是它存在的意义。例如传统 Web 工程里的写法：
 
 ```xml
 <dependency>
@@ -285,6 +298,9 @@ org.springframework:spring-webmvc:6.1.4
 ```
 
 之所以声明为 `provided`，是因为打包后这个工程要丢进外部的 Tomcat 容器里运行，而容器本身已经带了一套 Tomcat，再打进一份必然引起类冲突。
+
+> [!note] `runtime` 与 `provided` 别搞混
+> 两者在「是否参与编译」上正好相反：`runtime` **编译时不可见、运行时才需要**（如 MySQL 驱动）；`provided` **编译时可见、但不进产物**（如 `servlet-api`）。判断口诀：*运行时才用到的写 `runtime`，由容器提供的写 `provided`*。
 
 ## 4.4 排除依赖 exclusion
 
@@ -313,12 +329,26 @@ Maven 具备**传递依赖**能力：项目直接依赖 A，A 又依赖 B，B �
 
 当同一个 jar 通过多条路径被引入且版本不一致时，就会发生依赖冲突。Maven 的仲裁规则是「最短优先」：离当前项目声明越近的版本优先级越高；同一层深度上，则由先声明的那个说了算。
 
-想看清楚依赖到底是怎么被引进来的，在项目根目录执行 `mvn dependency:tree` 即可输出完整依赖树（其中的 `+-` 表示直接依赖，`\-` 表示依赖树中最后一次出现的重复依赖），加上 `-Dincludes=坐标` 还能只看某一部分。IDEA 中查看更直观：Maven 工具窗口切换到 `Dependencies` 标签页，会以树形展开所有依赖（含传递依赖），点某个节点还能在下方直接看到对应的 `pom.xml` 片段。
+想看清楚依赖到底是怎么被引进来的，在项目根目录执行 `mvn dependency:tree` 即可输出完整依赖树，图例如下：
+
+- `+-`：直接依赖
+- `\-`：重复出现的依赖，已被省略（树中只保留最后一次出现的那次）
+- `|`：该依赖下面还有下一层依赖
+- `*`：该依赖重复出现，被省略
+
+再加上 `-Dincludes=groupId:artifactId` 还能只看某一部分，例如 `mvn dependency:tree -Dincludes=org.springframework`。IDEA 中查看更直观：Maven 工具窗口切换到 `Dependencies` 标签页，会以树形展开所有依赖（含传递依赖），点某个节点还能在下方直接看到对应的 `pom.xml` 片段。
 
 > [!tip] 更推荐的解法：dependencyManagement
 > 实际开发中，版本冲突多数由 Spring Boot 这类框架的**依赖管理**机制解决——父工程的 `<dependencyManagement>` 已经把常用库的版本统一钉死，子模块声明依赖时不再写 `<version>` 即可。要覆盖某个版本，只需要在子模块的 `<dependencyManagement>` 中重写该依赖的版本号，而不是在 `<dependencies>` 里重复声明。
 >
 > 需要注意：`<dependencyManagement>` 里的条目**只管版本，不会真正引入依赖**。想用某个库，仍然必须在 `<dependencies>` 中再写一遍（此时可以省略 `<version>`），这是初学者最容易搞混的一点。
+
+> [!summary] 依赖管理三板斧
+> | 场景 | 用法 |
+> | --- | --- |
+> | 统一版本号 | 在 `<dependencyManagement>` 中声明，`<dependencies>` 里省略 `<version>` |
+> | 剔除不要的传递依赖 | 在 `<dependency>` 中用 `<exclusions>` 排除 |
+> | 搞清楚依赖从哪来 | `mvn dependency:tree`（终端）或 IDEA 的 `Dependencies` 标签页 |
 
 # 五、生命周期与项目构建
 
@@ -328,10 +358,13 @@ Maven 把项目构建的过程划分为若干个**阶段（phase）**，并预�
 
 1. **clean 生命周期**：清理构建产物
    - `pre-clean` → `clean` → `post-clean`
-2. **default 生命周期**（也叫构建生命周期，负责编译打包）：编译、测试、打包、安装、发布
+2. **default 生命周期**（也叫构建生命周期，负责编译打包）
    - `validate` → `compile` → `test` → `package` → `verify` → `install` → `deploy`
 3. **site 生命周期**：生成项目站点文档，日常开发用得很少
-   - `site` → `deploy-site`
+   - `pre-site` → `site` → `post-site` → `site-deploy`
+
+> [!note] 上面的阶段是常用的简化版
+> `default` 生命周期实际包含几十个阶段（如 `process-resources`、`test-compile`、`prepare-package`、`integration-test` 等），它们被夹在相邻的两个常用阶段之间，平时不需要记住；Maven 会自动把它们依次执行。
 
 日常只会用到 clean 和 default 两套，各个阶段的含义如下：
 
@@ -354,7 +387,11 @@ Maven 把项目构建的过程划分为若干个**阶段（phase）**，并预�
 
 也正因为 `package` 之前会先跑 `test`，所以每次打包都会自动执行一遍测试；如果觉得每次都跑测试太慢，就要用参数跳过去（见 5.2）。
 
+> [!tip] 阶段 ≠ 动作
+> 阶段只是构建流程上的一个节点，真正干活的是**绑定**在该阶段上的插件目标（goal）。例如 `compile` 阶段绑定了 `maven-compiler-plugin` 的 `compile` 目标，`package` 阶段绑定了 `maven-jar-plugin` 的 `jar` 目标。所以阶段不能被跳过，但可以通过改写插件配置来微调它的行为。
+
 ## 5.2 项目构建
+
 ### 5.2.1 常见构建命令
 
 | 指令                                         | 作用                  |
@@ -374,7 +411,11 @@ Maven 把项目构建的过程划分为若干个**阶段（phase）**，并预�
 > - 这个 jar 还要被**其他 Maven 项目**当作依赖引用 → 必须用 `install`，把构件放进本地仓库，下一个项目才能通过坐标找到它
 > - 这个 jar 要上传给整个团队使用 → 用 `deploy` 发布到公司私服（需先在 `pom.xml` 的 `<distributionManagement>` 中配置私服地址和账号）
 
-### 5.2.1 在终端中执行
+> [!note] 两个容易混淆的用法
+> - **`-DskipTests` 与 `-Dmaven.test.skip=true`**：前者只跳过**执行**测试（测试代码照常编译），后者连编译都跳过，跳得更快但也就测不到编译错误了。
+> - **`-P`（profile）**：用于激活 `pom.xml` 中 `<profiles>` 里定义的环境配置，例如 `mvn clean package -P prod` 会使用 id 为 `prod` 的那套配置（不同的仓库地址、激活的依赖等）。
+
+### 5.2.2 在终端中执行
 
 在终端里执行 `mvn` 命令，需要注意三件事。
 
@@ -394,7 +435,7 @@ mvn clean package
 mvn -f D:\develop\project\demo\pom.xml clean package
 ```
 
-**方式 3**：**用 Maven Wrapper 可以免装 Maven**。IDEA 创建 Maven 项目时默认会生成 `mvnw.cmd`（Windows）、`mvnw`（macOS / Linux）两个脚本和一个 `.mvn` 目录，它们会自动下载与项目匹配的 Maven 版本。在 Windows 上要执行的是带 `.cmd` 后缀的那个：
+**方式 3**：**用 Maven Wrapper 可以免装 Maven**。IDEA 新建 Maven 项目时可以勾选「使用 Maven Wrapper」，会生成 `mvnw.cmd`（Windows）、`mvnw`（macOS / Linux）两个脚本和一个 `.mvn` 目录，它们会自动下载与项目匹配的 Maven 版本；在已有项目中也可以执行 `mvn wrapper:wrapper` 手动生成。在 Windows 上要执行的是带 `.cmd` 后缀的那个：
 
 ```bash
 mvnw.cmd clean package
@@ -418,3 +459,21 @@ IDEA 把 Maven 深度集成进了界面，在里面执行生命周期指令有�
 2. `Working directory` 填项目根目录，即 `pom.xml` 所在位置，直接填 `$MODULE_WORKING_DIR$` 即可；
 3. `Command line` 填要执行的阶段与参数——**注意不要写 `mvn` 前缀**，多个用空格隔开，如 `clean package`、`clean install -DskipTests`、`clean package -P prod`；
 4. 保存后即可在右上角一键运行，日志输出在底部的 **Run** 面板。
+
+## 5.3 常见问题速查
+
+| 现象                                   | 原因                                              | 解决办法                                              |
+| ------------------------------------ | ----------------------------------------------- | ------------------------------------------------- |
+| `'mvn' 不是内部或外部命令`                    | `Path` 中没有配置 `%MAVEN_HOME%\bin`，或终端没有重新打开             | 检查环境变量，并重新打开终端窗口                            |
+| `Unknown lifecycle phase "xxx"`      | 阶段名拼写错误                                          | 对照 5.1 中的阶段列表检查拼写                              |
+| `Could not resolve dependencies ...` | 依赖下载不下来：坐标写错、镜像不通或版本不存在                        | 到 [MvnRepository](https://mvnrepository.com/) 核对坐标，或换个镜像重试    |
+| `The POM for xxx is missing`         | 坐标写错，或该构件在仓库中根本不存在                                 | 逐段核对 `groupId` / `artifactId` / `version`            |
+| 提示 `import` 作用域相关错误                    | `import` 只能写在 `<dependencyManagement>` 中，不能直接写在 `<dependencies>` 里 | 把该依赖移入 `<dependencyManagement>`                    |
+| 依赖下载超时或中断                             | 网络问题                                            | 换用阿里云镜像；本地已有缓存时可用 `mvn -o`（离线模式）构建 |
+
+> [!summary] 本篇要点回顾
+> - **Maven 解决两件事**：依赖管理（用坐标找 jar）与构建打包（用生命周期跑流程）。
+> - **三步配置**：环境变量 → 本地仓库 → 仓库镜像，配好后所有 Maven 命令都会自动遵守。
+> - **一份 `pom.xml` 管全局**：坐标标识项目，`properties` 收拢版本号，`dependencies` 声明依赖。
+> - **依赖的三个动作**：`<dependencyManagement>` 统版本、`<exclusions>` 排传递、`dependency:tree` 查来源。
+> - **构建按阶段推进**：`clean` → `compile` → `test` → `package` → `install` → `deploy`，执行后面的阶段会自动补齐前面的阶段。

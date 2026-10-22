@@ -2733,6 +2733,6 @@ public class EmpServiceImpl implements EmpService {
 > - **使用 Filter 时**：将 `CurrentHolder.clear()` 放在 `doFilter()` 的 `finally` 代码块中。同样能确保无论正常放行还是异常中断，都能执行清理。
 
 
-# 九、AOP
+# 九、面向切面编程 AOP
 
-## 9.1 
+AOP（Aspect Oriented Programming）即面向切面编程，AOP 是 OOP（面向对象编程）的一种延续，二者互补，并不对立。
