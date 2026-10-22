@@ -2760,7 +2760,7 @@ public Result page(EmpQueryParam empQueryParam) {
 }
 ```
 
-> [!TIP]
+> [!tips]
 > 上面两段「日志 - 方法执行前 / 方法执行后」就是典型的**横切关注点**：它横跨了所有业务方法，却不属于任何一个方法的业务逻辑。
 
 **（2）使用 AOP：日志逻辑封装成切面**
