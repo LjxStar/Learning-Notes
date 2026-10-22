@@ -2730,90 +2730,331 @@ public class EmpServiceImpl implements EmpService {
 > - **使用 Interceptor 时**：将 `CurrentHolder.clear()` 放在 `afterCompletion()` 方法中。该方法无论 Controller 是否抛异常，都会被调用。
 > - **使用 Filter 时**：将 `CurrentHolder.clear()` 放在 `doFilter()` 的 `finally` 代码块中。同样能确保无论正常放行还是异常中断，都能执行清理。
 
+---
 
 # 九、面向切面编程 AOP
 
-**AOP**（Aspect Oriented Programming）即面向切面编程，是面向对象编程的一种延续，二者互补，并不对立。其核心思想就是将横切关注点从核心业务逻辑中分离出来，形成一个个的**切面**（Aspect）。
+**AOP**（Aspect Oriented Programming，面向切面编程）是面向对象编程（OOP）的一种延续与补充：OOP 解决的是「业务功能怎么封装」，AOP 解决的是「日志、事务、权限这类横切逻辑怎么复用」，二者互补而不对立。AOP 的核心思想是**把横切关注点从核心业务逻辑中分离出来**，封装成一个个的**切面**（Aspect）。
 
 ## 9.1 快速入门
 
-以日志记录为例进行介绍，假如我们需要对某些方法进行统一格式的日志记录，没有使用 AOP 技术之前，我们需要挨个写日志记录的逻辑代码，全是重复的逻辑。
+以「统一记录操作日志」为例。假设要给一批方法输出统一格式的日志：如果不用 AOP，就必须在每个方法里手写一遍「执行前打日志 → 执行业务 → 执行后打日志」，重复代码既难维护，改一次日志格式还得逐个方法去改。
+
+#### （1）不使用 AOP：日志代码写在每个方法里
 
 ```java
-public Result<Object> method1() {
-	// 日志-方法执行前
+public Result save(Emp emp) {
+    // 日志 - 方法执行前
     // 业务逻辑
-    xxService.method1();
-    // 日志-方法执行后
+    empService.save(emp);
+    // 日志 - 方法执行后
     return Result.success();
 }
-public Result<Object> method2() {
-    // 日志-方法执行前
+
+public Result page(EmpQueryParam empQueryParam) {
+    // 日志 - 方法执行前
     // 业务逻辑
-    xxService.method2();
-    // 日志-方法执行后
-    return Result.success();
+    PageResult<Emp> pageResult = empService.page(empQueryParam);
+    // 日志 - 方法执行后
+    return Result.success(pageResult);
 }
 ```
 
-使用 AOP 技术之后，我们可以将日志记录的逻辑封装成一个切面，然后通过切入点和通知来指定在哪些方法需要执行日志记录的操作。
+> [!TIP]
+> 上面两段「日志 - 方法执行前 / 方法执行后」就是典型的**横切关注点**：它横跨了所有业务方法，却不属于任何一个方法的业务逻辑。
+
+#### （2）使用 AOP：日志逻辑封装成切面
+
+使用 AOP 之后，日志记录这段逻辑被封装成一个**切面**，再由**切入点**圈定生效范围、由**通知**声明执行的时机；业务方法只需打一个注解，不用再写任何日志代码。
+
+先定义一个日志注解，标记「这个方法需要记录操作日志」：
 
 ```java
-// 日志标记注解
-@Target({ElementType.PARAMETER,ElementType.METHOD})
+package com.itheima.annotation;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+/**
+ * 操作日志注解，打在方法上
+ */
+@Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Log {
+
+    /** 操作描述 */
     String description() default "";
+
+    /** 操作类型 */
     MethodType methodType() default MethodType.OTHER;
 }
+```
 
-// 日志切面类
+再定义一个枚举，说明操作类型：
+
+```java
+package com.itheima.enums;
+
+public enum MethodType {
+    INSERT, UPDATE, DELETE, SELECT, OTHER
+}
+```
+
+最后写切面类，把「记录日志」这件事完整封装进去：
+
+```java
+package com.itheima.aspect;
+
+import com.itheima.annotation.Log;
+import com.itheima.enums.MethodType;
+import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.stereotype.Component;
+
+/**
+ * 操作日志切面
+ */
+@Slf4j
 @Component
 @Aspect
 public class LogAspect {
-    // 切入点：匹配加了@Log注解的方法
-    @Pointcut("@annotation(com.ljxstar.annotation.Log)")
-    public void webLog() {}
 
-    // 环绕通知，在目标方法前后执行日志逻辑
-    @Around("webLog()")
+    /**
+     * 切入点：匹配所有标注了 @Log 注解的方法
+     */
+    @Pointcut("@annotation(com.itheima.annotation.Log)")
+    public void logPointcut() {
+    }
+
+    /**
+     * 环绕通知：在目标方法执行前后织入日志逻辑
+     */
+    @Around("logPointcut()")
     public Object doAround(ProceedingJoinPoint joinPoint) throws Throwable {
-        // 获取注解信息
-        Log logAnnotation = ((MethodSignature) joinPoint.getSignature()).getMethod().getAnnotation(Log.class);
+        // 1. 从连接点拿到方法签名，再取出方法上的 @Log 注解
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        Log logAnnotation = signature.getMethod().getAnnotation(Log.class);
         String desc = logAnnotation.description();
         MethodType type = logAnnotation.methodType();
-        // 记录方法执行前日志
-        Log.info("操作描述：{}，操作类型：{}，开始执行", desc, type);
+
+        // 2. 记录方法执行前的日志
+        log.info("操作描述：{}，操作类型：{}，开始执行", desc, type);
         long start = System.currentTimeMillis();
-        // 执行目标方法
+
+        // 3. 放行目标方法，并拿到它的返回值
         Object result = joinPoint.proceed();
-        // 记录方法执行后日志
+
+        // 4. 记录方法执行后的日志
         long cost = System.currentTimeMillis() - start;
-        Log.info("操作描述：{}，操作类型：{}，执行耗时：{}ms", desc, type, cost);
+        log.info("操作描述：{}，操作类型：{}，执行耗时：{}ms", desc, type, cost);
         return result;
     }
 }
 ```
 
-这样，业务方法只需添加注解，无需手写日志代码：
+业务方法加上注解即可，日志代码不用再写：
 
 ```java
-@Log(description = "method1",methodType = MethodType.INSERT)
-public Result<Object> method1() {
-    xxService.method1();
+@Log(description = "新增员工", methodType = MethodType.INSERT)
+public Result save(Emp emp) {
+    empService.save(emp);
     return Result.success();
 }
 ```
 
+> [!IMPORTANT]
+> - `@Aspect` 把这个类标记为**切面**；`@Pointcut` 声明「切哪些方法」；`@Around` 声明「在目标方法前后织入」，三者配合才构成一个完整的切面。
+> - `joinPoint.proceed()` 是**放行目标方法**的关键：不调用它，目标方法根本不会执行；它同时也是切面拿到方法返回值的地方。
+> - 切点表达式里的 `com.itheima.annotation.Log` 必须与注解的**全限定名**完全一致，写错就匹配不到任何方法。
+
+> [!WARNING]
+> 注解 `Log` 与 Lombok 生成的日志对象 `log` 只差一个字母的大小写，极易混淆：注解类型上没有 `info` 方法，写成 `Log.info(...)` 编译不过；打日志一律用 `log.info(...)`。
+
+> [!NOTE]
+> Spring AOP 是基于**动态代理**实现的：容器会为匹配的 bean 生成代理对象，只有**通过代理对象发起调用**时切面才会生效。因此：
+> - 切面只能增强**由 Spring 容器管理的 bean**，自己 `new` 出来的对象不受影响；
+> - 同类内部通过 `this.xxx()` 发起的**自调用**不会经过代理，切面不会触发——这是「切面没生效」最常见的原因。
+
 ## 9.2 AOP 核心概念
 
-- **横切关注点（cross-cutting concerns）** ：多个类或对象中的公共行为（如日志记录、事务管理、权限控制、接口限流、接口幂等等）。
-
-**连接点：****JoinPoint**，可以被 AOP 控制的方法（暗含方法执行时的相关信息）
-**通知：****Advice**，指哪些重复的逻辑，也就是共性功能，最终体现为一个方法
-**切入点****：****PointCut**，一个切点是一个表达式，它用来匹配哪些连接点需要被切面所增强。
+- **横切关注点（cross-cutting concerns）**：多个类或对象中的公共行为（如日志记录、事务管理、权限控制、接口限流、接口幂等等）。
+- **连接点（JoinPoint）**：可以被 AOP 控制的方法（暗含方法执行时的相关信息）
+- **通知（Advice）**：指哪些重复的逻辑，也就是共性功能，最终体现为一个方法
+- **切入点（PointCut）**：一个切点是一个表达式，它用来匹配哪些连接点需要被切面所增强。
 - **切面（Aspect）**：对横切关注点进行封装的类，一个切面是一个类。切面可以定义多个通知，用来实现具体的功能。
-**目标对象：Target**，通知所应用的对象
+- **目标对象（Target）**：通知所应用的对象
+
+这些概念在 9.1 示例中的对应关系如下：
+
+| 概念 | 在 9.1 示例中的体现 |
+| --- | --- |
+| 横切关注点 | 「记录操作日志」这件事本身 |
+| 切面 | `LogAspect` 类 |
+| 连接点 | 被 `@Log` 标注的方法，如 `save(...)` |
+| 切入点 | `@Pointcut("@annotation(com.itheima.annotation.Log)")` |
+| 通知 | `@Around` 标注的 `doAround(...)` 方法 |
+| 目标对象 | 被增强的 `EmpServiceImpl` 等由 Spring 管理的 bean |
+
+### 9.2.1 常用切入点表达式
+
+切入点表达式用来说明「切哪些方法」，常用写法如下：
+
+| 表达式 | 含义 |
+| --- | --- |
+| `@annotation(com.itheima.annotation.Log)` | 匹配所有标注了指定注解的方法 |
+| `execution(* com.itheima.service.impl.EmpServiceImpl.save(..))` | 匹配 `EmpServiceImpl` 的 `save` 方法 |
+| `execution(* com.itheima.service..*.*(..))` | 匹配 `service` 包及其子包下所有类的所有方法 |
+| `within(com.itheima.service..*)` | 匹配 `service` 包及其子包下所有类的方法 |
+| `this(com.itheima.service.impl.EmpServiceImpl)` | 代理对象是 `EmpServiceImpl` 类型 |
+| `target(com.itheima.service.impl.EmpServiceImpl)` | 目标对象是 `EmpServiceImpl` 类型 |
+
+> [!TIP]
+> 通配符只有两个，记住它们就够了：
+> - `*`：匹配**任意一个**（一个包名段、一层类名、一个方法名、一个参数类型）；
+> - `..`：匹配**任意多个**（包名可以是多级、方法参数可以是任意个）。
+>
+> 完整格式是 `execution(修饰符? 返回类型 声明类型? 方法名(参数) 异常?)`，例如 `execution(public * com.itheima.service..*.*(..))`。
 
 ## 9.3 通知
-## 9.4 切入点
+
+**通知（Advice）** 就是切面里真正干活的那段逻辑。Spring AOP 按「执行的时机」提供了 5 种通知：
+
+| 通知类型 | 注解 | 执行时机 |
+| --- | --- | --- |
+| 前置通知 | `@Before` | 目标方法**执行前** |
+| 后置通知 | `@After` | 目标方法**执行后**，无论成功还是抛异常都会执行 |
+| 后置返回通知 | `@AfterReturning` | 目标方法**正常返回后**执行，抛异常则不执行 |
+| 后置异常通知 | `@AfterThrowing` | 目标方法**抛出异常后**执行 |
+| 环绕通知 | `@Around` | 目标方法**执行前后**，需要自己调用 `proceed()` 放行 |
+
+把 9.1 的切面继续扩展，5 种通知写在同一个切面里就是这样：
+
+```java
+package com.itheima.aspect;
+
+import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.AfterThrowing;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.stereotype.Component;
+
+/**
+ * 操作日志切面：演示 5 种通知
+ */
+@Slf4j
+@Component
+@Aspect
+public class LogAspect {
+
+    /**
+     * 切入点：匹配所有标注了 @Log 注解的方法
+     */
+    @Pointcut("@annotation(com.itheima.annotation.Log)")
+    public void logPointcut() {
+    }
+
+    /**
+     * 前置通知：目标方法执行前
+     */
+    @Before("logPointcut()")
+    public void before(JoinPoint joinPoint) {
+        log.info("【前置通知】方法：{}，开始执行", joinPoint.getSignature().toShortString());
+    }
+
+    /**
+     * 后置通知：目标方法执行后，无论成功还是抛异常都会执行
+     */
+    @After("logPointcut()")
+    public void after(JoinPoint joinPoint) {
+        log.info("【后置通知】方法：{}，执行结束", joinPoint.getSignature().toShortString());
+    }
+
+    /**
+     * 后置返回通知：目标方法正常返回后执行
+     */
+    @AfterReturning("logPointcut()")
+    public void afterReturning(JoinPoint joinPoint, Object result) {
+        log.info("【后置返回通知】方法：{}，正常返回", joinPoint.getSignature().toShortString());
+    }
+
+    /**
+     * 后置异常通知：目标方法抛出异常后执行
+     */
+    @AfterThrowing("logPointcut()")
+    public void afterThrowing(JoinPoint joinPoint, Exception e) {
+        log.error("【后置异常通知】方法：{}，执行异常", joinPoint.getSignature().toShortString(), e);
+    }
+
+    /**
+     * 环绕通知：由自己控制目标方法的执行
+     */
+    @Around("logPointcut()")
+    public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
+        log.info("【环绕通知】方法：{}，执行前", joinPoint.getSignature().toShortString());
+        Object result = joinPoint.proceed();   // 放行目标方法
+        log.info("【环绕通知】方法：{}，执行后", joinPoint.getSignature().toShortString());
+        return result;
+    }
+}
+```
+
+> [!IMPORTANT]
+> - `@After` 与 `@AfterReturning` 的区别：`@After` 相当于 `finally`，**无论**目标方法成功还是抛异常都会执行；`@AfterReturning` 只在**正常返回**时执行。同理，`@AfterThrowing` 只在**抛异常**时执行。
+> - 同一个切面中，通知的执行顺序是：`@Before` → `@Around` 的前半段 → 目标方法 → `@Around` 的后半段 → `@AfterReturning` / `@AfterThrowing`（二者只会命中一个）→ `@After`。
+> - 一个切面里可以写多个通知方法，它们共用同一个切入点；通知方法的参数用 `JoinPoint` 即可拿到连接点信息，只有 `@Around` 需要用它的子类 `ProceedingJoinPoint`（因为要调用 `proceed()`）。
+
+## 9.4 代理
+
+Spring AOP 是基于**动态代理**实现的。容器启动后，会为**匹配了切点**的 bean 生成一个代理对象，并用它替换掉原来的对象塞进容器；之后业务代码拿到的其实是这个代理对象，调用它的方法时，代理会先把调用转交给切面，切面处理完再（或者不）调用真实对象。
+
+```java
+@Service
+public class EmpServiceImpl implements EmpService {
+
+    // 这里是真实的业务实现
+}
+
+// Controller 里注入到的，其实已经是容器中的代理对象了
+@Autowired
+private EmpService empService;
+```
+
+代理对象由切面决定如何织入，Spring 提供两种实现方式：
+
+| 对比项 | JDK 动态代理 | CGLIB 动态代理 |
+| --- | --- | --- |
+| 原理 | 基于**接口**，用 JDK 自带的 `Proxy` 生成实现同样接口的代理对象 | 基于**继承**，动态生成目标类的子类作为代理对象 |
+| 要求 | 目标类**必须实现至少一个接口** | 目标类**不需要接口**，但类本身不能是 `final` |
+| 可增强的方法 | 只能增强**接口中声明**的方法 | 可增强**非 final** 的方法，`private` / `final` / `static` 方法无法增强 |
+| Spring Boot 默认 | 不是默认 | **默认**（`spring.aop.proxy-target-class` 默认为 `true`） |
+
+> [!IMPORTANT]
+> Spring Boot 的自动配置默认使用 **CGLib 代理**；若希望改用 JDK 动态代理，把配置项设为 `false` 即可：
+>
+> ```yaml
+> spring:
+>   aop:
+>     proxy-target-class: false   # 改为 JDK 动态代理
+> ```
+>
+> 注意：CGLib 代理对象是目标类的**子类**，所以它**没有**实现目标类额外定义的那些接口（如 `EmpServiceImpl` 自己声明的接口），注入时按实现类类型注入反而可能失败——所以业务接口要规范地定义在接口上。
+
+> [!WARNING]
+> Spring AOP 基于代理，因此有三个「切面不生效」的典型场景：
+> 1. **自调用**：同一个类内部通过 `this.xxx()` 调用自己的方法，这条调用没有走代理对象，切面不会触发；
+> 2. **对象不由容器管理**：`new` 出来的对象不是代理对象，切面不会触发；
+> 3. **方法无法被增强**：`private`、`final`、`static` 方法代理拦不住。
+>
+> 另外，Spring AOP **只支持方法级**的连接点（方法执行），不像 AspectJ 那样能拦截字段访问、构造方法等。
