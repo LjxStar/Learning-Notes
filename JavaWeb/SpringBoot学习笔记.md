@@ -108,10 +108,6 @@ public class DeptController {
 | `data` | `Object` | 业务数据，可以是单个对象，也可以是 `List` |
 
 ```java
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -289,11 +285,6 @@ public Result delete(@RequestParam List<Integer> ids) {
 
 ```java
 package com.ljxstar.pojo;
-
-import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
-
-import java.time.LocalDate;
 
 @Data
 public class EmpQueryParam {
@@ -644,20 +635,6 @@ echo %OSS_ACCESS_KEY_SECRET%
 ```java
 package com.ljxstar.utils;
 
-import com.aliyun.sdk.service.oss2.OSSClient;
-import com.aliyun.sdk.service.oss2.credentials.CredentialsProvider;
-import com.aliyun.sdk.service.oss2.credentials.EnvironmentVariableCredentialsProvider;
-import com.aliyun.sdk.service.oss2.models.PutObjectRequest;
-import com.aliyun.sdk.service.oss2.models.PutObjectResult;
-import com.aliyun.sdk.service.oss2.transport.BinaryData;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-
-import java.net.URI;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.UUID;
-
 @Slf4j
 @Component
 public class AliyunOSSOperator {
@@ -665,7 +642,7 @@ public class AliyunOSSOperator {
     // 配置信息，根据自己的 bucket 修改；用常量命名，表示运行期不变
     private static final String ENDPOINT = "https://oss-cn-hangzhou.aliyuncs.com";
     private static final String REGION = "cn-hangzhou";
-    private static final String BUCKET_NAME = "tlias-system-javaweb";
+    private static final String BUCKET_NAME = "ljxstar-system-javaweb";
 
     /**
      * 上传文件到 OSS
@@ -1260,10 +1237,6 @@ SLF4J 本身没有实现，它是「门面」；真正干活的是绑定到它�
 三行固定搭配：导入 `Logger` 接口、`LoggerFactory` 工厂类，然后声明一个 `private static final` 日志记录器。
 
 ```java
-import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class LogTest {
 
     // 固定搭配：传入当前类的 Class 对象，框架据此输出类名
@@ -1294,8 +1267,6 @@ private static final Logger log = LoggerFactory.getLogger(Xxx.class);
 ```
 
 ```java
-import lombok.extern.slf4j.Slf4j;
-
 @Slf4j   // 自动生成 log 字段
 @RestController
 @RequestMapping("/depts")
@@ -1386,11 +1357,11 @@ Logback 的配置文件固定叫 `logback.xml`，放在 `src/main/resources` 目
 ```xml
 <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <!-- 日志文件的存放位置 -->
-    <file>D:/logs/tlias-current.log</file>
+    <file>D:/logs/ljxstar-current.log</file>
 
     <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
         <!-- 归档文件名，%d 日期，%i 序号 -->
-        <fileNamePattern>D:/logs/tlias-%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+        <fileNamePattern>D:/logs/ljxstar-%d{yyyy-MM-dd}-%i.log</fileNamePattern>
         <!-- 最多保留 30 天的历史日志 -->
         <maxHistory>30</maxHistory>
         <!-- 单个文件最大 10MB，超过则滚动到新文件 -->
@@ -2012,7 +1983,7 @@ public class ConversationController {
     public Result session1(HttpServletRequest request){
         HttpSession session = request.getSession();
         log.info("HttpSession-sets: {}", session.hashCode());
-        session.setAttribute("loginUser", "hehe"); //往session中存储会话数据
+        session.setAttribute("loginUser", "admin"); //往session中存储会话数据
         return Result.success();
     }
 
@@ -2156,16 +2127,6 @@ JJWT 从 0.12.0 起把 API 拆成了三个依赖：核心 API（编译时必需�
 
 ```java
 package com.ljxstar.utils;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.Map;
 
 /**
  * JWT工具类，仅生成、解析 JJWT 0.13.0
@@ -2656,7 +2617,7 @@ public class WebConfig implements WebMvcConfigurer {
 | 后置回调              | 仅能将逻辑写在 `chain.doFilter()` 之后                                       | 提供 `postHandle()` 和 `afterCompletion()` 两个专门的后置回调，且 `afterCompletion()` 保证一定会执行 |
 | 执行顺序              | 先于 Interceptor 执行                                                   | 后于 Filter 执行，且位于请求到达 Controller 的前沿                                             |
 
-> [!tip]
+> [!TIP]
 > **选用建议：**
 > - **Filter 更适合**：编码过滤（字符集设置）、跨域处理（CORS）、请求日志记录等「全局通用」且与业务无关的逻辑。
 > - **Interceptor 更适合**：登录校验、权限控制、接口访问日志等「业务相关」的横切逻辑。本项目的登录校验推荐优先使用 Interceptor。
@@ -2760,7 +2721,7 @@ public Result page(EmpQueryParam empQueryParam) {
 }
 ```
 
-> [!tip]
+> [!TIP]
 > 上面两段「日志 - 方法执行前 / 方法执行后」就是典型的**横切关注点**：它横跨了所有业务方法，却不属于任何一个方法的业务逻辑。
 
 **（2）使用 AOP：日志逻辑封装成切面**
@@ -2885,7 +2846,7 @@ execution(访问修饰符? 返回值 包名.类名.?方法名(方法参数) thro
 -  `*`：匹配**任意一个**（一个包名段、一层类名、一个方法名、一个参数类型）；
 -  `..`：匹配**任意多个**（包名可以是多级、方法参数可以是任意个）。
 
-> [!tip]
+> [!TIP]
 > 切入点表达式的语法规则：
 > 1. 方法的访问修饰符可以省略
 > 2. 返回值可以使用 `*` 号代替（任意返回值类型）
