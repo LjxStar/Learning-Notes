@@ -33,16 +33,79 @@
 > [!TIP]
 > 记忆：IOC 是**思想**（控制权反转了），DI 是**实现手段**（用「注入」的方式把依赖送进来），Spring 容器就是这套机制的具体落地。同理，bean 是容器里的对象，bean 之间的关系由依赖注入维护。
 
-### 1.1.3 四种依赖注入的方式
+### 1.1.4 三层架构
 
-上一节说到「控制反转」是把对象的创建权交给容器，而「依赖注入」则是容器**把对象所依赖的其他对象主动送进来**。注入的时机（构造时 / 字段赋值时）和匹配规则（按类型还是按名称），决定了具体有哪几种写法。
+SSM + Spring Boot 项目的代码按 Controller → Service → Mapper 三层组织，每一层由一个固定注解标记，注解位置错了 Spring 就无法完成依赖注入与对象管理。
 
-| 方式           | 写法                      | 匹配规则                    | 典型场景                    |
-| ------------ | ----------------------- | ----------------------- | ----------------------- |
-| `@Autowired` | 字段上标注 `@Autowired`      | **按类型**自动匹配             | 只有一个实现类时的常规写法           |
-| `@Qualifier` | 与 `@Autowired` **配合使用** | 按类型 + `@Qualifier` 指定名称 | 同类型存在多个实现，需要精确指定        |
-| `@Resource`  | 字段上标注 `@Resource`       | **先按名称**，再按类型           | 项目历史代码、JDK 原生注解写法       |
-| 构造器注入        | 依赖作为构造方法参数传入            | 按类型匹配                   | **推荐**：依赖显式、字段可 `final` |
+| 注解                | 标注位置                      | 作用                                                   |
+| ----------------- | ------------------------- | ---------------------------------------------------- |
+| `@RestController` | Controller 层**类**上        | 等价于 `@Controller` + `@ResponseBody`，方法返回值自动序列化为 JSON |
+| `@Service`        | Service 层**实现类**上，不要标在接口上 | 标记为业务层组件，参与事务管理                                      |
+| `@Mapper`         | Mapper 层**接口**上           | 标记为 MyBatis Mapper 接口，自动生成代理实现类                      |
+
+1. **Mapper 层**
+```java
+@Mapper
+public interface DeptMapper {
+
+    @Select("select * from dept")
+    List<Dept> findAll();
+}
+```
+
+2. **Service 层**
+```java
+@Service
+public class DeptServiceImpl implements DeptService {
+
+    @Autowired
+    private DeptMapper deptMapper;   // 由 Spring 注入 Mapper 代理对象
+
+    @Override
+    public List<Dept> findAll() {
+        return deptMapper.findAll();
+    }
+}
+```
+
+3. **Controller 层**
+```java
+@RestController
+@RequestMapping("/depts")
+public class DeptController {
+
+    @Autowired
+    private DeptService deptService; // 由 Spring 注入 Service 代理对象
+
+    @GetMapping
+    public Result list() {
+        return Result.success(deptService.findAll());
+    }
+}
+```
+
+`@RestController`、`@Service`、`@Mapper` 这类注解统称为**构造型（stereotype）注解**，作用都一样：把类标记为组件，交给 Spring IoC 容器管理、实例化成 bean。它们的区别只是「标在哪一层」：
+
+| 构造型注解 | 特点 |
+| --- | --- |
+| `@Component` | **通用构造型**，任何由 Spring 管理的组件都可以用它标注 |
+| `@Service` | `@Component` 在业务层的特殊化，额外具备事务管理的语义 |
+| `@Repository` | `@Component` 在数据访问层的特殊化，额外会把持久层异常统一转换为 Spring 的数据访问异常 |
+| `@Controller` | `@Component` 在控制层的特殊化，`@RestController` = `@Controller` + `@ResponseBody` |
+| `@Mapper` | **不是** Spring 自带的构造型注解，是 MyBatis 提供的，用于把 Mapper 接口交给 MyBatis 生成代理实现类 |
+
+> [!TIP]
+> 四个 Spring 自带的构造型注解**功能上几乎等价**，真正决定 bean 命名的是类名首字母小写（`DeptServiceImpl` → `deptServiceImpl`）。因此选哪个主要是为了表达语义：Service 层就写 `@Service`，别图省事全写 `@Component`。
+
+### 1.1.4 三种依赖注入的方式
+
+「控制反转是把对象的创建权交给容器，而「依赖注入」则是容器**把对象所依赖的其他对象主动送进来**。主要有四种写法。
+
+| 方式           | 写法                 | 匹配规则          | 典型场景                    |
+| ------------ | ------------------ | ------------- | ----------------------- |
+| `@Autowired` | 字段上标注 `@Autowired` | **按类型**自动匹配   | 只有一个实现类时的常规写法           |
+| 构造器注入        | 依赖作为构造方法参数传入       | 按类型匹配         | **推荐**：依赖显式、字段可 `final` |
+| `@Resource`  | 字段上标注 `@Resource`  | **先按名称**，再按类型 | 项目历史代码、JDK 原生注解写法       |
 
 #### （1）@Autowired 注入
 
@@ -62,8 +125,6 @@ public class DeptServiceImpl implements DeptService {
 }
 ```
 
-- **优点**：写法最简洁，不必写构造方法。
-- **缺点**：依赖关系是「隐式」的——不看注解根本不知道这个类依赖谁；字段在构造方法里还是 `null`（Spring 是先 `new` 出对象、再反射赋值的），所以**构造方法中不能使用被注入的字段**；单元测试时无法直接 `new` 出对象。
 
 > [!NOTE]
 > `@Autowired` 除了标在字段上，还可以标在**方法**或**构造方法**上，Spring 会把容器中匹配的 bean 作为参数传入：
@@ -175,69 +236,6 @@ public DeptServiceImpl(DeptMapper deptMapper) {
 > [!WARNING]
 > 字段注入（`@Autowired` / `@Resource` 直接标字段）有个隐蔽的坑：**构造方法里用不到被注入的字段**，因为 Spring 的顺序是「先调用构造方法创建对象 → 再反射给字段赋值」。如果某个类在构造方法中就调用了 `deptMapper`，那时它还是 `null`，会抛 `NullPointerException`。改用构造器注入即可彻底避免。
 
-### 1.1.4 三层架构
-
-SSM + Spring Boot 项目的代码按 Controller → Service → Mapper 三层组织，每一层由一个固定注解标记，注解位置错了 Spring 就无法完成依赖注入与对象管理。
-
-| 注解                | 标注位置                      | 作用                                                   |
-| ----------------- | ------------------------- | ---------------------------------------------------- |
-| `@RestController` | Controller 层**类**上        | 等价于 `@Controller` + `@ResponseBody`，方法返回值自动序列化为 JSON |
-| `@Service`        | Service 层**实现类**上，不要标在接口上 | 标记为业务层组件，参与事务管理                                      |
-| `@Mapper`         | Mapper 层**接口**上           | 标记为 MyBatis Mapper 接口，自动生成代理实现类                      |
-
-1. **Mapper 层**
-```java
-@Mapper
-public interface DeptMapper {
-
-    @Select("select * from dept")
-    List<Dept> findAll();
-}
-```
-
-2. **Service 层**
-```java
-@Service
-public class DeptServiceImpl implements DeptService {
-
-    @Autowired
-    private DeptMapper deptMapper;   // 由 Spring 注入 Mapper 代理对象
-
-    @Override
-    public List<Dept> findAll() {
-        return deptMapper.findAll();
-    }
-}
-```
-
-3. **Controller 层**
-```java
-@RestController
-@RequestMapping("/depts")
-public class DeptController {
-
-    @Autowired
-    private DeptService deptService; // 由 Spring 注入 Service 代理对象
-
-    @GetMapping
-    public Result list() {
-        return Result.success(deptService.findAll());
-    }
-}
-```
-
-`@RestController`、`@Service`、`@Mapper` 这类注解统称为**构造型（stereotype）注解**，作用都一样：把类标记为组件，交给 Spring IoC 容器管理、实例化成 bean。它们的区别只是「标在哪一层」：
-
-| 构造型注解 | 特点 |
-| --- | --- |
-| `@Component` | **通用构造型**，任何由 Spring 管理的组件都可以用它标注 |
-| `@Service` | `@Component` 在业务层的特殊化，额外具备事务管理的语义 |
-| `@Repository` | `@Component` 在数据访问层的特殊化，额外会把持久层异常统一转换为 Spring 的数据访问异常 |
-| `@Controller` | `@Component` 在控制层的特殊化，`@RestController` = `@Controller` + `@ResponseBody` |
-| `@Mapper` | **不是** Spring 自带的构造型注解，是 MyBatis 提供的，用于把 Mapper 接口交给 MyBatis 生成代理实现类 |
-
-> [!TIP]
-> 四个 Spring 自带的构造型注解**功能上几乎等价**，真正决定 bean 命名的是类名首字母小写（`DeptServiceImpl` → `deptServiceImpl`）。因此选哪个主要是为了表达语义：Service 层就写 `@Service`，别图省事全写 `@Component`。
 
 ## 1.2 统一响应结果 Result
 
