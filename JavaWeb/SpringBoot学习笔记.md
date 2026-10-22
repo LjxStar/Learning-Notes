@@ -1857,13 +1857,11 @@ logging:
 
 # 七、全局异常处理器
 
-## 7.1 为什么需要全局异常处理？
-
 在传统的 MVC 开发中，我们通常会在每个 Controller 中 try-catch 捕获异常，但这种方式重复代码多、难以维护。
 
 Spring Boot 提供了强大的全局异常处理机制 —— `@ControllerAdvice` 和 `@ExceptionHandler`，可以让我们集中处理所有 Controller 抛出的异常，并统一返回给调用者。
 
-## 7.2 全局异常快速入门
+## 7.1 快速入门
 
 Spring MVC 提供两个注解用于定义全局异常处理器：
 
@@ -1894,7 +1892,7 @@ public class GlobalExceptionHandler {
 > 3. 每个方法里先 `log` 记录，再返回统一响应结果。
 >
 
-## 7.3 基于业务的差异化处理
+## 7.2 基于业务的差异化处理
 
 在业务开发里，不同异常需要区分处理：参数错误提示修正，资源不存在提示查询不到，数据库底层异常禁止把原始错误返回前端。对于带有业务含义的异常，推荐自定义异常：
 
@@ -2735,4 +2733,15 @@ public class EmpServiceImpl implements EmpService {
 
 # 九、面向切面编程 AOP
 
-AOP（Aspect Oriented Programming）即面向切面编程，是面向对象编程的一种延续，二者互补，并不对立。其核心思想就是将横切关注点从核心业务逻辑中分离出来，形成一个个的**切面（Aspect）**。
+**AOP**（Aspect Oriented Programming）即面向切面编程，是面向对象编程的一种延续，二者互补，并不对立。其核心思想就是将横切关注点从核心业务逻辑中分离出来，形成一个个的**切面**（Aspect）。
+
+## 9.1 快速入门
+
+1. 导入依赖
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-aop</artifactId>
+</dependency>
+```
