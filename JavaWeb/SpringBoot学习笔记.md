@@ -2735,4 +2735,4 @@ public class EmpServiceImpl implements EmpService {
 
 # 九、面向切面编程 AOP
 
-AOP（Aspect Oriented Programming）即面向切面编程，其核心思想就是将横切关注点从核心业务逻辑中分离出来，形成一个个的**切面（Aspect）**。
+AOP（Aspect Oriented Programming）即面向切面编程，是面向对象编程的一种延续，二者互补，并不对立。其核心思想就是将横切关注点从核心业务逻辑中分离出来，形成一个个的**切面（Aspect）**。
