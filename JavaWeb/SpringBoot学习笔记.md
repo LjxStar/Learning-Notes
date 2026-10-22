@@ -642,7 +642,7 @@ public class AliyunOSSOperator {
     // 配置信息，根据自己的 bucket 修改；用常量命名，表示运行期不变
     private static final String ENDPOINT = "https://oss-cn-hangzhou.aliyuncs.com";
     private static final String REGION = "cn-hangzhou";
-    private static final String BUCKET_NAME = "ljxstar-system-javaweb";
+    private static final String BUCKET_NAME = "tlias-system-javaweb";
 
     /**
      * 上传文件到 OSS
@@ -1357,11 +1357,11 @@ Logback 的配置文件固定叫 `logback.xml`，放在 `src/main/resources` 目
 ```xml
 <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <!-- 日志文件的存放位置 -->
-    <file>D:/logs/ljxstar-current.log</file>
+    <file>D:/logs/tlias-current.log</file>
 
     <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
         <!-- 归档文件名，%d 日期，%i 序号 -->
-        <fileNamePattern>D:/logs/ljxstar-%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+        <fileNamePattern>D:/logs/tlias-%d{yyyy-MM-dd}-%i.log</fileNamePattern>
         <!-- 最多保留 30 天的历史日志 -->
         <maxHistory>30</maxHistory>
         <!-- 单个文件最大 10MB，超过则滚动到新文件 -->
