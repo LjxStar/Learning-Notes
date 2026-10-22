@@ -2860,15 +2860,18 @@ public Result save(Emp emp) {
 
 ![[切面概念.png]]
 
-## 9.2.1 切入点表达式
+## 9.3 切入点表达式
 
 切入点表达式是描述切入点方法的一种表达式，其主要用来决定项目中的哪些方法需要加入通知，常见为如下形式：
-- execution(……)：根据方法的签名来匹配
+
+- execution(...)：根据方法的签名来匹配
+
 ![[Pasted image 20261022195440.png]]
-- @annotation(……) ：根据注解匹配
+
+- @annotation(...) ：根据注解匹配
 ![[Pasted image 20261022195449.png]]
 
-
+9.3.1 execution
 > [!TIP]
 > 通配符只有两个，记住它们就够了：
 > - `*`：匹配**任意一个**（一个包名段、一层类名、一个方法名、一个参数类型）；
@@ -2876,6 +2879,7 @@ public Result save(Emp emp) {
 >
 > 完整格式是 `execution(修饰符? 返回类型 声明类型? 方法名(参数) 异常?)`，例如 `execution(public * com.ljxstar.service..*.*(..))`。
 
+9.3.2 annotation
 ## 9. 通知
 
 **通知（Advice）** 就是切面里真正干活的那段逻辑。Spring AOP 按「执行的时机」提供了 5 种通知：
