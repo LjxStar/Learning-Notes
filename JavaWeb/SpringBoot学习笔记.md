@@ -1753,7 +1753,7 @@ Spring 事务传播机制定义了多个事务方法嵌套调用时的行为规�
 
 实际开发中 `REQUIRED`**、**`REQUIRES_NEW` 比较常用，下面将详解这两种的传播机制
 
-1. **REQUIRED**
+**（1）REQUIRED**
 **REQUIRED**是 Spring 默认的传播机制，它的核心原则是"有则加入，无则新建"。当外层方法已存在事务时，内层方法会直接加入该事务，形成共享事务上下文；若外层无事务，则内层会创建新事务独立执行。例如用户注册时同步创建账户和日志记录：
 ```java
 @Service 
@@ -1775,7 +1775,8 @@ public class LogService {
     }
 }
 ```
-2. **REQUIRES_NEW**
+
+**（2）REQUIRES_NEW**
 **REQUIRES_NEW**与 REQUIRED 完全相反，它会**强制创建新的独立事务**，与外层事务彻底隔离。即使外层已有事务，内层方法也会挂起外层事务，新建物理事务执行，且内层事务的提交/回滚与外层互不影响。例如订单支付失败时，支付记录需要回滚，但失败日志必须留存：
 ```java
 @Service
@@ -1830,7 +1831,7 @@ logging:
 
 在传统的 MVC 开发中，我们通常会在每个 Controller 中 try-catch 捕获异常，但这种方式重复代码多、难以维护。
 
-Spring Boot 提供了强大的全局异常处理机制 —— `@ControllerAdvice` 和 `@ExceptionHandler`，可以让我们集中处理所有 Controller 抛出的异常，并统一返回给调用者。
+Spring Boot 提供强大的全局异常处理机制 —— `@ControllerAdvice` 和 `@ExceptionHandler`，可以让我们集中处理所有 Controller 抛出的异常，并统一返回给调用者。
 
 ## 7.1 快速入门
 
@@ -2018,7 +2019,7 @@ public class ConversationController {
 
 ## 8.2 JWT 令牌
 
-**JWT**（JSON Web Token）是令牌的一种具体格式，用于在通信双方以 json 数据格式安全的传输信息。由于数字签名的存在，这些信息是可靠的。
+JWT（JSON Web Token）是令牌的一种具体格式，用于在通信双方以 json 数据格式安全的传输信息。由于数字签名的存在，这些信息是可靠的。
 
 ### 8.2.1 JWT 与特点
 
