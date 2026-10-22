@@ -2872,14 +2872,16 @@ public Result save(Emp emp) {
 ![[Pasted image 20261022195449.png]]
 
 9.3.1 execution
+
+`execution(修饰符? 返回类型 声明类型? 方法名(参数) 异常?)`，例如 `execution(public * com.ljxstar.service..*.*(..))`。
 > [!TIP]
 > 通配符只有两个，记住它们就够了：
 > - `*`：匹配**任意一个**（一个包名段、一层类名、一个方法名、一个参数类型）；
 > - `..`：匹配**任意多个**（包名可以是多级、方法参数可以是任意个）。
 >
-> 完整格式是 `execution(修饰符? 返回类型 声明类型? 方法名(参数) 异常?)`，例如 `execution(public * com.ljxstar.service..*.*(..))`。
+> 完整格式是 
 
-9.3.2 annotation
+9.3.2 @annotation
 ## 9. 通知
 
 **通知（Advice）** 就是切面里真正干活的那段逻辑。Spring AOP 按「执行的时机」提供了 5 种通知：
