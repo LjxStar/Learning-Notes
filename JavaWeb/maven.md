@@ -1,4 +1,5 @@
-# 一、Maven 简介
+# 一、Maven 入门
+## 1.1 Maven 介绍
 
 Maven 是 Apache 基金会推出的 Java 项目自动化构建工具，也是目前 Java 生态中事实上的标准构建工具。它把「**下载依赖**」和「**构建打包**」这两件最烦琐的事情统一到了一条命令里：
 
@@ -16,7 +17,7 @@ Maven 是 Apache 基金会推出的 Java 项目自动化构建工具，也是目
 4. **Maven 坐标与依赖管理** —— 怎么找依赖、怎么引依赖、怎么排依赖、怎么看依赖
 5. **生命周期与构建命令** —— 打包的各个阶段，以及在终端与 IDEA 中分别怎么执行
 
-# 二、Maven 的安装与配置
+## 1.2 Maven 的安装与配置
 
 从官网下载到的 Maven 是一个 zip 压缩文件，解压后即可使用，整体配置分三步：配置环境变量 → 指定本地仓库 → 指定远程仓库镜像。
 
@@ -25,7 +26,7 @@ Maven 是 Apache 基金会推出的 Java 项目自动化构建工具，也是目
 > - **核心配置文件**：`D:\apache-maven-3.9.9\conf\settings.xml`
 > - **本地仓库目录**：`D:\apache-maven-3.9.9\mvn_repo`
 
-## 2.1 环境变量
+### 1.1.1 环境变量
 
 Maven 环境变量的配置方式与 JDK 完全一致，都是两步：先声明一个「主目录」变量，再把它的 `bin` 目录追加到 `Path` 中。
 
@@ -44,7 +45,7 @@ Java version: 17.0.x, vendor: ..., runtime: ...
 OS name: "windows 11", version: ..., arch: "amd64", family: "windows"
 ```
 
-## 2.2 本地仓库
+### 1.1.2 本地仓库
 
 Maven 从远程仓库下载下来的所有 jar 包与插件，都会**缓存到本地仓库**中，之后再使用同一个依赖时就无需联网下载，直接从本地读取，速度极快。
 
@@ -73,7 +74,7 @@ Maven 从远程仓库下载下来的所有 jar 包与插件，都会**缓存到�
 
 ![[Maven配置本地仓库.png]]
 
-## 2.3 仓库镜像
+### 1.1.3 仓库镜像
 
 Maven 官方提供的**中央仓库**（Central Repository）服务器位于国外，国内直连下载通常比较慢，甚至会超时。为了解决这个问题，阿里巴巴提供了公共的 Maven 仓库镜像，其中基本涵盖了主流开源项目的 jar 包，且国内访问速度很快。
 
@@ -131,7 +132,7 @@ Maven 遵循「约定优于配置」的设计：目录名和文件位置都有�
 
 当项目较大、需要按业务拆分时，还可以采用**多模块**结构：最外层是一个 `packaging` 为 `pom` 的父工程（`pom.xml` 中用 `<modules>` 列出子模块），父工程目录下再并列放若干个独立的 `src` 和 `pom.xml`，各模块既能单独构建，也能由父工程统一管理版本号和插件配置。
 
-## 3.2 pom 文件详解常见标签
+## 3.2 pom 文件常见标签
 
 POM 是 Project Object Model（项目对象模型）的缩写，`pom.xml` 就是这个模型的配置文件，它描述了项目「叫什么、是什么版本、需要什么、用什么方式打包」。这个文件默认位于项目根目录，位置固定不可更改。
 
@@ -245,7 +246,7 @@ org.springframework:spring-webmvc:6.1.4
 
 **坐标去哪里查？** 可以通过 [MvnRepository](https://mvnrepository.com/) 检索中央仓库中的构件，输入 `spring-webmvc` 就能看到所有版本，选一个即可。IDEA 中还有更快的办法：在 `pom.xml` 里敲 `groupId:`，IDEA 会自动拉取候选列表，用方向键选中就能补全，写 `version` 时同理。
 
-## 4.2 引入依赖
+## 4.2 引入依赖 dependency
 
 在 `<dependencies>` 中写一个 `<dependency>` 标签即可，最少只需要三个标签：
 
@@ -261,7 +262,7 @@ org.springframework:spring-webmvc:6.1.4
 
 写完后 IDEA 会触发一次依赖下载，把对应的 jar 缓存到本地仓库（`D:\apache-maven-3.9.9\mvn_repo`），随后就能在 `External Libraries` 中看到它。
 
-## 4.3 依赖范围
+## 4.3 依赖范围 scope
 
 `<scope>` 决定依赖在编译期、测试期、运行期分别是否可见，也决定它会不会被打进最终产物：
 
@@ -285,7 +286,7 @@ org.springframework:spring-webmvc:6.1.4
 
 之所以声明为 `provided`，是因为打包后这个工程要丢进外部的 Tomcat 容器里运行，而容器本身已经带了一套 Tomcat，再打进一份必然引起类冲突。
 
-## 4.4 排除依赖
+## 4.4 排除依赖 exclusion
 
 Maven 具备**传递依赖**能力：项目直接依赖 A，A 又依赖 B，B 还依赖 C，那么 B 和 C 都会被自动放进你的 classpath，不需要你手写声明。
 
