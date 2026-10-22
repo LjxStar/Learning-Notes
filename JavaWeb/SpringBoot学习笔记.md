@@ -2656,7 +2656,7 @@ public class WebConfig implements WebMvcConfigurer {
 | 后置回调              | 仅能将逻辑写在 `chain.doFilter()` 之后                                       | 提供 `postHandle()` 和 `afterCompletion()` 两个专门的后置回调，且 `afterCompletion()` 保证一定会执行 |
 | 执行顺序              | 先于 Interceptor 执行                                                   | 后于 Filter 执行，且位于请求到达 Controller 的前沿                                             |
 
-> [!TIP]
+> [!tip]
 > **选用建议：**
 > - **Filter 更适合**：编码过滤（字符集设置）、跨域处理（CORS）、请求日志记录等「全局通用」且与业务无关的逻辑。
 > - **Interceptor 更适合**：登录校验、权限控制、接口访问日志等「业务相关」的横切逻辑。本项目的登录校验推荐优先使用 Interceptor。
@@ -2760,7 +2760,7 @@ public Result page(EmpQueryParam empQueryParam) {
 }
 ```
 
-> [!tips]
+> [!tip]
 > 上面两段「日志 - 方法执行前 / 方法执行后」就是典型的**横切关注点**：它横跨了所有业务方法，却不属于任何一个方法的业务逻辑。
 
 **（2）使用 AOP：日志逻辑封装成切面**
@@ -2885,7 +2885,7 @@ execution(访问修饰符? 返回值 包名.类名.?方法名(方法参数) thro
 -  `*`：匹配**任意一个**（一个包名段、一层类名、一个方法名、一个参数类型）；
 -  `..`：匹配**任意多个**（包名可以是多级、方法参数可以是任意个）。
 
-> [!tips]
+> [!tip]
 > 切入点表达式的语法规则：
 > 1. 方法的访问修饰符可以省略
 > 2. 返回值可以使用 `*` 号代替（任意返回值类型）
