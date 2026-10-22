@@ -137,40 +137,6 @@ public class DeptServiceImpl implements DeptService {
 > }
 > ```
 
-
-#### （3）@Resource 注解注入
-
-`@Resource` 是  JDK 提供的**标准注解**，位于 `jakarta.annotation.Resource`（Spring Boot 2 中为 `javax.annotation.Resource`），不属于 Spring 专属，但 Spring 同样支持它。
-
-```java
-@Service
-public class DeptServiceImpl implements DeptService {
-
-    @Resource
-    private DeptMapper deptMapper;
-}
-```
-
-它的默认匹配规则和 `@Autowired` 正好相反：**先按名称（byName）查找，找不到再按类型（byType）查找**。也可以显式指定名称：
-
-```java
-@Resource(name = "deptMapper")
-private DeptMapper deptMapper;
-```
-
-两者对比：
-
-| 对比项    | `@Autowired`               | `@Resource`                          |
-| ------ | ----------------------- | -------------------------------- |
-| 来源    | Spring 专属注解              | Jakarta 标准注解（Common Annotations）      |
-| 匹配顺序   | **先按类型**，名称需 `@Qualifier` 补充 | **先按名称**，找不到再按类型                 |
-| 指定实现   | `@Qualifier("deptMapper")`   | `@Resource(name = "deptMapper")`        |
-| 标注位置   | 字段、方法、构造方法              | **只能标在字段或 setter 方法上**              |
-| 找不到依赖时 | 报错（可用 `required = false` 改为不注入） | 报错                                 |
-
-> [!TIP]
-> `@Resource` 无需额外引入依赖，`spring-boot-starter` 已经把 `jakarta.annotation-api` 带进来了。
-
 #### （4）构造器注入
 
 把依赖通过构造方法传入。**Spring 4.3 之后**，如果一个类中只有一个构造方法，Spring 会自动用它完成注入，连 `@Autowired` 都可以省略。
@@ -212,6 +178,30 @@ public DeptServiceImpl(DeptMapper deptMapper) {
 
 > [!WARNING]
 > 字段注入（`@Autowired` / `@Resource` 直接标字段）有个隐蔽的坑：**构造方法里用不到被注入的字段**，因为 Spring 的顺序是「先调用构造方法创建对象 → 再反射给字段赋值」。如果某个类在构造方法中就调用了 `deptMapper`，那时它还是 `null`，会抛 `NullPointerException`。改用构造器注入即可彻底避免。
+
+
+#### （3）@Resource 注解注入
+
+`@Resource` 是  JDK 提供的**标准注解**，位于 `jakarta.annotation.Resource`（Spring Boot 2 中为 `javax.annotation.Resource`），不属于 Spring 专属，但 Spring 同样支持它。
+
+```java
+@Service
+public class DeptServiceImpl implements DeptService {
+
+    @Resource
+    private DeptMapper deptMapper;
+}
+```
+
+它的默认匹配规则和 `@Autowired` 正好相反：**先按名称（byName）查找，找不到再按类型（byType）查找**。也可以显式指定名称：
+
+```java
+@Resource(name = "deptMapper")
+private DeptMapper deptMapper;
+```
+
+> [!TIP]
+> `@Resource` 无需额外引入依赖，`spring-boot-starter` 已经把 `jakarta.annotation-api` 带进来了。
 
 
 ## 1.2 统一响应结果 Result
