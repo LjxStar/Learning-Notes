@@ -33,7 +33,149 @@
 > [!TIP]
 > 记忆：IOC 是**思想**（控制权反转了），DI 是**实现手段**（用「注入」的方式把依赖送进来），Spring 容器就是这套机制的具体落地。同理，bean 是容器里的对象，bean 之间的关系由依赖注入维护。
 
-### 1.1.3 三层架构
+### 1.1.3 四种依赖注入的方式
+
+上一节说到「控制反转」是把对象的创建权交给容器，而「依赖注入」则是容器**把对象所依赖的其他对象主动送进来**。注入的时机（构造时 / 字段赋值时）和匹配规则（按类型还是按名称），决定了具体有哪几种写法。
+
+| 方式           | 写法                      | 匹配规则                    | 典型场景                    |
+| ------------ | ----------------------- | ----------------------- | ----------------------- |
+| `@Autowired` | 字段上标注 `@Autowired`      | **按类型**自动匹配             | 只有一个实现类时的常规写法           |
+| `@Qualifier` | 与 `@Autowired` **配合使用** | 按类型 + `@Qualifier` 指定名称 | 同类型存在多个实现，需要精确指定        |
+| `@Resource`  | 字段上标注 `@Resource`       | **先按名称**，再按类型           | 项目历史代码、JDK 原生注解写法       |
+| 构造器注入        | 依赖作为构造方法参数传入            | 按类型匹配                   | **推荐**：依赖显式、字段可 `final` |
+
+#### （1）@Autowired 注入
+
+最常见的写法，把注解标在需要注入的字段上。Spring 启动时扫描到该注解，会**按类型**从容器中找出对应的 bean，并通过反射赋值给字段。
+
+```java
+@Service
+public class DeptServiceImpl implements DeptService {
+
+    @Autowired
+    private DeptMapper deptMapper;   // 按类型注入 Mapper 代理对象
+
+    @Override
+    public List<Dept> findAll() {
+        return deptMapper.findAll();
+    }
+}
+```
+
+- **优点**：写法最简洁，不必写构造方法。
+- **缺点**：依赖关系是「隐式」的——不看注解根本不知道这个类依赖谁；字段在构造方法里还是 `null`（Spring 是先 `new` 出对象、再反射赋值的），所以**构造方法中不能使用被注入的字段**；单元测试时无法直接 `new` 出对象。
+
+> [!NOTE]
+> `@Autowired` 除了标在字段上，还可以标在**方法**或**构造方法**上，Spring 会把容器中匹配的 bean 作为参数传入：
+>
+> ```java
+> @Autowired
+> public void setDeptMapper(DeptMapper deptMapper) {
+>     this.deptMapper = deptMapper;
+> }
+> ```
+
+#### （2）@Qualifier 配合 @Autowired 注入
+
+当容器中**存在多个同类型**的 bean 时，单独用 `@Autowired` 会因为无法确定注入哪一个而报错：
+
+```
+NoUniqueBeanDefinitionException: expected single matching bean but found 2
+```
+
+这时用 `@Qualifier` 补上一个 **bean 名称**，精确指定要注入哪一个：
+
+```java
+@Service
+public class DeptServiceImpl implements DeptService {
+
+    @Autowired
+    @Qualifier("deptMapper")
+    private DeptMapper deptMapper;
+}
+```
+
+> [!WARNING]
+> `@Qualifier` 的值是 **bean 的名称**，不是类名。bean 名称默认取「类名首字母小写」（`DeptMapper` → `deptMapper`），自定义了 `@Component("xxx")` 的则以自定义的名称为准。
+>
+> 注入**接口**时，同一接口往往有多个实现类（如 `DeptServiceImpl`、`EmpServiceImpl`），这是 `@Qualifier` 最典型的使用场景。
+
+#### （3）@Resource 注解注入
+
+`@Resource` 是 Jakarta（原 JDK）提供的**标准注解**，位于 `jakarta.annotation.Resource`（Spring Boot 2 中为 `javax.annotation.Resource`），不属于 Spring 专属，但 Spring 同样支持它。
+
+```java
+@Service
+public class DeptServiceImpl implements DeptService {
+
+    @Resource
+    private DeptMapper deptMapper;
+}
+```
+
+它的默认匹配规则和 `@Autowired` 正好相反：**先按名称（byName）查找，找不到再按类型（byType）查找**。也可以显式指定名称：
+
+```java
+@Resource(name = "deptMapper")
+private DeptMapper deptMapper;
+```
+
+两者对比：
+
+| 对比项    | `@Autowired`               | `@Resource`                          |
+| ------ | ----------------------- | -------------------------------- |
+| 来源    | Spring 专属注解              | Jakarta 标准注解（Common Annotations）      |
+| 匹配顺序   | **先按类型**，名称需 `@Qualifier` 补充 | **先按名称**，找不到再按类型                 |
+| 指定实现   | `@Qualifier("deptMapper")`   | `@Resource(name = "deptMapper")`        |
+| 标注位置   | 字段、方法、构造方法              | **只能标在字段或 setter 方法上**              |
+| 找不到依赖时 | 报错（可用 `required = false` 改为不注入） | 报错                                 |
+
+> [!TIP]
+> `@Resource` 无需额外引入依赖，`spring-boot-starter` 已经把 `jakarta.annotation-api` 带进来了。
+
+#### （4）构造器注入
+
+把依赖通过构造方法传入。**Spring 4.3 之后**，如果一个类中只有一个构造方法，Spring 会自动用它完成注入，连 `@Autowired` 都可以省略。
+
+```java
+@Service
+public class DeptServiceImpl implements DeptService {
+
+    private final DeptMapper deptMapper;   // 依赖不可变
+
+    // 只有一个构造方法时，@Autowired 可省略
+    public DeptServiceImpl(DeptMapper deptMapper) {
+        this.deptMapper = deptMapper;
+    }
+
+    @Override
+    public List<Dept> findAll() {
+        return deptMapper.findAll();
+    }
+}
+```
+
+有多个构造方法时，必须用 `@Autowired` 标出要用的那一个：
+
+```java
+@Autowired
+public DeptServiceImpl(DeptMapper deptMapper) {
+    this.deptMapper = deptMapper;
+}
+```
+
+> [!IMPORTANT]
+> **实际开发推荐构造器注入**，理由有三个：
+> 1. **依赖显式**：类的方法签名直接说明了它依赖谁，不用点进类里找 `@Autowired`；
+> 2. **对象一旦创建就是完整的**：依赖在构造时就已注入，不会出现「某个字段忘了注入导致空指针」；
+> 3. **便于测试**：单元测试里可以直接 `new DeptServiceImpl(mockMapper)`，把真实的 bean 替换成 mock。
+>
+> 字段可以声明成 `final`，保证注入后不再被修改。
+
+> [!WARNING]
+> 字段注入（`@Autowired` / `@Resource` 直接标字段）有个隐蔽的坑：**构造方法里用不到被注入的字段**，因为 Spring 的顺序是「先调用构造方法创建对象 → 再反射给字段赋值」。如果某个类在构造方法中就调用了 `deptMapper`，那时它还是 `null`，会抛 `NullPointerException`。改用构造器注入即可彻底避免。
+
+### 1.1.4 三层架构
 
 SSM + Spring Boot 项目的代码按 Controller → Service → Mapper 三层组织，每一层由一个固定注解标记，注解位置错了 Spring 就无法完成依赖注入与对象管理。
 
