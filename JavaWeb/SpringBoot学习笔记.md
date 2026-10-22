@@ -2925,7 +2925,7 @@ execution(* com.itheima.service.DeptService.insert(..)) || execution(* com.ithei
 基于注解的方式来匹配切入点方法。这种方式虽然多一步操作，我们需要自定义一个注解，但是相对来比较灵活。我们需要匹配哪个方法，就在方法上加上对应的注解就可以了
 快速入门为 annotation
 
-## 9. 通知
+## 9.4 通知
 
 **通知（Advice）** 就是切面里真正干活的那段逻辑。Spring AOP 按「执行的时机」提供了 5 种通知：
 
@@ -2942,47 +2942,3 @@ execution(* com.itheima.service.DeptService.insert(..)) || execution(* com.ithei
 > - `@After` 与 `@AfterReturning` 的区别：`@After` 相当于 `finally`，**无论**目标方法成功还是抛异常都会执行；`@AfterReturning` 只在**正常返回**时执行。同理，`@AfterThrowing` 只在**抛异常**时执行。
 > - 同一个切面中，通知的执行顺序是：`@Before` → `@Around` 的前半段 → 目标方法 → `@Around` 的后半段 → `@AfterReturning` / `@AfterThrowing`（二者只会命中一个）→ `@After`。
 > - 一个切面里可以写多个通知方法，它们共用同一个切入点；通知方法的参数用 `JoinPoint` 即可拿到连接点信息，只有 `@Around` 需要用它的子类 `ProceedingJoinPoint`（因为要调用 `proceed()`）。
-
-## 9.4 代理
-
-Spring AOP 是基于**动态代理**实现的。容器启动后，会为**匹配了切点**的 bean 生成一个代理对象，并用它替换掉原来的对象塞进容器；之后业务代码拿到的其实是这个代理对象，调用它的方法时，代理会先把调用转交给切面，切面处理完再（或者不）调用真实对象。
-
-```java
-@Service
-public class EmpServiceImpl implements EmpService {
-
-    // 这里是真实的业务实现
-}
-
-// Controller 里注入到的，其实已经是容器中的代理对象了
-@Autowired
-private EmpService empService;
-```
-
-代理对象由切面决定如何织入，Spring 提供两种实现方式：
-
-| 对比项 | JDK 动态代理 | CGLIB 动态代理 |
-| --- | --- | --- |
-| 原理 | 基于**接口**，用 JDK 自带的 `Proxy` 生成实现同样接口的代理对象 | 基于**继承**，动态生成目标类的子类作为代理对象 |
-| 要求 | 目标类**必须实现至少一个接口** | 目标类**不需要接口**，但类本身不能是 `final` |
-| 可增强的方法 | 只能增强**接口中声明**的方法 | 可增强**非 final** 的方法，`private` / `final` / `static` 方法无法增强 |
-| Spring Boot 默认 | 不是默认 | **默认**（`spring.aop.proxy-target-class` 默认为 `true`） |
-
-> [!IMPORTANT]
-> Spring Boot 的自动配置默认使用 **CGLib 代理**；若希望改用 JDK 动态代理，把配置项设为 `false` 即可：
->
-> ```yaml
-> spring:
->   aop:
->     proxy-target-class: false   # 改为 JDK 动态代理
-> ```
->
-> 注意：CGLib 代理对象是目标类的**子类**，所以它**没有**实现目标类额外定义的那些接口（如 `EmpServiceImpl` 自己声明的接口），注入时按实现类类型注入反而可能失败——所以业务接口要规范地定义在接口上。
-
-> [!WARNING]
-> Spring AOP 基于代理，因此有三个「切面不生效」的典型场景：
-> 1. **自调用**：同一个类内部通过 `this.xxx()` 调用自己的方法，这条调用没有走代理对象，切面不会触发；
-> 2. **对象不由容器管理**：`new` 出来的对象不是代理对象，切面不会触发；
-> 3. **方法无法被增强**：`private`、`final`、`static` 方法代理拦不住。
->
-> 另外，Spring AOP **只支持方法级**的连接点（方法执行），不像 AspectJ 那样能拦截字段访问、构造方法等。
