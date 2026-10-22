@@ -2701,7 +2701,7 @@ public class EmpServiceImpl implements EmpService {
 
 以「统一记录操作日志」为例。假设要给一批方法输出统一格式的日志：如果不用 AOP，就必须在每个方法里手写一遍「执行前打日志 → 执行业务 → 执行后打日志」，重复代码既难维护，改一次日志格式还得逐个方法去改。
 
-**（1）不使用 AOP：日志代码写在每个方法里**
+#### （1）不使用 AOP：日志代码写在每个方法里
 
 ```java
 public Result save(Emp emp) {
@@ -2724,7 +2724,7 @@ public Result page(EmpQueryParam empQueryParam) {
 > [!TIP]
 > 上面两段「日志 - 方法执行前 / 方法执行后」就是典型的**横切关注点**：它横跨了所有业务方法，却不属于任何一个方法的业务逻辑。
 
-**（2）使用 AOP：日志逻辑封装成切面**
+#### （2）使用 AOP：日志逻辑封装成切面
 
 使用 AOP 之后，日志记录这段逻辑被封装成一个**切面**，再由**切入点**圈定生效范围、由**通知**声明执行的时机；业务方法只需打一个注解，不用再写任何日志代码。
 
@@ -2745,7 +2745,7 @@ public @interface Log {
     MethodType methodType() default MethodType.OTHER;
 }
 
-// 定义一个枚举，说明操作类型
+// 操作类型枚举
 public enum MethodType {
     INSERT, UPDATE, DELETE, SELECT, OTHER
 }
@@ -2825,26 +2825,27 @@ public Result save(Emp emp) {
 
 切入点表达式是描述切入点方法的一种表达式，其主要用来决定项目中的哪些方法需要加入通知，常见为如下形式：
 
-- execution(...)：根据方法的签名来匹配
+- `execution(...)`：根据方法的签名来匹配
 
 ![[Pasted image 20261022195440.png]]
 
-- @annotation(...) ：根据注解匹配
+- `@annotation(...)`：根据注解匹配
+
 ![[Pasted image 20261022195449.png]]
 
-9.3.1 execution
+### 9.3.1 execution(...)
 
-execution 主要根据方法的返回值、包名、类名、方法名、方法参数等信息来匹配，语法为：
+`execution` 主要根据方法的返回值、包名、类名、方法名、方法参数等信息来匹配，语法为：
 
-```Java
+```java
 execution(访问修饰符? 返回值 包名.类名.?方法名(方法参数) throws 异常?)
 // 其中带 `?` 的表示可以省略的部分。
 ```
 
-可以使用通配符描述切入点
+可以使用通配符描述切入点：
 
--  `*`：匹配**任意一个**（一个包名段、一层类名、一个方法名、一个参数类型）；
--  `..`：匹配**任意多个**（包名可以是多级、方法参数可以是任意个）。
+- `*`：匹配**任意一个**（一个包名段、一层类名、一个方法名、一个参数类型）；
+- `..`：匹配**任意多个**（包名可以是多级、方法参数可以是任意个）。
 
 > [!TIP]
 > 切入点表达式的语法规则：
@@ -2858,48 +2859,150 @@ execution(访问修饰符? 返回值 包名.类名.?方法名(方法参数) thro
 > 8. 可以使用 `..` 配置参数，任意个任意类型的参数
 
 常见示例：
+
 ```java
-// 匹配 cn.ljxstar.controller 包下所有类的所有方法
-execution(* cn.ljxstar.controller.*.*(..))
+// 匹配 com.ljxstar.controller 包下所有类的所有方法
+execution(* com.ljxstar.controller.*.*(..))
 
-// 匹配 cn.ljxstar.controller 包及其所有子包下所有类所有方法
-execution(* cn.ljxstar.controller..*.*(..))
+// 匹配 com.ljxstar.controller 包及其所有子包下所有类所有方法
+execution(* com.ljxstar.controller..*.*(..))
 
-// 返回值为 Result，controller包下任意类任意方法
-execution(Result cn.ljxstar.controller.*.*(..))
+// 返回值为 Result，controller 包下任意类任意方法
+execution(Result com.ljxstar.controller.*.*(..))
 
-// 第一个参数是String，第二个参数任意
-execution(* cn.ljxstar.controller.*.*(String, ..))
+// 第一个参数是 String，第二个参数任意
+execution(* com.ljxstar.controller.*.*(String, ..))
 
 // 匹配所有以 save 开头的方法
-execution(* cn.ljxstar.service..*.save*(..))
+execution(* com.ljxstar.service..*.save*(..))
 
 // 匹配所有无参方法
-execution(* cn.ljxstar.service..*.*())
-```
- 根据业务需要，可以使用且（&&）、或（||）、非（!） 来组合比较复杂的切入点表达式。
-```Java
-execution(* com.itheima.service.DeptService.insert(..)) || execution(* com.itheima.service.DeptService.update(..))
+execution(* com.ljxstar.service..*.*())
 ```
 
-9.3.2 @annotation
-基于注解的方式来匹配切入点方法。这种方式虽然多一步操作，我们需要自定义一个注解，但是相对来比较灵活。我们需要匹配哪个方法，就在方法上加上对应的注解就可以了
-快速入门为 annotation
+根据业务需要，可以使用且（`&&`）、或（`||`）、非（`!`）来组合比较复杂的切入点表达式：
+
+```java
+execution(* com.ljxstar.service.DeptService.insert(..)) || execution(* com.ljxstar.service.DeptService.update(..))
+```
+
+### 9.3.2 @annotation(...)
+
+基于注解的方式来匹配切入点方法。这种方式虽然多一步操作（需要自定义一个注解），但相对来比较灵活：需要匹配哪个方法，就在方法上加上对应的注解就可以了。
+
+```java
+// 匹配所有标注了 @Log 注解的方法
+@annotation(com.ljxstar.annotation.Log)
+```
 
 ## 9.4 通知
 
 **通知（Advice）** 就是切面里真正干活的那段逻辑。Spring AOP 按「执行的时机」提供了 5 种通知：
 
-| 通知类型   | 注解                | 执行时机                               |
-| ------ | ----------------- | ---------------------------------- |
-| 前置通知   | `@Before`         | 目标方法**执行前**                        |
-| 后置通知   | `@After`          | 目标方法**执行后**，无论成功还是抛异常都会执行          |
-| 后置返回通知 | `@AfterReturning` | 目标方法**正常返回后**执行，抛异常则不执行            |
-| 后置异常通知 | `@AfterThrowing`  | 目标方法**抛出异常后**执行                    |
-| 环绕通知   | `@Around`         | 目标方法**执行前后**，需要自己调用 `proceed()` 放行 |
+| 通知类型 | 注解 | 执行时机 |
+| --- | --- | --- |
+| 前置通知 | `@Before` | 目标方法**执行前** |
+| 后置通知 | `@After` | 目标方法**执行后**，无论成功还是抛异常都会执行 |
+| 后置返回通知 | `@AfterReturning` | 目标方法**正常返回后**执行，抛异常则不执行 |
+| 后置异常通知 | `@AfterThrowing` | 目标方法**抛出异常后**执行 |
+| 环绕通知 | `@Around` | 目标方法**执行前后**，需要自己调用 `proceed()` 放行 |
 
+把 9.1 的切面继续扩展，5 种通知写在同一个切面里就是这样：
+
+```java
+/**
+ * 操作日志切面：演示 5 种通知
+ */
+@Slf4j
+@Component
+@Aspect
+public class LogAspect {
+
+    /**
+     * 切入点：匹配所有标注了 @Log 注解的方法
+     */
+    @Pointcut("@annotation(com.ljxstar.annotation.Log)")
+    public void logPointcut() {
+    }
+
+    /**
+     * 前置通知：目标方法执行前
+     */
+    @Before("logPointcut()")
+    public void before(JoinPoint joinPoint) {
+        log.info("【前置通知】方法：{}，开始执行", joinPoint.getSignature().toShortString());
+    }
+
+    /**
+     * 后置通知：目标方法执行后，无论成功还是抛异常都会执行
+     */
+    @After("logPointcut()")
+    public void after(JoinPoint joinPoint) {
+        log.info("【后置通知】方法：{}，执行结束", joinPoint.getSignature().toShortString());
+    }
+
+    /**
+     * 后置返回通知：目标方法正常返回后执行
+     */
+    @AfterReturning("logPointcut()")
+    public void afterReturning(JoinPoint joinPoint, Object result) {
+        log.info("【后置返回通知】方法：{}，正常返回", joinPoint.getSignature().toShortString());
+    }
+
+    /**
+     * 后置异常通知：目标方法抛出异常后执行
+     */
+    @AfterThrowing("logPointcut()")
+    public void afterThrowing(JoinPoint joinPoint, Exception e) {
+        log.error("【后置异常通知】方法：{}，执行异常", joinPoint.getSignature().toShortString(), e);
+    }
+
+    /**
+     * 环绕通知：由自己控制目标方法的执行
+     */
+    @Around("logPointcut()")
+    public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
+        log.info("【环绕通知】方法：{}，执行前", joinPoint.getSignature().toShortString());
+        Object result = joinPoint.proceed();   // 放行目标方法
+        log.info("【环绕通知】方法：{}，执行后", joinPoint.getSignature().toShortString());
+        return result;
+    }
+}
+```
+
+### 9.4.1 多个通知的执行顺序
+
+同一个切面里可以写多个通知，它们共用同一个切入点。目标方法被调用时，各通知按下面的顺序依次执行：
+
+```java
+@Around 前置 → @Before → 目标方法 → @AfterReturning / @AfterThrowing → @After → @Around 后置
+```
+
+拆开来看一共 6 步：
+
+1. **`@Around` 的前置逻辑**：`proceed()` 之前执行；
+2. **`@Before`**：目标方法执行**前**执行；
+3. **目标方法**：真正跑业务逻辑；
+4. **`@AfterReturning` 或 `@AfterThrowing`**：目标方法**正常返回**后执行前者，**抛出异常**后执行后者——二者**只会命中一个**；
+5. **`@After`**：目标方法执行**后**执行，无论成功还是抛异常都会执行（相当于 `finally`）；
+6. **`@Around` 的后置逻辑**：`proceed()` 之后执行。
 
 > [!IMPORTANT]
 > - `@After` 与 `@AfterReturning` 的区别：`@After` 相当于 `finally`，**无论**目标方法成功还是抛异常都会执行；`@AfterReturning` 只在**正常返回**时执行。同理，`@AfterThrowing` 只在**抛异常**时执行。
-> - 同一个切面中，通知的执行顺序是：`@Before` → `@Around` 的前半段 → 目标方法 → `@Around` 的后半段 → `@AfterReturning` / `@AfterThrowing`（二者只会命中一个）→ `@After`。
 > - 一个切面里可以写多个通知方法，它们共用同一个切入点；通知方法的参数用 `JoinPoint` 即可拿到连接点信息，只有 `@Around` 需要用它的子类 `ProceedingJoinPoint`（因为要调用 `proceed()`）。
+> - 同一个切面里写了**多个同类型**的通知（如两个 `@After`）时，它们的先后顺序是**未定义**的（javac 编译的 class 反射不出方法声明顺序），要么合并成一个，要么拆成不同的切面用 `@Order` 控制。
+
+> [!TIP]
+> 多个**切面**都命中同一个方法时，默认的执行顺序同样是**未定义**的，用 `@Order` 明确指定：值越小优先级越高。
+>
+> ```java
+> @Order(1)   // 优先级高，先执行
+> @Aspect
+> @Component
+> public class LogAspect { ... }
+>
+> @Order(2)   // 优先级低，后执行
+> @Aspect
+> @Component
+> public class AuthAspect { ... }
+> ```
