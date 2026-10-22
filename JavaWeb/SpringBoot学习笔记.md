@@ -2731,3 +2731,6 @@ public class EmpServiceImpl implements EmpService {
 > **清理操作必须放在请求结束的「必定执行」时机**
 > - **使用 Interceptor 时**：将 `CurrentHolder.clear()` 放在 `afterCompletion()` 方法中。该方法无论 Controller 是否抛异常，都会被调用。
 > - **使用 Filter 时**：将 `CurrentHolder.clear()` 放在 `doFilter()` 的 `finally` 代码块中。同样能确保无论正常放行还是异常中断，都能执行清理。
+
+
+# 九、AOP
