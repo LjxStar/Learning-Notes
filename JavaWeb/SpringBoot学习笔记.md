@@ -4,38 +4,44 @@
 
 ### 1.1.1 分层解耦
 
-软件开发中，一个功能通常要经过**数据校验 → 业务处理 → 数据存取**这几个环节，如果把它们全部写在一个方法里，代码会又长又难维护，也会因为「改一处动全身」而频繁出 bug。
+在软件开发中，一个完整功能通常要经过**数据校验 → 业务处理 → 数据存取**这几个环节。如果把它们全部塞进一个方法里，代码会又长又难维护，还会因为「改一处动全身」而频繁出 bug。
 
-**分层解耦**就是把每一类职责单独抽出来，交给专门的类去做：
+**分层解耦**就是把每一类职责单独抽出来，交给专门的类去完成：
 
 - **Controller 层**：只负责接收请求、校验参数、返回响应，不写业务逻辑；
 - **Service 层**：只负责业务处理，需要操作数据库时再往下调用；
 - **Mapper 层**：只负责与数据库打交道，把 SQL 执行结果返回上去。
 
+每一层都通过**接口**对外暴露能力：调用方只面向接口编程，具体的实现类则交给后续的 IOC 容器统一创建和管理。
+
 > [!IMPORTANT]
-> 分层的意义不只是「代码好看」，更重要的是**各层可以独立替换、独立测试**。比如业务逻辑变了，SQL 一行都不用改；表结构变了，也不需要动 Controller。
+> 分层的意义不只是「代码好看」，更重要的是**各层可以独立替换、独立测试**。业务逻辑变了，SQL 一行都不用改；表结构变了，也不需要动 Controller。
 
 有了分层还不够：Controller 里直接 `new DeptServiceImpl()`，Service 就和具体实现类**死死绑定**在一起，Service 内部同样会 `new deptMapper()`。要让上层「只依赖抽象、不依赖实现」，就需要容器把依赖对象主动送上来——这就是下面要讲的 IOC 与 DI。
 
 ### 1.1.2 IOC 与 DI
 
 - **控制反转**：Inversion Of Control，简称 **IOC**。对象的创建控制权由程序自身转移到外部（容器），这种思想称为控制反转。
-
     - 对象的创建权由程序员主动创建转移到容器（由容器创建、管理对象）。这个容器称为：**IOC 容器**，也就是 Spring 容器。
-
 - **依赖注入**：Dependency Injection，简称 **DI**。容器为应用程序提供运行时所依赖的资源，称之为依赖注入。
-
     - 程序运行时需要某个资源，此时容器就为其提供这个资源。
     - 例：`EmpController` 程序运行时需要 `EmpService` 对象，Spring 容器就为其提供并注入 `EmpService` 对象。
-
 - **bean 对象**：IOC 容器中创建、管理的对象，称之为 **bean 对象**。
+
+三者之间的关系可以这样对照：
+
+| 概念   | 关键词        | 一句话理解                   |
+| ---- | ----------- | ------------------------ |
+| IOC | **控制反转**   | 对象「谁来创建」反过来了，由容器说了算 |
+| DI  | **依赖注入**   | 容器把对象「需要的东西」主动塞给它   |
+| bean | **容器里的对象** | 被容器创建并管理的对象，一个类默认就是一个 bean |
 
 > [!TIP]
 > 记忆：IOC 是**思想**（控制权反转了），DI 是**实现手段**（用「注入」的方式把依赖送进来），Spring 容器就是这套机制的具体落地。同理，bean 是容器里的对象，bean 之间的关系由依赖注入维护。
 
 ### 1.1.3 三层架构
 
-SSM + Spring Boot 项目的代码按 Controller → Service → Mapper 三层组织，每一层由一个固定注解标记，注解位置错了 Spring 就无法完成依赖注入与对象管理。
+Spring Boot + MyBatis 项目的代码按 Controller → Service → Mapper 三层组织，每一层由一个固定注解标记，注解位置错了 Spring 就无法完成依赖注入与对象管理。
 
 | 注解                | 标注位置                      | 作用                                                   |
 | ----------------- | ------------------------- | ---------------------------------------------------- |
@@ -44,45 +50,48 @@ SSM + Spring Boot 项目的代码按 Controller → Service → Mapper 三层组
 | `@Mapper`         | Mapper 层**接口**上           | 标记为 MyBatis Mapper 接口，自动生成代理实现类                      |
 
 1. **Mapper 层**
-```java
-@Mapper
-public interface DeptMapper {
+   ```java
+   @Mapper
+   public interface DeptMapper {
 
-    @Select("select * from dept")
-    List<Dept> findAll();
-}
-```
+       @Select("select * from dept")
+       List<Dept> findAll();
+   }
+   ```
 
 2. **Service 层**
-```java
-@Service
-public class DeptServiceImpl implements DeptService {
+   ```java
+   @Service
+   public class DeptServiceImpl implements DeptService {
 
-    @Autowired
-    private DeptMapper deptMapper;   // 由 Spring 注入 Mapper 代理对象
+       @Autowired
+       private DeptMapper deptMapper;   // 由 Spring 注入 Mapper 代理对象
 
-    @Override
-    public List<Dept> findAll() {
-        return deptMapper.findAll();
-    }
-}
-```
+       @Override
+       public List<Dept> findAll() {
+           return deptMapper.findAll();
+       }
+   }
+   ```
 
 3. **Controller 层**
-```java
-@RestController
-@RequestMapping("/depts")
-public class DeptController {
+   ```java
+   @RestController
+   @RequestMapping("/depts")
+   public class DeptController {
 
-    @Autowired
-    private DeptService deptService; // 由 Spring 注入 Service 代理对象
+       @Autowired
+       private DeptService deptService; // 由 Spring 注入 Service 代理对象
 
-    @GetMapping
-    public Result list() {
-        return Result.success(deptService.findAll());
-    }
-}
-```
+       @GetMapping
+       public Result list() {
+           return Result.success(deptService.findAll());
+       }
+   }
+   ```
+
+> [!TIP]
+> 注入进来的**都是代理对象**：Service 里的 `deptMapper` 并非 Mapper 接口本身，而是 MyBatis 通过动态代理生成的实现；Service 上加了 `@Transactional` 时，Controller 注入到的 `deptService` 也是 Spring AOP 生成的代理——事务正是靠这个代理在方法执行前后织入的。
 
 `@RestController`、`@Service`、`@Mapper` 这类注解统称为**构造型（stereotype）注解**，作用都一样：把类标记为组件，交给 Spring IoC 容器管理、实例化成 bean。它们的区别只是「标在哪一层」：
 
@@ -99,14 +108,14 @@ public class DeptController {
 
 ### 1.1.4 四种依赖注入的方式
 
-「控制反转是把对象的创建权交给容器，而「依赖注入」则是容器**把对象所依赖的其他对象主动送进来**。主要有四种写法。
+「控制反转」是把对象的**创建权**交给容器，而「依赖注入」则是容器**把对象所依赖的其他对象主动送进来**。Spring 中最常见的注入方式有四种：
 
-| 方式           | 写法                    | 典型场景                               |
-| ------------ | --------------------- | ---------------------------------- |
-| `@Autowired` | 字段上标注 `@Autowired`    | 只有一个实现类时的常规写法                      |
-| 构造器注入        | 依赖作为构造方法参数传入          | Spring 官方推荐；依赖显式、字段可用 `final`、依赖非空 |
-| Setter 注入    | set 方法上加 `@Autowired` | 可选依赖，支持后续修改依赖                      |
-| `@Resource`  | 字段上标注 `@Resource`     | 老项目、JSR 原生注解，需要按名称匹配 Bean          |
+| 方式         | 写法                    | 匹配规则          | 典型场景                               |
+| ------------ | --------------------- | --------------- | ---------------------------------- |
+| `@Autowired` | 字段上标注 `@Autowired`    | **先按类型**，再按名称   | 只有一个实现类时的常规写法                      |
+| 构造器注入     | 依赖作为构造方法的参数传入        | 按类型            | Spring 官方推荐；依赖显式、字段可用 `final`、依赖非空 |
+| Setter 注入 | set 方法上加 `@Autowired` | 按类型            | 依赖可能为空，或运行期需要替换实现                |
+| `@Resource` | 字段上标注 `@Resource`    | **先按名称**，再按类型   | 老项目、JSR 原生注解，需要按名称匹配 Bean          |
 
 #### （1）@Autowired 注入
 
@@ -126,9 +135,34 @@ public class DeptServiceImpl implements DeptService {
 }
 ```
 
+**匹配规则：先按类型，再按名称。** 容器里只有一个 `DeptMapper` 类型的 bean 时直接注入；若存在多个同类型 bean，Spring 会用**字段名 / 参数名**去匹配 bean 的名字（`deptMapper` → 找名为 `deptMapper` 的 bean），两者都对不上就会抛 `NoUniqueBeanDefinitionException`。
+
+同类型存在多个实现类时，用 `@Primary` 标记默认实现的那个：
+
+```java
+@Service
+@Primary   // 多个同类型 bean 时，默认注入这一个
+public class DeptServiceImpl implements DeptService {
+}
+```
+
+也可以用 `@Qualifier` 精确指定要注入的 bean：
+
+```java
+@Autowired
+@Qualifier("deptMapper")
+private DeptMapper deptMapper;
+```
+
+依赖**可选**时，写成 `@Autowired(required = false)`：容器中找不到对应 bean 时不报错，字段保持 `null`，使用时自行判空。
+
+```java
+@Autowired(required = false)   // 可选依赖：找不到就不注入
+private DeptMapper deptMapper;
+```
 
 > [!NOTE]
-> `@Autowired` 除了标在字段上，还可以标在**方法**或**构造方法**上，Spring 会把容器中匹配的 bean 作为参数传入：
+> `@Autowired` 除了标在字段上，还可以标在 **set 方法**或**构造方法**上，Spring 会把容器中匹配的 bean 作为参数传入（set 方法的完整写法见下文「Setter 注入」）：
 >
 > ```java
 > @Autowired
@@ -137,7 +171,7 @@ public class DeptServiceImpl implements DeptService {
 > }
 > ```
 
-#### （4）构造器注入
+#### （2）构造器注入
 
 把依赖通过构造方法传入。**Spring 4.3 之后**，如果一个类中只有一个构造方法，Spring 会自动用它完成注入，连 `@Autowired` 都可以省略。
 
@@ -179,10 +213,41 @@ public DeptServiceImpl(DeptMapper deptMapper) {
 > [!WARNING]
 > 字段注入（`@Autowired` / `@Resource` 直接标字段）有个隐蔽的坑：**构造方法里用不到被注入的字段**，因为 Spring 的顺序是「先调用构造方法创建对象 → 再反射给字段赋值」。如果某个类在构造方法中就调用了 `deptMapper`，那时它还是 `null`，会抛 `NullPointerException`。改用构造器注入即可彻底避免。
 
+#### （3）Setter 注入
 
-#### （3）@Resource 注解注入
+把依赖通过 set 方法传入：在 set 方法上标注 `@Autowired`，Spring 创建好对象后，再回调这个方法把依赖送进来。
 
-`@Resource` 是  JDK 提供的**标准注解**，位于 `jakarta.annotation.Resource`（Spring Boot 2 中为 `javax.annotation.Resource`），不属于 Spring 专属，但 Spring 同样支持它。
+```java
+@Service
+public class DeptServiceImpl implements DeptService {
+
+    private DeptMapper deptMapper;
+
+    @Autowired
+    public void setDeptMapper(DeptMapper deptMapper) {
+        this.deptMapper = deptMapper;
+    }
+
+    @Override
+    public List<Dept> findAll() {
+        return deptMapper.findAll();
+    }
+}
+```
+
+它的特点与适用场景：
+
+- **依赖可变**：注入完成后仍能再次调用 set 方法替换依赖，适合「运行期需要动态更换实现」的场景（策略模式、多实现类切换）；
+- **创建与赋值分离**：对象先创建、依赖后赋值，中间存在一个「依赖还没就位」的窗口期，因此构造方法里同样拿不到注入的字段；
+- **字段不能声明为 `final`**：值在创建之后还会被改写，语义上不再是不可变依赖；
+- **依赖可选**：写成 `@Autowired(required = false)` 时，容器中找不到对应 bean 不会报错，该 set 方法不会被调用，字段保持 `null`。
+
+> [!TIP]
+> Setter 注入与字段注入本质相同，都是「先创建对象、后赋值依赖」。**依赖固定不变时一律用构造器注入**；只有确实需要在运行期替换依赖时，才考虑 Setter 注入。
+
+#### （4）@Resource 注解注入
+
+`@Resource` 是 **JSR 250（Jakarta Annotations）提供的标准注解**，位于 `jakarta.annotation.Resource`（Spring Boot 2 中为 `javax.annotation.Resource`），并不属于 Spring 专属，但 Spring 同样支持它。
 
 ```java
 @Service
@@ -201,7 +266,22 @@ private DeptMapper deptMapper;
 ```
 
 > [!TIP]
-> `@Resource` 无需额外引入依赖，`spring-boot-starter` 已经把 `jakarta.annotation-api` 带进来了。
+> `@Resource` 无需额外引入依赖，`spring-boot-starter` 已经把 `jakarta.annotation-api` 带进来了；JDK 11 起 `javax.annotation` 已从 JDK 中移除，老项目需自行引入 `javax.annotation-api` 依赖。
+
+#### `@Autowired` 与 `@Resource` 对比
+
+| 对比项    | `@Autowired`                                        | `@Resource`                                            |
+| ------ | ------------------------------------------------- | ----------------------------------------------------- |
+| 所属   | Spring 自带注解                                        | JSR 250 / Jakarta 标准注解                                  |
+| 包名   | `org.springframework.beans.factory.annotation.Autowired` | `jakarta.annotation.Resource`（Boot 2 为 `javax.annotation.Resource`） |
+| 匹配顺序  | **先 byType，再 byName**                                | **先 byName，再 byType**                                      |
+| 指定 bean | 用 `@Qualifier("beanName")`                             | 用 `@Resource(name = "beanName")`                           |
+| 可选依赖  | 支持 `required = false`                                 | 不支持，找不到直接抛异常                                        |
+| 可标注位置 | 字段、set 方法、构造方法                                    | 字段、set 方法                                              |
+| 使用场景  | 新项目首选                                               | 老项目（尤其是 SSH/SSM 老代码）中大量存在                         |
+
+> [!IMPORTANT]
+> **实际开发怎么选**：新项目一律用**构造器注入**；需要「按名称精确查找」或维护老代码时用 `@Resource`；`@Autowired` 字段注入和 Setter 注入了解原理即可，日常不推荐。
 
 
 ## 1.2 统一响应结果 Result
