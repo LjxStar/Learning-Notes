@@ -2972,9 +2972,8 @@ public class LogAspect {
 
 同一个切面里可以写多个通知，它们共用同一个切入点。目标方法被调用时，各通知按下面的顺序依次执行：
 
-```java
-@Around 前置 → @Before → 目标方法 → @AfterReturning / @AfterThrowing → @After → @Around 后置
-```
+> @Around 前置 → @Before → 目标方法 → @AfterReturning / @AfterThrowing → @After → @Around 后置
+
 
 拆开来看一共 6 步：
 
