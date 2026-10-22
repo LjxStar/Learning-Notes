@@ -2798,7 +2798,7 @@ public enum MethodType {
 ```
 
 
-写切面类，把「记录日志」这件事完整封装进去：
+写切面类，把「记录日志」的逻辑代码完整封装进去：
 
 ```java
 package com.itheima.aspect;
