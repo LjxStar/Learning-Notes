@@ -1248,11 +1248,11 @@ createApp({
 | 常见指令                  | 作用                             |
 | --------------------- | ------------------------------ |
 | v-for                 | 列表渲染，遍历容器的元素或者对象的属性            |
+| v-on                  | 为HTML标签绑定事件                    |
 | v-bind                | 为HTML标签绑定属性值，如设置 href , css样式等 |
+| v-model               | 在表单元素上创建双向数据绑定                 |
 | v-if/v-else-if/v-else | 条件性的渲染某元素，判定为true时渲染,否则不渲染     |
 | v-show                | 根据条件展示某元素，区别在于切换的是display属性的值  |
-| v-model               | 在表单元素上创建双向数据绑定                 |
-| v-on                  | 为HTML标签绑定事件                    |
 
 在这里你可以直观地看到完整的指令语法：
 
@@ -1335,7 +1335,18 @@ createApp({
 </html>
 ```
 
-### 2.2.2 v-bind
+### 2.2.2 v-on
+
+**绑定事件监听**，给元素绑定 DOM 事件，触发后执行 JS 代码，可使用 @ 简写。
+
+**事件修饰符**
+
+- `.prevent`：阻止默认行为
+- `.stop`：阻止事件冒泡
+- `.once`：事件只触发一次
+- `.self`：仅点击元素自身才触发
+
+### 2.2.3 v-bind
 
 `v-bind` 用于**动态绑定 HTML 标签属性**，将 Vue 中的响应式数据关联到标签属性上，常用于 `src`、`href`、class、style 等属性。`v-bind:属性名` 可简写为 `:属性名`。
 
@@ -1363,7 +1374,75 @@ createApp({
 <MyComponent :prop="someThing" />
 ```
 
-### 2.2.3 v-if & v-show
+### 2.2.4 v-model
+
+在表单输入元素或组件上创建双向绑定，可以方便地**获取**或**设置**表单项数据。
+
+> 本质语法糖：v-model = :value + @input
+
+```html
+<!-- 原生输入框 -->
+<input v-model="msg" />
+<!-- 等价写法 -->
+<input :value="msg" @input="msg = $event.target.value" />
+```
+
+**修饰符**
+
+- `.lazy`：失去焦点后更新数据
+- `.number`：自动转为数字类型
+- `.trim`：移除输入内容两端空格
+
+以下为 `v-model` 拿表单数据，`v-on` 绑定提交事件的示例：
+
+```html
+<template>
+  <div id="app">
+    <h3>登录表单</h3>
+    <!-- v-on绑定表单提交事件 -->
+    <form @submit.prevent="onLogin">
+      <div>
+        账号：<input v-model="account" placeholder="请输入账号">
+      </div>
+      <div>
+        密码：<input v-model="password" type="password">
+      </div>
+      <div>
+        <input type="checkbox" v-model="remember">记住密码
+      </div>
+      <button type="submit">登录</button>
+    </form>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      // v-model绑定的响应式数据
+      account: '',
+      password: '',
+      remember: false
+    }
+  },
+  methods: {
+    // v-on触发的登录方法
+    onLogin() {
+      console.log('账号', this.account)
+      console.log('密码', this.password)
+      console.log('记住密码', this.remember)
+      if (!this.account || !this.password) {
+        alert('账号密码不能为空')
+        return
+      }
+      alert('登录成功！')
+    }
+  }
+}
+</script>
+```
+
+### 2.2.5 v-if & v-show
 
 `v-if` 和 `v-show` 都可以控制元素**显示 / 隐藏**，但底层实现原理不同。
 
@@ -1414,85 +1493,6 @@ createApp({
   </script>
 </body>
 </html>
-```
-
-### 2.2.4 v-model
-
-在表单输入元素或组件上创建双向绑定，可以方便地**获取**或**设置**表单项数据。
-
-> 本质语法糖：v-model = :value + @input
-
-```html
-<!-- 原生输入框 -->
-<input v-model="msg" />
-<!-- 等价写法 -->
-<input :value="msg" @input="msg = $event.target.value" />
-```
-
-**修饰符**
-
-- `.lazy`：失去焦点后更新数据
-- `.number`：自动转为数字类型
-- `.trim`：移除输入内容两端空格
-
-### 2.2.5 v-on
-
-**绑定事件监听**，给元素绑定 DOM 事件，触发后执行 JS 代码，可使用 @ 简写。
-
-**事件修饰符**
-
-- `.prevent`：阻止默认行为
-- `.stop`：阻止事件冒泡
-- `.once`：事件只触发一次
-- `.self`：仅点击元素自身才触发
-
-以下为 `v-model` 拿表单数据，`v-on` 绑定提交事件的示例：
-
-```html
-<template>
-  <div id="app">
-    <h3>登录表单</h3>
-    <!-- v-on绑定表单提交事件 -->
-    <form @submit.prevent="onLogin">
-      <div>
-        账号：<input v-model="account" placeholder="请输入账号">
-      </div>
-      <div>
-        密码：<input v-model="password" type="password">
-      </div>
-      <div>
-        <input type="checkbox" v-model="remember">记住密码
-      </div>
-      <button type="submit">登录</button>
-    </form>
-  </div>
-</template>
-
-<script>
-export default {
-  data() {
-    return {
-      // v-model绑定的响应式数据
-      account: '',
-      password: '',
-      remember: false
-    }
-  },
-  methods: {
-    // v-on触发的登录方法
-    onLogin() {
-      console.log('账号', this.account)
-      console.log('密码', this.password)
-      console.log('记住密码', this.remember)
-      if (!this.account || !this.password) {
-        alert('账号密码不能为空')
-        return
-      }
-      alert('登录成功！')
-    }
-  }
-}
-</script>
 ```
 
 ## 2.3 生命周期
