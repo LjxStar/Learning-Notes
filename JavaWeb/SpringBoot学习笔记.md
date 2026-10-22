@@ -2862,16 +2862,11 @@ public Result save(Emp emp) {
 
 ### 9.2.1 常用切入点表达式
 
-切入点表达式是描述切入点方法的一种表达式，其主要用来决定项目中的哪些方法需要加入通知，chang
+切入点表达式是描述切入点方法的一种表达式，其主要用来决定项目中的哪些方法需要加入通知，常见为如下形式：
+- execution(……)：根据方法的签名来匹配
+- @annotation(……) ：根据注解匹配
 
-| 表达式                                                             | 含义                              |
-| --------------------------------------------------------------- | ------------------------------- |
-| `@annotation(com.ljxstar.annotation.Log)`                       | 匹配所有标注了指定注解的方法                  |
-| `execution(* com.ljxstar.service.impl.EmpServiceImpl.save(..))` | 匹配 `EmpServiceImpl` 的 `save` 方法 |
-| `execution(* com.ljxstar.service..*.*(..))`                     | 匹配 `service` 包及其子包下所有类的所有方法     |
-| `within(com.ljxstar.service..*)`                                | 匹配 `service` 包及其子包下所有类的方法       |
-| `this(com.ljxstar.service.impl.EmpServiceImpl)`                 | 代理对象是 `EmpServiceImpl` 类型       |
-| `target(com.ljxstar.service.impl.EmpServiceImpl)`               | 目标对象是 `EmpServiceImpl` 类型       |
+
 
 > [!TIP]
 > 通配符只有两个，记住它们就够了：
