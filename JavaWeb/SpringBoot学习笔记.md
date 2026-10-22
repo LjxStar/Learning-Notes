@@ -2018,9 +2018,6 @@ public class ConversationController {
 相比 Cookie 和 Session，JWT 更适合现代 Web 应用（尤其是前后端分离、分布式集群场景）。
 
 ## 8.2 JWT 令牌
-
-JWT（JSON Web Token）是令牌的一种具体格式，用于在通信双方以 json 数据格式安全的传输信息。由于数字签名的存在，这些信息是可靠的。
-
 ### 8.2.1 JWT 与特点
 
 | 特点      | 说明             | 对登录的意义                   |
