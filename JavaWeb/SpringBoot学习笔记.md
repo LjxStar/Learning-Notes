@@ -2741,15 +2741,17 @@ public class EmpServiceImpl implements EmpService {
 
 ```java
 public Result<Object> method1() {
+	// 日志-方法执行前
     // 业务逻辑
     xxService.method1();
-    Log.info("日志信息")
+    // 日志-方法执行后
     return Result.success();
 }
 public Result<Object> method2() {
+    // 日志-方法执行前
     // 业务逻辑
     xxService.method2();
-    Log.info("日志信息")
+    // 日志-方法执行后
     return Result.success();
 }
 ```
@@ -2776,18 +2778,37 @@ public class LogAspect {
     // 环绕通知，在目标方法前后执行日志逻辑
     @Around("webLog()")
     public Object doAround(ProceedingJoinPoint joinPoint) throws Throwable {
-        // 日志处理
+        // 获取注解信息
+        Log logAnnotation = ((MethodSignature) joinPoint.getSignature()).getMethod().getAnnotation(Log.class);
+        String desc = logAnnotation.description();
+        MethodType type = logAnnotation.methodType();
+        // 记录方法执行前日志
+        Log.info("操作描述：{}，操作类型：{}，开始执行", desc, type);
+        long start = System.currentTimeMillis();
+        // 执行目标方法
+        Object result = joinPoint.proceed();
+        // 记录方法执行后日志
+        long cost = System.currentTimeMillis() - start;
+        Log.info("操作描述：{}，操作类型：{}，执行耗时：{}ms", desc, type, cost);
+        return result;
     }
 }
 ```
 
-这样的话，我们一行注解即可实现日志记录：
+这样，业务方法只需添加注解，无需手写日志代码：
 
 ```java
 @Log(description = "method1",methodType = MethodType.INSERT)
 public Result<Object> method1() {
-    // 业务逻辑
     xxService.method1();
     return Result.success();
 }
 ```
+
+## 9.2 AOP 核心概念
+
+**连接点：****JoinPoint**
+**通知：****Advice**
+**切入点****：****PointCut**
+**切面：Aspect**
+**目标对象：Target**
