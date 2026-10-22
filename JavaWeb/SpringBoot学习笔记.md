@@ -97,7 +97,7 @@ public class DeptController {
 > [!TIP]
 > 四个 Spring 自带的构造型注解**功能上几乎等价**，真正决定 bean 命名的是类名首字母小写（`DeptServiceImpl` → `deptServiceImpl`）。因此选哪个主要是为了表达语义：Service 层就写 `@Service`，别图省事全写 `@Component`。
 
-### 1.1.4 三种依赖注入的方式
+### 1.1.4 四种依赖注入的方式
 
 「控制反转是把对象的创建权交给容器，而「依赖注入」则是容器**把对象所依赖的其他对象主动送进来**。主要有四种写法。
 
