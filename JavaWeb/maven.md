@@ -103,12 +103,12 @@ Maven 官方提供的**中央仓库**（Central Repository，地址为 `https://
 
 `settings.xml` 有两个位置，Maven 会把两份配置**合并**使用，同名元素以**用户级**的为准：
 
-| 配置文件           | 位置                                | 作用范围                       |
-| -------------- | --------------------------------- | --------------------------- |
-| 全局 `settings.xml` | `D:\apache-maven-3.9.9\conf\settings.xml` | 对这台电脑上所有的用户与项目都生效   |
-| 用户 `settings.xml` | `%USERPROFILE%\.m2\settings.xml`      | 只对当前用户的所有项目生效            |
+| 配置文件              | 位置                                        | 作用范围              |
+| ----------------- | ----------------------------------------- | ----------------- |
+| 全局 `settings.xml` | `D:\apache-maven-3.9.9\conf\settings.xml` | 对这台电脑上所有的用户与项目都生效 |
+| 用户 `settings.xml` | `%USERPROFILE%\.m2\settings.xml`          | 只对当前用户的所有项目生效     |
 
-本篇示例统一写在全局的 `conf\settings.xml` 中；若这台电脑有多个用户，把只属于自己的配置（如私服账号）改写到用户级 `settings.xml` 里更稳妥，不会影响别人。
+本篇示例统一写在全局的 `conf\settings.xml` 中；若这台电脑有多个用户，把只属于自己的配置改写到用户级 `settings.xml` 里更稳妥，不会影响别人。
 
 # 三、标准目录结构与 pom 文件
 
@@ -235,7 +235,7 @@ Maven 还内置了一批属性可直接引用，例如 `${project.version}` 取�
 
 Maven 管理依赖的思路可以概括为一句话：**用坐标定位依赖，用 POM 声明依赖，剩下的下载与冲突处理交给 Maven 自己完成**。这一章就按这个顺序展开。
 
-## 4.1 什么是 Maven 坐标
+## 4.1 什么是 Maven 坐标？
 
 任何一个构件（jar 包）在仓库中都有唯一的「身份证」，称为 **Maven 坐标**，格式是 `groupId:artifactId:version`，用冒号连接。例如 Spring 的 `spring-webmvc`：
 
@@ -451,21 +451,3 @@ IDEA 把 Maven 深度集成进了界面，在里面执行生命周期指令有�
 2. `Working directory` 填项目根目录，即 `pom.xml` 所在位置，直接填 `$MODULE_WORKING_DIR$` 即可；
 3. `Command line` 填要执行的阶段与参数——**注意不要写 `mvn` 前缀**，多个用空格隔开，如 `clean package`、`clean install -DskipTests`、`clean package -P prod`；
 4. 保存后即可在右上角一键运行，日志输出在底部的 **Run** 面板。
-
-## 5.3 常见问题速查
-
-| 现象                                   | 原因                                              | 解决办法                                              |
-| ------------------------------------ | ----------------------------------------------- | ------------------------------------------------- |
-| `'mvn' 不是内部或外部命令`                    | `Path` 中没有配置 `%MAVEN_HOME%\bin`，或终端没有重新打开             | 检查环境变量，并重新打开终端窗口                            |
-| `Unknown lifecycle phase "xxx"`      | 阶段名拼写错误                                          | 对照 5.1 中的阶段列表检查拼写                              |
-| `Could not resolve dependencies ...` | 依赖下载不下来：坐标写错、镜像不通或版本不存在                        | 到 [MvnRepository](https://mvnrepository.com/) 核对坐标，或换个镜像重试    |
-| `The POM for xxx is missing`         | 坐标写错，或该构件在仓库中根本不存在                                 | 逐段核对 `groupId` / `artifactId` / `version`            |
-| 提示 `import` 作用域相关错误                    | `import` 只能写在 `<dependencyManagement>` 中，不能直接写在 `<dependencies>` 里 | 把该依赖移入 `<dependencyManagement>`                    |
-| 依赖下载超时或中断                             | 网络问题                                            | 换用阿里云镜像；本地已有缓存时可用 `mvn -o`（离线模式）构建 |
-
-> [!summary] 本篇要点回顾
-> - **Maven 解决两件事**：依赖管理（用坐标找 jar）与构建打包（用生命周期跑流程）。
-> - **三步配置**：环境变量 → 本地仓库 → 仓库镜像，配好后所有 Maven 命令都会自动遵守。
-> - **一份 `pom.xml` 管全局**：坐标标识项目，`properties` 收拢版本号，`dependencies` 声明依赖。
-> - **依赖的三个动作**：`<dependencyManagement>` 统版本、`<exclusions>` 排传递、`dependency:tree` 查来源。
-> - **构建按阶段推进**：`clean` → `compile` → `test` → `package` → `install` → `deploy`，执行后面的阶段会自动补齐前面的阶段。
