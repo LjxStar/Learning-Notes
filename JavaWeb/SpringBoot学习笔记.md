@@ -2737,11 +2737,40 @@ public class EmpServiceImpl implements EmpService {
 
 ## 9.1 快速入门
 
-1. 导入依赖
+**（1）导入依赖**
 
 ```xml
 <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-aop</artifactId>
 </dependency>
+```
+
+**（2）定义切入点表达式**
+
+```java
+// 定义切入点
+@Pointcut("@annotation(com.ljxstar.annotation.Log)") // Log注解已定义
+public void webLog() {}
+```
+
+**（3）定义切面**
+
+```java
+@Component
+@Aspect
+public class LogAspect {
+  // 切入点，所有被 Log 注解标注的方法
+  @Pointcut("@annotation(cn.javaguide.annotation.Log)")
+  public void webLog() {
+  }
+
+   /**
+   * 环绕通知
+   */
+  @Around("webLog()")
+  public Object doAround(ProceedingJoinPoint joinPoint) throws Throwable {
+    // 省略具体的处理逻辑
+  }
+}
 ```
