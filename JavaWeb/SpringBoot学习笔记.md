@@ -2740,7 +2740,7 @@ public class EmpServiceImpl implements EmpService {
 
 以「统一记录操作日志」为例。假设要给一批方法输出统一格式的日志：如果不用 AOP，就必须在每个方法里手写一遍「执行前打日志 → 执行业务 → 执行后打日志」，重复代码既难维护，改一次日志格式还得逐个方法去改。
 
-#### （1）不使用 AOP：日志代码写在每个方法里
+**（1）不使用 AOP：日志代码写在每个方法里**
 
 ```java
 public Result save(Emp emp) {
@@ -2763,11 +2763,11 @@ public Result page(EmpQueryParam empQueryParam) {
 > [!TIP]
 > 上面两段「日志 - 方法执行前 / 方法执行后」就是典型的**横切关注点**：它横跨了所有业务方法，却不属于任何一个方法的业务逻辑。
 
-#### （2）使用 AOP：日志逻辑封装成切面
+**（2）使用 AOP：日志逻辑封装成切面**
 
 使用 AOP 之后，日志记录这段逻辑被封装成一个**切面**，再由**切入点**圈定生效范围、由**通知**声明执行的时机；业务方法只需打一个注解，不用再写任何日志代码。
 
-先定义一个日志注解，标记「这个方法需要记录操作日志」：
+定义一个日志注解，标记「这个方法需要记录操作日志」：
 
 ```java
 package com.itheima.annotation;
@@ -2790,19 +2790,15 @@ public @interface Log {
     /** 操作类型 */
     MethodType methodType() default MethodType.OTHER;
 }
-```
 
-再定义一个枚举，说明操作类型：
-
-```java
-package com.itheima.enums;
-
+// 定义一个枚举，说明操作类型
 public enum MethodType {
     INSERT, UPDATE, DELETE, SELECT, OTHER
 }
 ```
 
-最后写切面类，把「记录日志」这件事完整封装进去：
+
+写切面类，把「记录日志」这件事完整封装进去：
 
 ```java
 package com.itheima.aspect;
