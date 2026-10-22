@@ -2898,22 +2898,22 @@ execution(访问修饰符? 返回值 包名.类名.?方法名(方法参数) thro
 
 常见示例：
 ```java
-// 1. 匹配 cn.ljxstar.controller 包下所有类的所有方法
+// 匹配 cn.ljxstar.controller 包下所有类的所有方法
 execution(* cn.ljxstar.controller.*.*(..))
 
-// 2. 匹配 cn.ljxstar.controller 包及其所有子包下所有类所有方法
+// 匹配 cn.ljxstar.controller 包及其所有子包下所有类所有方法
 execution(* cn.ljxstar.controller..*.*(..))
 
-// 3. 返回值为 Result，controller包下任意类任意方法
+// 返回值为 Result，controller包下任意类任意方法
 execution(Result cn.ljxstar.controller.*.*(..))
 
-// 4. 第一个参数是String，第二个参数任意
+// 第一个参数是String，第二个参数任意
 execution(* cn.ljxstar.controller.*.*(String, ..))
 
-// 5. 匹配所有以 save 开头的方法
+// 匹配所有以 save 开头的方法
 execution(* cn.ljxstar.service..*.save*(..))
 
-// 6. 匹配所有无参方法
+// 匹配所有无参方法
 execution(* cn.ljxstar.service..*.*())
 ```
  根据业务需要，可以使用且（&&）、或（||）、非（!） 来组合比较复杂的切入点表达式。
