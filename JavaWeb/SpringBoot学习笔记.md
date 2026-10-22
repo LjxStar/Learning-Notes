@@ -2737,26 +2737,54 @@ public class EmpServiceImpl implements EmpService {
 
 ## 9.1 快速入门
 
-**（1）导入依赖**
-
-```xml
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-aop</artifactId>
-</dependency>
-```
-
-**（2）定义切入点表达式**
+以日志记录为例进行介绍，假如我们需要对某些方法进行统一格式的日志记录，没有使用 AOP 技术之前，我们需要挨个写日志记录的逻辑代码，全是重复的逻辑。
 
 ```java
-// 定义切入点
-@Pointcut("@annotation(com.ljxstar.annotation.Log)") // Log注解已定义
-public void webLog() {}
+public CommonResponse<Object> method1() {
+      // 业务逻辑
+      xxService.method1();
+      // 省略具体的业务处理逻辑
+      // 日志记录
+      ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+      HttpServletRequest request = attributes.getRequest();
+      // 省略记录日志的具体逻辑 如：获取各种信息，写入数据库等操作...
+      return CommonResponse.success();
+}
+
+public CommonResponse<Object> method2() {
+      // 业务逻辑
+      xxService.method2();
+      // 省略具体的业务处理逻辑
+      // 日志记录
+      ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+      HttpServletRequest request = attributes.getRequest();
+      // 省略记录日志的具体逻辑 如：获取各种信息，写入数据库等操作...
+      return CommonResponse.success();
+}
 ```
 
-**（3）定义切面**
+使用 AOP 技术之后，我们可以将日志记录的逻辑封装成一个切面，然后通过切入点和通知来指定在哪些方法需要执行日志记录的操作。
 
 ```java
+
+// 日志注解
+@Target({ElementType.PARAMETER,ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface Log {
+
+    /**
+     * 描述
+     */
+    String description() default "";
+
+    /**
+     * 方法类型 INSERT DELETE UPDATE OTHER
+     */
+    MethodType methodType() default MethodType.OTHER;
+}
+
+// 日志切面
 @Component
 @Aspect
 public class LogAspect {
@@ -2772,5 +2800,19 @@ public class LogAspect {
   public Object doAround(ProceedingJoinPoint joinPoint) throws Throwable {
     // 省略具体的处理逻辑
   }
+
+  // 省略其他代码
+}
+```
+
+这样的话，我们一行注解即可实现日志记录：
+
+```java
+@Log(description = "method1",methodType = MethodType.INSERT)
+public CommonResponse<Object> method1() {
+      // 业务逻辑
+      xxService.method1();
+      // 省略具体的业务处理逻辑
+      return CommonResponse.success();
 }
 ```
