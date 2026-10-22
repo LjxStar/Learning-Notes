@@ -336,12 +336,6 @@ Maven 具备**传递依赖**能力：项目直接依赖 A，A 又依赖 B，B �
 >
 > 需要注意：`<dependencyManagement>` 里的条目**只管版本，不会真正引入依赖**。想用某个库，仍然必须在 `<dependencies>` 中再写一遍（此时可以省略 `<version>`），这是初学者最容易搞混的一点。
 
-> [!summary] 依赖管理三板斧
-> | 场景 | 用法 |
-> | --- | --- |
-> | 统一版本号 | 在 `<dependencyManagement>` 中声明，`<dependencies>` 里省略 `<version>` |
-> | 剔除不要的传递依赖 | 在 `<dependency>` 中用 `<exclusions>` 排除 |
-> | 搞清楚依赖从哪来 | `mvn dependency:tree`（终端）或 IDEA 的 `Dependencies` 标签页 |
 
 # 五、生命周期与项目构建
 
@@ -378,7 +372,7 @@ Maven 把项目构建的过程划分为若干个**阶段（phase）**，并预�
 - `mvn package` 实际等于 `validate` + `compile` + `test` + `package`
 - `mvn install` 实际等于 `mvn package` + `install`
 
-也正因为 `package` 之前会先跑 `test`，所以每次打包都会自动执行一遍测试；如果觉得每次都跑测试太慢，就要用参数跳过去（见 5.2）。
+也正因为 `package` 之前会先跑 `test`，所以每次打包都会自动执行一遍测试；如果觉得每次都跑测试太慢，就要用参数跳过去。
 
 > [!tip] 阶段 ≠ 动作
 > 阶段只是构建流程上的一个节点，真正干活的是**绑定**在该阶段上的插件目标（goal）。例如 `compile` 阶段绑定了 `maven-compiler-plugin` 的 `compile` 目标，`package` 阶段绑定了 `maven-jar-plugin` 的 `jar` 目标。所以阶段不能被跳过，但可以通过改写插件配置来微调它的行为。
