@@ -2770,13 +2770,6 @@ public Result page(EmpQueryParam empQueryParam) {
 定义一个日志注解，标记「这个方法需要记录操作日志」：
 
 ```java
-package com.itheima.annotation;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 /**
  * 操作日志注解，打在方法上
  */
@@ -2797,22 +2790,9 @@ public enum MethodType {
 }
 ```
 
-
 写切面类，把「记录日志」的逻辑代码完整封装进去：
 
 ```java
-package com.itheima.aspect;
-
-import com.itheima.annotation.Log;
-import com.itheima.enums.MethodType;
-import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
-import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.stereotype.Component;
-
 /**
  * 操作日志切面
  */
