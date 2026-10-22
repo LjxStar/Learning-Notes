@@ -137,34 +137,10 @@ public class DeptServiceImpl implements DeptService {
 > }
 > ```
 
-#### （2）@Qualifier 配合 @Autowired 注入
-
-当容器中**存在多个同类型**的 bean 时，单独用 `@Autowired` 会因为无法确定注入哪一个而报错：
-
-```
-NoUniqueBeanDefinitionException: expected single matching bean but found 2
-```
-
-这时用 `@Qualifier` 补上一个 **bean 名称**，精确指定要注入哪一个：
-
-```java
-@Service
-public class DeptServiceImpl implements DeptService {
-
-    @Autowired
-    @Qualifier("deptMapper")
-    private DeptMapper deptMapper;
-}
-```
-
-> [!WARNING]
-> `@Qualifier` 的值是 **bean 的名称**，不是类名。bean 名称默认取「类名首字母小写」（`DeptMapper` → `deptMapper`），自定义了 `@Component("xxx")` 的则以自定义的名称为准。
->
-> 注入**接口**时，同一接口往往有多个实现类（如 `DeptServiceImpl`、`EmpServiceImpl`），这是 `@Qualifier` 最典型的使用场景。
 
 #### （3）@Resource 注解注入
 
-`@Resource` 是 Jakarta（原 JDK）提供的**标准注解**，位于 `jakarta.annotation.Resource`（Spring Boot 2 中为 `javax.annotation.Resource`），不属于 Spring 专属，但 Spring 同样支持它。
+`@Resource` 是  JDK 提供的**标准注解**，位于 `jakarta.annotation.Resource`（Spring Boot 2 中为 `javax.annotation.Resource`），不属于 Spring 专属，但 Spring 同样支持它。
 
 ```java
 @Service
