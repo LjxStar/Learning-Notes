@@ -127,7 +127,7 @@ public class DeptServiceImpl implements DeptService {
 }
 ```
 
-**匹配规则：先按类型，再按名称。** 容器里只有一个 `DeptMapper` 类型的 bean 时直接注入；若存在多个同类型 bean，Spring 会用**字段名 / 参数名**去匹配 bean 的名字（`deptMapper` → 找名为 `deptMapper` 的 bean），两者都对不上就会抛 `NoUniqueBeanDefinitionException`。
+**匹配规则：先按类型，再按名称。** 容器里只有一个 `DeptMapper` 类型的 bean 时直接注入；若存在多个同类型 bean，Spring 会用**字段名 / 参数名**去匹配 bean 的名字（`deptMapper` → 找名为 `deptMapper` 的 bean），两者都对不上就会抛异常。
 
 同类型存在多个实现类时，用 `@Primary` 标记**默认实现**的那个：
 
