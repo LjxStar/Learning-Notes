@@ -236,9 +236,9 @@ Maven 还内置了一批属性可直接引用，例如 `${project.version}` 取�
 
 # 二、Maven 坐标与依赖管理
 
-Maven 管理依赖的思路可以概括为一句话：**用坐标定位依赖，用 POM 声明依赖，剩下的下载与冲突处理交给 Maven 自己完成**。这一章就按这个顺序展开。
+Maven 管理依赖的思路可以概括为一句话：**用坐标定位依赖，用 POM 声明依赖，剩下的下载与冲突处理交给 Maven 自己完成**。这一章按「坐标 → 声明 → 范围 → 冲突处理」的顺序展开。
 
-## 2.1 什么是 Maven 坐标？
+## 2.1 Maven 坐标
 
 任何一个构件（jar 包）在仓库中都有唯一的「身份证」，称为 **Maven 坐标**，格式是 `groupId:artifactId:version`，用冒号连接。例如 Spring 的 `spring-webmvc`：
 
@@ -254,7 +254,7 @@ org.springframework:spring-webmvc:6.1.4
 
 **坐标去哪里查？** 可以通过 [MvnRepository](https://mvnrepository.com/) 检索中央仓库中的构件，输入 `spring-webmvc` 就能看到所有版本，选一个即可。IDEA 中还有更快的办法：在 `pom.xml` 里敲 `groupId:`，IDEA 会自动拉取候选列表，用方向键选中就能补全，写 `version` 时同理。
 
-## 2.2 引入依赖 dependency
+## 2.2 引入依赖
 
 在 `<dependencies>` 中写一个 `<dependency>` 标签即可，最少只需要三个标签：
 
@@ -270,17 +270,17 @@ org.springframework:spring-webmvc:6.1.4
 
 写完后 IDEA 会触发一次依赖下载，把对应的 jar 缓存到本地仓库（`D:\apache-maven-3.9.9\mvn_repo`），随后就能在 `External Libraries` 中看到它。
 
-## 2.3 依赖范围 scope
+## 2.3 依赖范围
 
 `<scope>` 决定依赖在编译期、测试期、运行期分别是否可见，也决定它会不会被打进最终产物：
 
 | `scope`    | 主程序编译 | 测试编译 | 运行时 | 打包进产物 | 典型场景                                     |
-| ---------- | ----- | ---- | --- | ---- | ---------------------------------------- |
-| `compile`  | ✅     | ✅    | ✅  | ✅   | 默认值，绝大多数依赖都是它                            |
-| `provided` | ✅     | ✅    | ✅  | ❌   | 由运行环境提供，打包时不带。如 `servlet-api`            |
-| `runtime`  | ❌     | ✅    | ✅  | ✅   | 编译用不到、运行时才需要。如 MySQL 驱动                  |
-| `test`     | ❌     | ✅    | ❌  | ❌   | 只在测试中使用，不进产物。如 `junit-jupiter`、`mockito` |
-| `import`   | —     | —    | —   | —    | 仅在 `<dependencyManagement>` 中使用，导入一份版本清单 |
+| ---------- | ----- | ---- | --- | ----- | ---------------------------------------- |
+| `compile`  | ✅     | ✅    | ✅   | ✅     | 默认值，绝大多数依赖都是它                            |
+| `provided` | ✅     | ✅    | ✅   | ❌     | 由运行环境提供，打包时不带。如 `servlet-api`            |
+| `runtime`  | ❌     | ✅    | ✅   | ✅     | 编译用不到、运行时才需要。如 MySQL 驱动                  |
+| `test`     | ❌     | ✅    | ❌   | ❌     | 只在测试中使用，不进产物。如 `junit-jupiter`、`mockito` |
+| `import`   | —     | —    | —   | —     | 仅在 `<dependencyManagement>` 中使用，导入一份版本清单 |
 
 最需要留意的是 `provided`：**它会参与编译，也会出现在运行时的类路径上，但不会被打进 jar 包**，最终由运行环境（容器）提供，这才是它存在的意义。例如传统 Web 工程里的写法：
 
@@ -297,11 +297,26 @@ org.springframework:spring-webmvc:6.1.4
 > [!note] `runtime` 与 `provided` 别搞混
 > 两者在「是否参与编译」上正好相反：`runtime` **编译时不可见、运行时才需要**（如 MySQL 驱动）；`provided` **编译时可见、但不进产物**（如 `servlet-api`）。判断口诀：*运行时才用到的写 `runtime`，由容器提供的写 `provided`*。
 
-## 2.4 排除依赖 exclusion
+## 2.4 传递依赖与依赖冲突
 
 Maven 具备**传递依赖**能力：项目直接依赖 A，A 又依赖 B，B 还依赖 C，那么 B 和 C 都会被自动放进你的 classpath，不需要你手写声明。
 
-传递依赖省事，但也带来两个麻烦：一是引入了自己根本不想要或版本过旧的 jar，二是不同 jar 传递进来的同一个库版本不一致，产生冲突。解决这些问题有两个手段：让 `dependencyManagement` 统一版本，或者用 `<exclusions>` 直接排除。
+传递依赖省事，但也会带来麻烦：一是引入了自己根本不想要或版本过旧的 jar，二是同一个库通过多条路径被引入且版本不一致，形成冲突。冲突往往在编译期看不出来，等到运行时报 `NoSuchMethodError` 才暴露，排查成本很高。
+
+真的撞上冲突时，Maven 的仲裁规则是「最短优先」：离当前项目声明越近的版本优先级越高；同一层深度上，则由先声明的那个说了算。
+
+想看清楚依赖到底是怎么被引进来的，在项目根目录执行 `mvn dependency:tree` 即可输出完整依赖树，图例如下：
+
+- `+-`：直接依赖
+- `\-`：重复出现的依赖，已被省略（树中只保留最后一次出现的那次）
+- `|`：该依赖下面还有下一层依赖
+- `*`：该依赖重复出现，被省略
+
+再加上 `-Dincludes=groupId:artifactId` 还能只看某一部分，例如 `mvn dependency:tree -Dincludes=org.springframework`。IDEA 中查看更直观：Maven 工具窗口切换到 `Dependencies` 标签页，会以树形展开所有依赖（含传递依赖），点某个节点还能在下方直接看到对应的 `pom.xml` 片段。
+
+依赖树把冲突暴露出来之后，处理方式主要有两种：不需要的传递依赖直接排除，版本不统一的则交给父工程统一管理。
+
+## 2.5 排除依赖
 
 **排除语法**：在需要排除的 `<dependency>` 内部添加 `<exclusions>`，每个 `<exclusion>` 指定一个 `groupId` 和 `artifactId`：
 
@@ -320,23 +335,39 @@ Maven 具备**传递依赖**能力：项目直接依赖 A，A 又依赖 B，B �
 </dependency>
 ```
 
-## 2.5 依赖冲突与依赖树
+排除之后如果还需要同类功能，记得自己再显式引入替代依赖，例如上面注释里提到的，用 `spring-boot-starter-undertow` 替换 Tomcat。
 
-当同一个 jar 通过多条路径被引入且版本不一致时，就会发生依赖冲突。Maven 的仲裁规则是「最短优先」：离当前项目声明越近的版本优先级越高；同一层深度上，则由先声明的那个说了算。
+## 2.6 用 dependencyManagement 统一版本
 
-想看清楚依赖到底是怎么被引进来的，在项目根目录执行 `mvn dependency:tree` 即可输出完整依赖树，图例如下：
+实际开发中，版本冲突多数由 Spring Boot 这类框架的**依赖管理**机制解决：父工程的 `<dependencyManagement>` 把常用库的版本统一钉死，子模块声明依赖时不再写 `<version>`。
 
-- `+-`：直接依赖
-- `\-`：重复出现的依赖，已被省略（树中只保留最后一次出现的那次）
-- `|`：该依赖下面还有下一层依赖
-- `*`：该依赖重复出现，被省略
+```xml
+<!-- 父工程：只声明版本，不真正引入依赖 -->
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.16.1</version>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
 
-再加上 `-Dincludes=groupId:artifactId` 还能只看某一部分，例如 `mvn dependency:tree -Dincludes=org.springframework`。IDEA 中查看更直观：Maven 工具窗口切换到 `Dependencies` 标签页，会以树形展开所有依赖（含传递依赖），点某个节点还能在下方直接看到对应的 `pom.xml` 片段。
+<!-- 子模块：省略 version，版本由父工程决定 -->
+<dependencies>
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+    </dependency>
+</dependencies>
+```
 
-> [!tip] 更推荐的解法：dependencyManagement
-> 实际开发中，版本冲突多数由 Spring Boot 这类框架的**依赖管理**机制解决——父工程的 `<dependencyManagement>` 已经把常用库的版本统一钉死，子模块声明依赖时不再写 `<version>` 即可。要覆盖某个版本，只需要在子模块的 `<dependencyManagement>` 中重写该依赖的版本号，而不是在 `<dependencies>` 里重复声明。
->
-> 需要注意：`<dependencyManagement>` 里的条目**只管版本，不会真正引入依赖**。想用某个库，仍然必须在 `<dependencies>` 中再写一遍（此时可以省略 `<version>`），这是初学者最容易搞混的一点。
+要覆盖某个版本，只需在子模块自己的 `<dependencyManagement>` 中重写该依赖的版本号，而不是在 `<dependencies>` 里重复声明。
+
+> [!note] dependencyManagement 只管版本，不引入依赖
+> 它里面的条目**不会把任何依赖加进项目**。想用某个库，仍然必须在 `<dependencies>` 中声明（此时可省略 `<version>`），这是初学者最容易搞混的一点。
+
+Spring Boot 的 `spring-boot-dependencies` 这种「版本清单」，则是通过 `<scope>import</scope>` 导入到 `<dependencyManagement>` 中的，这正是依赖范围表格里 `import` 的用途。
 
 # 三、生命周期与项目构建
 
