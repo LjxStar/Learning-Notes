@@ -1124,6 +1124,7 @@ List<Dept> findAll();
     order by total
 </select>
 ```
+
 此时，我们便可以利用下面的 mapper 接口来接收
 
 ```java
