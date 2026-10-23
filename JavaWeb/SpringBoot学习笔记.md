@@ -1280,9 +1280,6 @@ List<Map<String,Object>> countEmpJobData();
 </update>
 ```
 
-> [!NOTE]
-> 假设只传了 `name`，拼接结果为 `update emp set name = #{name} where id = #{id}`——末尾的逗号被自动去掉。如果不用 `<set>` 而手动拼接，一旦某个 `<if>` 不成立，`set` 后面可能残留逗号或直接缺失，导致 SQL 语法错误。
-
 ### 3.4.3 foreach 遍历集合
 
 `<foreach>` 用于遍历集合，常用于 `in (...)` 查询或批量插入 `values (...)`。
