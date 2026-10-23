@@ -1870,9 +1870,10 @@ public class EmpServiceImpl implements EmpService {
 
 ### 6.2.2 回滚规则 rollbackFor
 
-Spring 事务的默认行为是**仅在方法抛出未被捕获的 `RuntimeException` 或 `Error` 时才会触发回滚**，而对于编译时异常（如 `IOException`、`SQLException` 等 `Exception` 的直接子类），即使未被捕获也不会回滚事务。更需要注意的是，如果异常被 `try-catch` 捕获且未重新抛出，**即使是运行时异常也不会触发回滚**。
+Spring 事务默认只对 `RuntimeException` 和 `Error` 回滚；受检异常（如 `IOException`、`SQLException`）默认不回滚，事务会提交。  
+异常必须传播到事务代理边界之外，事务拦截器才能感知；如果方法内部 `try-catch` 捕获后未重新抛出，即使是运行时异常，默认也不会回滚。  
 
-如果需要自定义回滚规则，让指定异常也触发事务回滚，可以配置 `@Transactional` 的 `rollbackFor` 属性，声明发生哪些异常类型时执行事务回滚。
+需要自定义回滚规则时，可通过 `@Transactional` 的 `rollbackFor` 属性声明哪些异常类型触发事务回滚（如 `rollbackFor = Exception.class` 扩大回滚范围），也可在捕获异常后调用 `setRollbackOnly()` 手动标记回滚。
 
 ```java
 @Service
