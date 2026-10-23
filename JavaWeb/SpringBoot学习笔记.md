@@ -671,7 +671,7 @@ public Result upload(String nickname, MultipartFile file) {
 > `transferTo(File)` 与 `getBytes()` 都能拿到文件内容，区别在于：文件较大时 `getBytes()` 会把整个文件一次性读进内存，容易内存溢出；`transferTo` 是**边写边读**，更省内存，大文件优先用它。
 
 > [!TIP]
-> **上传大小限制**：Spring Boot 默认单文件上限只有 1 MB，超出会抛 `MaxUploadSizeExceededException`（表现为接口直接返回 400）。需要放宽时在 `application.yml` 中配置：
+> **上传大小限制**：Spring Boot 默认单文件上限只有 1 MB，超出会抛异常（表现为接口直接返回 400）。需要放宽时在 `application.yml` 中配置：
 >
 > ```yaml
 > spring:
