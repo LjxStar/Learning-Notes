@@ -229,7 +229,7 @@ public class DeptServiceImpl implements DeptService {
 
 #### （4）@Resource 注解注入
 
-`@Resource` 是 **JSR 250（Jakarta Annotations）提供的标准注解**，位于 `jakarta.annotation.Resource`（Spring Boot 2 中为 `javax.annotation.Resource`），并不属于 Spring 专属，但 Spring 同样支持它。
+`@Resource` 是 **JSR 250（Jakarta Annotations）提供的标准注解**，位于 `jakarta.annotation.Resource`[^1]，并不属于 Spring 专属，但 Spring 同样支持它。
 
 ```java
 @Service
@@ -3087,3 +3087,5 @@ execution(* com.ljxstar.service.DeptService.insert(..)) || execution(* com.ljxst
 > ```
 
 **截止至 2026 年 10 月 22 日**
+
+[^1]: Spring Boot 2 中为 javax.annotation.Resource
