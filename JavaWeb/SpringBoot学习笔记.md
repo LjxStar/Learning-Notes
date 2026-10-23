@@ -566,7 +566,7 @@ public Result list(@CookieValue("token") String token) {
 }
 ```
 
-以用户登录为例，用户没登录或者登录时没勾选记住我会出现 Cookie 不存在的情况，此时直接取会抛异常。登录状态一律加上默认值并判空：
+以用户登录为例，用户没登录或者登录时没勾选记住我会出现 Cookie 不存在的情况，此时直接取会抛异常。可以加上 `required = false` ，Spring 框架会自动将默认值设为 `null` 
 
 ```java
 @GetMapping
