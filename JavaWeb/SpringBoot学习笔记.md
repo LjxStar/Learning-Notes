@@ -1096,7 +1096,7 @@ List<Dept> findAll();
 
 ### 3.3.3 resultType
 
-`resultType` 用于指定 `<select>` 语句返回值的类型，MyBatis 会按「列名 ↔ 属性名」自动把每行记录封装成该类型的对象。**最常见的用法是直接写实体类（POJO）的全限定名**：
+`resultType` 用于指定 `<select>` 语句返回值的类型，MyBatis 会按「列名 ↔ 属性名」自动把每行记录封装成该类型的对象。最常见的用法是直接写**实体类的全限定名**：
 
 ```xml
 <select id="findAll" resultType="com.ljxstar.pojo.Dept">
@@ -1106,7 +1106,7 @@ List<Dept> findAll();
 
 此时 Mapper 方法的返回值写成 `List<Dept>` 即可，查询返回几行，List 里就有几个 `Dept` 对象。
 
-resultType 不只可以是 POJO，还可以是 MyBatis 类型处理器支持的常见 Java 类型，如基本类型/包装类型、String、BigDecimal、Date、Map 等。以 `java.util.Map` 为例：
+resultType 不只可以是 POJO，还可以是 **MyBatis 类型处理器支持的常见 Java 类型**，如基本类型/包装类型、String、BigDecimal、Date、Map 等。以 `java.util.Map` 为例：
 
 ```xml
 <select id="countEmpJobData" resultType="java.util.Map">
