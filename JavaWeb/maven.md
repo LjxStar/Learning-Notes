@@ -204,39 +204,11 @@ POM 是 Project Object Model（项目对象模型）的缩写，`pom.xml` 就是
 - `war`：Web 项目，产出 `.war` 文件，交给 Tomcat 等容器运行
 - `pom`：不产出实际构件，专门用于**父工程**（`packaging` 为 `pom` 且含 `<modules>`）或**依赖包聚合**，常用于管理多模块项目和统一版本号
 
-## 1.5 用属性统一管理版本号
-
-依赖多了以后，同一个第三方库的版本号会在 `<dependencies>` 中反复出现，一旦升级就要改很多处。把它抽到 `<properties>` 中就可以只改一处：
-
-```xml
-<properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.release>17</maven.compiler.release>
-    <spring.version>6.1.4</spring.version>
-    <jackson.version>2.16.1</jackson.version>
-</properties>
-
-<dependencies>
-    <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-webmvc</artifactId>
-        <version>${spring.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
-        <version>${jackson.version}</version>
-    </dependency>
-</dependencies>
-```
-
-Maven 还内置了一批属性可直接引用，例如 `${project.version}` 取当前项目版本、`${project.basedir}` 取项目根目录路径。
-
-`pom.xml` 里最常写的内容就是依赖。下一章来看如何用 Maven 坐标声明依赖，以及传递依赖、版本冲突该怎么处理。
+`pom.xml` 里最常写的内容就是依赖。下一章来看如何用 Maven 坐标声明依赖，以及依赖范围、传递依赖与版本统一该怎么处理。
 
 # 二、Maven 坐标与依赖管理
 
-Maven 管理依赖的思路可以概括为一句话：**用坐标定位依赖，用 POM 声明依赖，剩下的下载与冲突处理交给 Maven 自己完成**。这一章按「坐标 → 声明 → 范围 → 冲突处理」的顺序展开。
+Maven 管理依赖的思路可以概括为一句话：**用坐标定位依赖，用 POM 声明依赖，剩下的下载与冲突处理交给 Maven 自己完成**。
 
 ## 2.1 Maven 坐标
 
@@ -323,9 +295,43 @@ org.springframework:spring-webmvc:6.1.4
 
 排除之后如果还需要同类功能，记得自己再显式引入替代依赖，例如上面注释里提到的，用 `spring-boot-starter-undertow` 替换 Tomcat。
 
-## 2.5 用 dependencyManagement 统一版本
+## 2.5 统一管理版本
 
-实际开发中，版本冲突多数由 Spring Boot 这类框架的**依赖管理**机制解决：父工程的 `<dependencyManagement>` 把常用库的版本统一钉死，子模块声明依赖时不再写 `<version>`。
+依赖一多，同一个库的版本号就会在多处重复，升级时容易漏改；父子工程之间也常常出现版本不一致。Maven 提供了两种集中管理版本的手段：用 `<properties>` 把版本号抽成常量，或交给 `<dependencyManagement>` 统一声明。
+
+### 2.5.1 用属性统一版本号
+
+`<properties>` 本质上就是一个键值对集合，用来存放会被反复引用的常量。把依赖版本抽进去之后，升级时只需要改这一处：
+
+```xml
+<properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>17</maven.compiler.release>
+    <spring.version>6.1.4</spring.version>
+    <jackson.version>2.16.1</jackson.version>
+</properties>
+
+<dependencies>
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-webmvc</artifactId>
+        <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson.version}</version>
+    </dependency>
+</dependencies>
+```
+
+引用时写 `${属性名}` 即可。Maven 还内置了一批属性可以直接使用，例如 `${project.version}` 取当前项目版本、`${project.basedir}` 取项目根目录、`${project.build.directory}` 取构建输出目录（默认是 `target`）。
+
+属性适合管理零散、少量的版本号；如果依赖很多、又有父子工程，更常用的是下面这种做法。
+
+### 2.5.2 用 dependencyManagement 统一版本
+
+属性解决的是「版本号写几遍」的问题，「最终用哪个版本」则由 `<dependencyManagement>` 决定。实际开发中，版本冲突多数由 Spring Boot 这类框架的**依赖管理**机制解决：父工程的 `<dependencyManagement>` 把常用库的版本统一钉死，子模块声明依赖时不再写 `<version>`。
 
 ```xml
 <!-- 父工程：只声明版本，不真正引入依赖 -->
