@@ -967,7 +967,8 @@ public interface DeptMapper {
 
 > [!TIP]
 > **注解和 XML 可以在同一个 Mapper 接口中混用**：方法名与 XML 里的 `id` 对应时，XML 中的 SQL 生效，方法上的注解被忽略。
-> 一般情况下，简单 SQL 用注解，复杂的动态 SQL 写 XML。
+> 
+> **SQL 编写原则**：简单 SQL 用注解编写；复杂、动态 SQL 用 XML 编写。
 
 ## 3.2 参数传递
 
