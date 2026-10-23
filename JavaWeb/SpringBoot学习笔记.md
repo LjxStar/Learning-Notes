@@ -566,8 +566,7 @@ public Result list(@CookieValue("token") String token) {
 }
 ```
 
-> [!WARNING]
-> Cookie **可能不存在**（用户没登录、没勾选「记住我」），此时直接取会抛异常。登录状态一律加上默认值并判空：
+Cookie 可能不存在，例如用户没登录或者没勾选，此时直接取会抛异常。登录状态一律加上默认值并判空：
 
 ```java
 @GetMapping
