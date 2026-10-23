@@ -429,7 +429,7 @@ public Result delete(@RequestParam List<Integer> ids) {
 ```
 
 > [!TIP]
-> - 两种写法 Spring MVC 都能自动转换，但**推荐用集合**：`List` 语义更清晰，后面可以直接 `.stream().forEach(...)`，不必再写循环。
+> - 两种写法 Spring MVC 都能自动转换，但**推荐用集合**：`List` 语义更清晰，后面可以直接使用流式 API 进行集合处理，不必再写循环。
 > - 集合接收**必须加 `@RequestParam`**，否则 Spring MVC 会认为你要接收的是一个复杂对象，直接尝试去创建 `List` 实例并报转换异常。
 
 ### 2.1.3 用实体类封装多个查询条件
