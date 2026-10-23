@@ -1888,7 +1888,7 @@ public class EmpServiceImpl implements EmpService {
 ```
 
 > [!TIP]
-> `RuntimeException` 包含 `NullPointerException`、`IllegalArgumentException` 等；受检异常指 `IOException`、`SQLException` 这类编译期就能发现的异常。日常开发**建议统一写 `rollbackFor = Exception.class`**，免得抛了个受检异常结果数据只写了一半。
+> `RuntimeException` 包含 `NullPointerException`、`IllegalArgumentException` 等；受检异常指 `IOException`、`SQLException` 这类编译期就能发现的异常。日常开发**建议统一写 `rollbackFor = Exception.class`**，免得抛了个受检异常，数据只写了一半。
 
 
 ### 6.2.3 传播行为 propagation
