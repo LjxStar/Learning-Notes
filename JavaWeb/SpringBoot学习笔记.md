@@ -400,7 +400,7 @@ public Result delete(Integer id) {
 ```
 
 > [!WARNING]
-> 方式（3）依赖 **形参名**。IDEA 编译时若没有勾选 `Add parameters`（等价于 javac 的 `-parameters`），class 文件里就丢掉了形参名，此时 Spring MVC 拿不到 `id`，会直接报 `Name for argument of type [java.lang.Integer] not specified`。
+> 方式（3）依赖 **形参名**。IDEA 编译时若没有勾选 `Add parameters`（等价于 javac 的 `-parameters`），class 文件里就丢掉了形参名，此时 Spring MVC 拿不到 `id`，会直接报错。
 >
 > 三个示例里类上已有 `@RequestMapping("/depts")`，所以方法上的 `@DeleteMapping` 后面什么都不写，完整路径就是 `DELETE /depts`。
 
