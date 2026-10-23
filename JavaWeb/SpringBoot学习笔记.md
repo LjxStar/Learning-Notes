@@ -1131,6 +1131,7 @@ resultType 不只可以是 POJO，还可以是 MyBatis 类型处理器支持的�
 List<Map<String,Object>> countEmpJobData();
 ```
 
+![[Pasted image 20261023181434.png]]
 
 ### 3.3.4 resultMap
 
