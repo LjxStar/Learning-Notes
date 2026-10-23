@@ -766,18 +766,20 @@ public class UploadController {
 在RAM 控制台创建「使用永久 AccessKey 访问」的 RAM 用户，保存 AccessKey，然后为该用户授予 `AliyunOSSFullAccess` 权限。将 RAM 用户的 AccessKey 写入环境变量作为凭证：
 
 ```bash
+# Windows 永久设置用户环境变量
 setx OSS_ACCESS_KEY_ID "YOUR_ACCESS_KEY_ID"
 setx OSS_ACCESS_KEY_SECRET "YOUR_ACCESS_KEY_SECRET"
 ```
 
 ```bash
+# 打印环境变量，用于验证是否设置成功
 echo %OSS_ACCESS_KEY_ID%
 echo %OSS_ACCESS_KEY_SECRET%
 ```
 
 > [!WARNING]
 > - `setx` 只对**新打开**的命令行窗口生效，执行后需要重开终端和 IDEA 才能读到值。
-> - AccessKey 的权限等同于账号密码，一旦泄露要立刻在 RAM 控制台禁用该密钥。更稳妥的做法是用「临时 STS 令牌」，但配置更复杂，个人项目用环境变量即可。
+> - AccessKey 的权限等同于账号密码，一旦泄露要立刻在 RAM 控制台禁用该密钥。
 
 #### （3）集成代码
 
