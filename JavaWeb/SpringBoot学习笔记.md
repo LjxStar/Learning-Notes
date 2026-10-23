@@ -1131,7 +1131,7 @@ resultType 不只可以是 POJO，还可以是 **MyBatis 类型处理器支持�
 List<Map<String,Object>> countEmpJobData();
 ```
 
-![[Pasted image 20261023181434.png]]
+![[resultType.png]]
 
 ### 3.3.4 resultMap
 
@@ -2981,11 +2981,11 @@ public Result save(Emp emp) {
 
 - `execution(...)`：根据方法的签名来匹配
 
-![[Pasted image 20261022195440.png]]
+![[aop切入点表达式-方法签名.png]]
 
 - `@annotation(...)`：根据注解匹配
 
-![[Pasted image 20261022195449.png]]
+![[aop切入点表达式-注解.png]]
 
 ### 9.3.1 execution(...)
 
