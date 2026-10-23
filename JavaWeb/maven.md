@@ -428,7 +428,7 @@ mvn -f D:\develop\project\demo\pom.xml clean package
 mvnw.cmd clean package
 ```
 
-### 5.2.3 在 IDEA 中执行
+### 5.2.3 在IDEA中执行
 
 IDEA 把 Maven 深度集成进了界面，在里面执行生命周期指令有两种主要方式。
 
