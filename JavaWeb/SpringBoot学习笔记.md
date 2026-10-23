@@ -1106,7 +1106,7 @@ List<Dept> findAll();
 
 此时 Mapper 方法的返回值写成 `List<Dept>` 即可，查询返回几行，List 里就有几个 `Dept` 对象。
 
-除了 POJO，`resultType` 还可以放 `java.util.Map` 等类型，例如：
+resultType 不只可以是 POJO，还可以是 MyBatis 类型处理器支持的常见 Java 类型，如基本类型/包装类型、String、BigDecimal、Date、Map 等。以 `java.util.Map` 为例：
 
 ```xml
 <select id="countEmpJobData" resultType="java.util.Map">
