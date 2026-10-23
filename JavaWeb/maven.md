@@ -254,7 +254,7 @@ org.springframework:spring-webmvc:6.1.4
 
 **坐标去哪里查？** 可以通过 [MvnRepository](https://mvnrepository.com/) 检索中央仓库中的构件，输入 `spring-webmvc` 就能看到所有版本，选一个即可。IDEA 中还有更快的办法：在 `pom.xml` 里敲 `groupId:`，IDEA 会自动拉取候选列表，用方向键选中就能补全，写 `version` 时同理。
 
-## 2.2 引入依赖
+## 2.2 引入依赖 dependencies
 
 在 `<dependencies>` 中写一个 `<dependency>` 标签即可，最少只需要三个标签：
 
@@ -270,7 +270,7 @@ org.springframework:spring-webmvc:6.1.4
 
 写完后 IDEA 会触发一次依赖下载，把对应的 jar 缓存到本地仓库（`D:\apache-maven-3.9.9\mvn_repo`），随后就能在 `External Libraries` 中看到它。
 
-## 2.3 依赖范围
+## 2.3 依赖范围 scope
 
 `<scope>` 决定依赖在编译期、测试期、运行期分别是否可见，也决定它会不会被打进最终产物：
 
@@ -297,26 +297,12 @@ org.springframework:spring-webmvc:6.1.4
 > [!note] `runtime` 与 `provided` 别搞混
 > 两者在「是否参与编译」上正好相反：`runtime` **编译时不可见、运行时才需要**（如 MySQL 驱动）；`provided` **编译时可见、但不进产物**（如 `servlet-api`）。判断口诀：*运行时才用到的写 `runtime`，由容器提供的写 `provided`*。
 
-## 2.4 传递依赖与依赖冲突
+> [!TIP]
+> Maven 具备**传递依赖**能力：项目直接依赖 A，A 又依赖 B，B 还依赖 C，那么 B 和 C 都会被自动放进你的 classpath，不需要你手写声明。
+> 
+> 传递依赖省事，但也会带来麻烦：一是引入了自己根本不想要或版本过旧的 jar，二是同一个库通过多条路径被引入且版本不一致，形成冲突。冲突往往在编译期看不出来，等到运行时才报错误，排查成本很高。
 
-Maven 具备**传递依赖**能力：项目直接依赖 A，A 又依赖 B，B 还依赖 C，那么 B 和 C 都会被自动放进你的 classpath，不需要你手写声明。
-
-传递依赖省事，但也会带来麻烦：一是引入了自己根本不想要或版本过旧的 jar，二是同一个库通过多条路径被引入且版本不一致，形成冲突。冲突往往在编译期看不出来，等到运行时报 `NoSuchMethodError` 才暴露，排查成本很高。
-
-真的撞上冲突时，Maven 的仲裁规则是「最短优先」：离当前项目声明越近的版本优先级越高；同一层深度上，则由先声明的那个说了算。
-
-想看清楚依赖到底是怎么被引进来的，在项目根目录执行 `mvn dependency:tree` 即可输出完整依赖树，图例如下：
-
-- `+-`：直接依赖
-- `\-`：重复出现的依赖，已被省略（树中只保留最后一次出现的那次）
-- `|`：该依赖下面还有下一层依赖
-- `*`：该依赖重复出现，被省略
-
-再加上 `-Dincludes=groupId:artifactId` 还能只看某一部分，例如 `mvn dependency:tree -Dincludes=org.springframework`。IDEA 中查看更直观：Maven 工具窗口切换到 `Dependencies` 标签页，会以树形展开所有依赖（含传递依赖），点某个节点还能在下方直接看到对应的 `pom.xml` 片段。
-
-依赖树把冲突暴露出来之后，处理方式主要有两种：不需要的传递依赖直接排除，版本不统一的则交给父工程统一管理。
-
-## 2.5 排除依赖
+## 2.4 排除依赖 exclusions
 
 **排除语法**：在需要排除的 `<dependency>` 内部添加 `<exclusions>`，每个 `<exclusion>` 指定一个 `groupId` 和 `artifactId`：
 
@@ -337,7 +323,7 @@ Maven 具备**传递依赖**能力：项目直接依赖 A，A 又依赖 B，B �
 
 排除之后如果还需要同类功能，记得自己再显式引入替代依赖，例如上面注释里提到的，用 `spring-boot-starter-undertow` 替换 Tomcat。
 
-## 2.6 用 dependencyManagement 统一版本
+## 2.5 用 dependencyManagement 统一版本
 
 实际开发中，版本冲突多数由 Spring Boot 这类框架的**依赖管理**机制解决：父工程的 `<dependencyManagement>` 把常用库的版本统一钉死，子模块声明依赖时不再写 `<version>`。
 
