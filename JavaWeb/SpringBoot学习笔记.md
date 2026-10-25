@@ -2868,14 +2868,14 @@ public class EmpController {
 
     @PostMapping
     public Result save(@RequestBody Emp emp) {
-        // 日志 - 方法执行前
+        // 记录方法执行前的日志
         log.info("操作描述：{}，操作类型：{}，开始执行", "新增员工", MethodType.INSERT);
         long start = System.currentTimeMillis();
 
         // 业务逻辑
         empService.save(emp);
 
-        // 日志 - 方法执行后
+        // 记录方法执行后的日志
         long cost = System.currentTimeMillis() - start;
         log.info("操作描述：{}，操作类型：{}，执行耗时：{}ms", "新增员工", MethodType.INSERT, cost);
 
@@ -2884,14 +2884,14 @@ public class EmpController {
 
     @GetMapping("/page")
     public Result page(EmpQueryParam empQueryParam) {
-        // 日志 - 方法执行前
+        // 记录方法执行前的日志
         log.info("操作描述：{}，操作类型：{}，开始执行", "分页查询员工", MethodType.QUERY);
         long start = System.currentTimeMillis();
 
         // 业务逻辑
         PageResult<Emp> pageResult = empService.page(empQueryParam);
 
-        // 日志 - 方法执行后
+        // 记录方法执行后的日志
         long cost = System.currentTimeMillis() - start;
         log.info("操作描述：{}，操作类型：{}，执行耗时：{}ms", "分页查询员工", MethodType.QUERY, cost);
 
