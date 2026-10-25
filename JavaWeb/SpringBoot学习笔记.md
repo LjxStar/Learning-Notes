@@ -2858,21 +2858,32 @@ public class EmpServiceImpl implements EmpService {
 **（1）不使用 AOP：日志代码写在每个方法里**
 
 ```java
-public Result save(Emp emp) {
-    // 日志 - 方法执行前
-    // 业务逻辑
-    empService.save(emp);
-    // 日志 - 方法执行后
-    return Result.success();
-}
-
-public Result page(EmpQueryParam empQueryParam) {
-    // 日志 - 方法执行前
-    // 业务逻辑
-    PageResult<Emp> pageResult = empService.page(empQueryParam);
-    // 日志 - 方法执行后
-    return Result.success(pageResult);
-}
+@PostMapping
+    public Result save(@RequestBody Emp emp) {
+        // 日志 - 方法执行前
+        LocalDateTime startTime = LocalDateTime.now();
+        long start = System.currentTimeMillis();
+        // 业务逻辑
+        empService.save(emp);
+        // 日志 - 方法执行后
+        long cost = System.currentTimeMillis() - start;
+        log.info("[操作日志] 新增员工 结束, 操作时间: {}, 耗时: {} ms", LocalDateTime.now(), cost);
+        return Result.success();
+    }
+    @GetMapping("/page")
+    public Result page(EmpQueryParam empQueryParam) {
+        // 日志 - 方法执行前
+        LocalDateTime startTime = LocalDateTime.now();
+        long start = System.currentTimeMillis();
+        log.info("[操作日志] 分页查询员工 开始, 操作时间: {}, 参数: {}", startTime, empQueryParam);
+        // 业务逻辑
+        PageResult<Emp> pageResult = empService.page(empQueryParam);
+        // 日志 - 方法执行后
+        long cost = System.currentTimeMillis() - start;
+        log.info("[操作日志] 分页查询员工 结束, 操作时间: {}, 耗时: {} ms, 结果总数: {}",
+                LocalDateTime.now(), cost, pageResult.getTotal());
+        return Result.success(pageResult);
+    }
 ```
 
 > [!TIP]
