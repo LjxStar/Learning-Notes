@@ -2858,32 +2858,46 @@ public class EmpServiceImpl implements EmpService {
 **（1）不使用 AOP：日志代码写在每个方法里**
 
 ```java
-@PostMapping
+@Slf4j
+@RestController
+@RequestMapping("/emps")
+public class EmpController {
+
+    @Autowired
+    private EmpService empService;
+
+    @PostMapping
     public Result save(@RequestBody Emp emp) {
-        // 日志 - 方法执行前
-        LocalDateTime startTime = LocalDateTime.now();
+        // 日志 - 方法执行前（对应切面第 2 步，description/methodType 来自原 @Log 注解）
+        log.info("操作描述：{}，操作类型：{}，开始执行", "新增员工", MethodType.INSERT);
         long start = System.currentTimeMillis();
+
         // 业务逻辑
         empService.save(emp);
-        // 日志 - 方法执行后
+
+        // 日志 - 方法执行后（对应切面第 4 步）
         long cost = System.currentTimeMillis() - start;
-        log.info("[操作日志] 新增员工 结束, 操作时间: {}, 耗时: {} ms", LocalDateTime.now(), cost);
+        log.info("操作描述：{}，操作类型：{}，执行耗时：{}ms", "新增员工", MethodType.INSERT, cost);
+
         return Result.success();
     }
+
     @GetMapping("/page")
     public Result page(EmpQueryParam empQueryParam) {
         // 日志 - 方法执行前
-        LocalDateTime startTime = LocalDateTime.now();
+        log.info("操作描述：{}，操作类型：{}，开始执行", "分页查询员工", MethodType.QUERY);
         long start = System.currentTimeMillis();
-        log.info("[操作日志] 分页查询员工 开始, 操作时间: {}, 参数: {}", startTime, empQueryParam);
+
         // 业务逻辑
         PageResult<Emp> pageResult = empService.page(empQueryParam);
+
         // 日志 - 方法执行后
         long cost = System.currentTimeMillis() - start;
-        log.info("[操作日志] 分页查询员工 结束, 操作时间: {}, 耗时: {} ms, 结果总数: {}",
-                LocalDateTime.now(), cost, pageResult.getTotal());
+        log.info("操作描述：{}，操作类型：{}，执行耗时：{}ms", "分页查询员工", MethodType.QUERY, cost);
+
         return Result.success(pageResult);
     }
+}
 ```
 
 > [!TIP]
