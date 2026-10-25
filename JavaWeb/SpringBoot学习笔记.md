@@ -2868,14 +2868,14 @@ public class EmpController {
 
     @PostMapping
     public Result save(@RequestBody Emp emp) {
-        // 日志 - 方法执行前（对应切面第 2 步，description/methodType 来自原 @Log 注解）
+        // 日志 - 方法执行前
         log.info("操作描述：{}，操作类型：{}，开始执行", "新增员工", MethodType.INSERT);
         long start = System.currentTimeMillis();
 
         // 业务逻辑
         empService.save(emp);
 
-        // 日志 - 方法执行后（对应切面第 4 步）
+        // 日志 - 方法执行后
         long cost = System.currentTimeMillis() - start;
         log.info("操作描述：{}，操作类型：{}，执行耗时：{}ms", "新增员工", MethodType.INSERT, cost);
 
