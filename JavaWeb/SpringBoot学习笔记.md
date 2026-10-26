@@ -2776,11 +2776,13 @@ public class WebConfig implements WebMvcConfigurer {
 > - **Filter 更适合**：编码过滤（字符集设置）、跨域处理（CORS）、请求日志记录等「全局通用」且与业务无关的逻辑。
 > - **Interceptor 更适合**：登录校验、权限控制、接口访问日志等「业务相关」的横切逻辑。本项目的登录校验推荐优先使用 Interceptor。
 
-## 8.5 CurrentHolder
+## 8.5 ThreadLocal
 
 在登录校验通过后，拦截器（或过滤器）需要将当前登录用户的 ID 暂存起来，供后续的 Service、Mapper 等业务代码使用。例如：记录操作日志时，需要知道「是谁」进行了该操作。
 
 由于 HTTP 是无状态的，Controller 方法的形参中并不包含当前登录用户信息。直接从请求头解析 JWT 再次校验既繁琐又重复。因此，推荐使用 **`ThreadLocal`** 来临时存储当前请求线程下的用户信息。
+
+![[ThreadLocal执行流程.png]]
 
 ### 8.5.1 ThreadLocal 原理
 
