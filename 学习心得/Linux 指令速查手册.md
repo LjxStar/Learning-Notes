@@ -494,7 +494,7 @@ ip -br addr           # 一行一块网卡，最清爽
 ip route              # 路由表，看默认网关
 ```
 
-老写法 `ifconfig` 要另装 net-tools，新系统默认没有，看懂即可。
+> 老写法 `ifconfig` 要另装 net-tools，新系统默认没有，看懂即可。
 
 ### 2. ping — 通不通
 
@@ -559,11 +559,11 @@ ssh-keygen -t ed25519          # 一路回车，生成密钥
 ssh-copy-id user@host          # 把公钥送到服务器
 ```
 
-| 报错 | 多半是 |
-| --- | --- |
+| 报错                              | 多半是                          |
+| ------------------------------- | ---------------------------- |
 | `Permission denied (publickey)` | 公钥没上传，或 `~/.ssh` 权限过宽（要 700） |
-| `Connection refused` | 对端 sshd 没起，或端口不对 |
-| `Connection timed out` | 防火墙 / 云安全组没放行 22 端口 |
+| `Connection refused`            | 对端 sshd 没起，或端口不对             |
+| `Connection timed out`          | 防火墙 / 云安全组没放行 22 端口          |
 
 ### 6. scp — 跨机器传文件
 
@@ -573,17 +573,6 @@ scp -r dir user@host:/data/          # 传整个目录
 scp user@host:/var/log/app.log ./    # 从远程拉回来
 scp -P 2222 file user@host:/data/    # 指定端口（这里是大写 P）
 ```
-
-### 7. 不通时按这个顺序查
-
-> [!note] 逐层往下走，大多数问题能定位
-> 1. `ip -br addr`：网卡起来了吗，有 IP 吗。
-> 2. `ping 网关`：局域网通不通（网关看 `ip route`）。
-> 3. `ping 8.8.8.8`：能不能出网。
-> 4. `ping www.baidu.com`：不通就是 DNS，查 `/etc/resolv.conf`。
-> 5. `ss -tunlp`：服务在听吗，听在 `0.0.0.0` 还是 `127.0.0.1`（后者外面访问不到）。
-> 6. `curl -v 地址`：对端到底回没回。
-> 7. 本机防火墙 / 云服务器安全组：最容易忘的一层。
 
 ---
 
@@ -599,11 +588,11 @@ vim a.txt       # 打开（没有就新建）
 
 ![[模式切换关系.png]]
 
-| 模式 | 怎么进 | 能干什么 |
-| --- | --- | --- |
-| 命令模式 | 一打开就是；按 `Esc` 随时回来 | 移动、删除、复制粘贴、撤销 |
-| 插入模式 | 命令模式按 `i`（光标前）/ `a`（光标后）/ `o`（下一行） | 打字 |
-| 末行模式 | 命令模式按 `:` | 保存、退出、替换 |
+| 模式   | 怎么进                                | 能干什么          |
+| ---- | ---------------------------------- | ------------- |
+| 命令模式 | 一打开就是；按 `Esc` 随时回来                 | 移动、删除、复制粘贴、撤销 |
+| 插入模式 | 命令模式按 `i`（光标前）/ `a`（光标后）/ `o`（下一行） | 打字            |
+| 末行模式 | 命令模式按 `:`                          | 保存、退出、替换      |
 
 > [!warning] 新手最容易混：`dd`、`yy`、`p`、`u` **不加冒号**，直接按键；`:w`、`:q` **必须加冒号**。
 
@@ -732,21 +721,21 @@ sudo apt update
 
 ## 十一、环境变量
 
-### 1. 看
+### 1. 查看
 
 ```bash
 env                # 所有环境变量
 echo $PATH         # 看某一个变量
 ```
 
-| 变量 | 含义 |
-| --- | --- |
-| `PATH` | 命令的搜索路径，命令找不到先看它 |
-| `HOME` | 当前用户的家目录 |
-| `LANG` | 语言和字符集，中文乱码时调它 |
+| 变量          | 含义                             |
+| ----------- | ------------------------------ |
+| `PATH`      | 命令的搜索路径，命令找不到先看它               |
+| `HOME`      | 当前用户的家目录                       |
+| `LANG`      | 语言和字符集，中文乱码时调它                 |
 | `JAVA_HOME` | JDK 装在哪，Maven / Tomcat 靠它找 JDK |
 
-### 2. 临时设（关掉终端就没了）
+### 2. 临时设
 
 ```bash
 export JAVA_HOME=/usr/local/jdk
@@ -756,10 +745,10 @@ unset JAVA_HOME                        # 删掉这个变量
 
 ### 3. 永久设
 
-| 文件 | 谁生效 | 什么时候加载 |
-| --- | --- | --- |
-| `~/.bashrc` | 当前用户 | 每开一个终端（最常用） |
-| `/etc/profile` | 所有用户 | 登录时 |
+| 文件                      | 谁生效  | 什么时候加载      |
+| ----------------------- | ---- | ----------- |
+| `~/.bashrc`             | 当前用户 | 每开一个终端（最常用） |
+| `/etc/profile`          | 所有用户 | 登录时         |
 | `/etc/profile.d/xxx.sh` | 所有用户 | 登录时（推荐，好卸载） |
 
 ```bash
@@ -817,18 +806,18 @@ iptables -D INPUT -p tcp --dport 80 -j ACCEPT # 删除这条规则
 
 ## 附：速查总表
 
-| 类别 | 常用命令 |
-| --- | --- |
-| 目录 | `ls -lh` `cd` `pwd` `mkdir -p` `rmdir` |
-| 文件 | `cp -r` `rm -rf` `mv` `touch` `find -name` `which` |
-| 看内容 | `cat -n` `less -N` `tail -f` `head -n` `more` |
-| 搜文本 | `grep -rn` `wc -l` `sed -i 's/a/b/g'` `awk '{print $1}'` |
-| 管道重定向 | 管道 `\|`、`>`、`>>`、`2>&1`、`/dev/null`、`tee` |
-| 权限 | `chmod 755` `chmod +x` `chown -R` `chgrp` `umask` |
-| 进程服务 | `ps -ef` `top` `kill -9` `systemctl` `journalctl -u` `nohup &` |
-| 系统状态 | `df -h` `du -sh` `free -h` `uptime` `uname -a` |
-| 网络 | `ip addr` `ss -tunlp` `ping -c` `curl -I` `ssh` `scp` `netstat`(老) |
-| 编辑压缩 | `vim` `tar -czvf` `tar -xzvf` `zip -r` `unzip` |
-| 软件包 | `apt update` `apt install` `apt purge` `yum install` `dnf` `dpkg -i` `rpm -ivh` |
-| 环境变量 | `env` `export` `unset` `source` `~/.bashrc` `/etc/profile` |
-| 防火墙 | `ufw`(Ubuntu) `firewall-cmd`(CentOS) `iptables` |
+| 类别    | 常用命令                                                                            |
+| ----- | ------------------------------------------------------------------------------- |
+| 目录    | `ls -lh` `cd` `pwd` `mkdir -p` `rmdir`                                          |
+| 文件    | `cp -r` `rm -rf` `mv` `touch` `find -name` `which`                              |
+| 看内容   | `cat -n` `less -N` `tail -f` `head -n` `more`                                   |
+| 搜文本   | `grep -rn` `wc -l` `sed -i 's/a/b/g'` `awk '{print $1}'`                        |
+| 管道重定向 | 管道 `\|`、`>`、`>>`、`2>&1`、`/dev/null`、`tee`                                       |
+| 权限    | `chmod 755` `chmod +x` `chown -R` `chgrp` `umask`                               |
+| 进程服务  | `ps -ef` `top` `kill -9` `systemctl` `journalctl -u` `nohup &`                  |
+| 系统状态  | `df -h` `du -sh` `free -h` `uptime` `uname -a`                                  |
+| 网络    | `ip addr` `ss -tunlp` `ping -c` `curl -I` `ssh` `scp` `netstat`                 |
+| 编辑压缩  | `vim` `tar -czvf` `tar -xzvf` `zip -r` `unzip`                                  |
+| 软件包   | `apt update` `apt install` `apt purge` `yum install` `dnf` `dpkg -i` `rpm -ivh` |
+| 环境变量  | `env` `export` `unset` `source` `~/.bashrc` `/etc/profile`                      |
+| 防火墙   | `ufw`(Ubuntu) `firewall-cmd`(CentOS) `iptables`                                 |
