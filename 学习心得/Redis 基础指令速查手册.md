@@ -2,7 +2,7 @@
 
 > [!tip] 阅读约定
 > - 成对命令只写主命令，变体缩进附在其下：左/右、阻塞/非阻塞、秒/毫秒。
-> - 命名规律：`p` 前缀表示毫秒，`at` 后缀表示绝对时间戳，`nx` 表示目标不存在才执行，`x` 后缀表示目标已存在才操作，`store` 表示把结果写入新 key。
+> - 命名规律：时间类命令中 `p` 前缀表示毫秒，`at` 后缀表示绝对时间戳；`nx` 表示目标不存在才执行，`lpushx`/`rpushx` 中的 `x` 表示 key 已存在才写入；`store` 表示把结果写入新 key。
 > - 过期时间只作用于 key 本身，五种数据类型都没有独立的过期命令。
 
 ## 一、通用 Key 操作
@@ -42,7 +42,7 @@ value 最大 512 MB，可存文本、整数和二进制数据，是最常用的�
 
 - `set key value`：设置值，存在则覆盖；可附加 `ex`/`px`/`nx`/`xx` 选项
 - `get key`：获取值
-- `getset key value`：设置新值并返回旧值
+- `getset key value`：设置新值并返回旧值（6.2+ 可用 `set key value get` 代替）
 - `append key value`：末尾追加内容，返回追加后的长度
 - `setrange key offset value`：从 offset 起覆写，超出部分自动补 `\x00`
 - `getrange key start end`：截取子串，闭区间，`-1` 表示末尾
@@ -60,7 +60,7 @@ value 最大 512 MB，可存文本、整数和二进制数据，是最常用的�
 - `setex key seconds value`：设置值并附加秒级过期
     - `psetex key milliseconds value`：毫秒级过期
 
-> [!note] `set key value ex seconds nx` 可在一次写入中同时完成「设值 + 过期 + 不存在才写」，相当于 `setex` 与 `setnx` 的组合。
+> [!note] `set key value ex seconds nx` 一次完成「设值 + 过期 + 不存在才写」，效果等同于 `setnx` 成功后再执行 `expire`，但整个过程是原子的。
 
 ### 数值增减
 
@@ -174,7 +174,7 @@ field-value 结构，一个 key 下可存多个字段，适合表示对象的多
 
 ### 添加与计分
 
-- `zadd key score member [score member ...]`：添加成员，已存在则更新分数；可附加 `nx`/`xx`/`gt`/`lt`/`ch`
+- `zadd key score member [score member ...]`：添加成员，已存在则更新分数；可附加 `nx`/`xx`/`gt`/`lt`/`ch`（`nx` 与 `xx`、`gt` 与 `lt` 两两互斥）
 - `zincrby key increment member`：给成员分数累加增量
 
 ### 移除
@@ -201,16 +201,4 @@ field-value 结构，一个 key 下可存多个字段，适合表示对象的多
 - `zrangebyscore key min max [withscores] [limit offset count]`：按分数升序查询
     - `zrevrangebyscore key max min [withscores] [limit offset count]`：按分数降序查询
 
-> [!tip] Redis 6.2+ 可用 `zrange key min max byscore|bylex rev limit offset count` 统一表达上述区间查询。
-
-## 速记小结
-
-| 类型 | 结构 | 典型场景 |
-|---|---|---|
-| **String** | 单值 | 缓存、计数器、分布式锁 |
-| **List** | 双向链表 | 消息队列、栈、时间线、分页 |
-| **Hash** | field-value | 对象存储（用户、商品） |
-| **Set** | 无序集合 | 去重、标签、共同好友、抽奖 |
-| **ZSet** | 带分数的有序集合 | 排行榜、延时队列、范围检索 |
-
-> 选型口诀：要顺序用 List，要去重用 Set，要排序用 ZSet，要按字段更新用 Hash，其余单值场景用 String。
+> [!tip] Redis 6.2+ 可用 `zrange key start stop byscore|bylex rev limit offset count` 统一替代上述区间命令；其中带 `rev` 且使用 `byscore`/`bylex` 时，`start` 需不小于 `stop`（区间从大到小给出）。
