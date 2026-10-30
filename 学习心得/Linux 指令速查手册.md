@@ -1327,17 +1327,17 @@ iptables -F                                       # 清空所有规则（危险�
 
 按章顺序排列，括号内为最常用的一两个写法。
 
-| 类别 | 核心命令 |
-| --- | --- |
-| 目录操作（一） | `ls -al` `cd` `pwd` `mkdir -p` `rmdir` `du -sh` `tree -L 1` |
-| 文件操作（二） | `cp -a` `rm -rf` `mv` `touch` `ln -s` `find -name` `which` |
-| 文本查看（三） | `cat -n` `less -N` `head -n` `tail -f` `grep -rn` `wc -l` |
-| 权限属主（四） | `chmod 755` `chown -R` `chgrp` `umask` |
-| 进程服务（五） | `ps -ef` `top` `kill -9` `systemctl` `nohup &` `journalctl -u` `free -h` `df -h` |
+| 类别      | 核心命令                                                                                                                    |
+| ------- | ----------------------------------------------------------------------------------------------------------------------- |
+| 目录操作（一） | `ls -al` `cd` `pwd` `mkdir -p` `rmdir` `du -sh` `tree -L 1`                                                             |
+| 文件操作（二） | `cp -a` `rm -rf` `mv` `touch` `ln -s` `find -name` `which`                                                              |
+| 文本查看（三） | `cat -n` `less -N` `head -n` `tail -f` `grep -rn` `wc -l`                                                               |
+| 权限属主（四） | `chmod 755` `chown -R` `chgrp` `umask`                                                                                  |
+| 进程服务（五） | `ps -ef` `top` `kill -9` `systemctl` `nohup &` `journalctl -u` `free -h` `df -h`                                        |
 | 网络诊断（六） | `ip addr` `ss -tunlp` `netstat` `lsof -i:80` `ping -c` `nc -zv` `curl -I` `wget -c` `dig +short` `traceroute` `tcpdump` |
-| 网络配置（七） | `ip route` `netplan apply` `nmcli con mod` `ifcfg-eth0` `hostnamectl` `/etc/hosts` `ssh` `scp -r` `rsync -avz` |
-| 编辑压缩（八） | `vim` `tar -czvf` `tar -xzvf` `zip -r` `unzip` |
-| 软件包（九） | `apt update` `apt install` `apt purge` `yum install` `dnf` `dpkg -i` `rpm -ivh` |
-| 环境变量（十） | `env` `export` `unset` `source` `/etc/profile` `~/.bashrc` |
-| 防火墙（十一） | `ufw`(Ubuntu) `firewall-cmd`(CentOS) `iptables` |
-| 发行版差异 | 见 [[#〇、Ubuntu 与 CentOS 的核心差异]]：sudo / 包管理 / 网络配置 / 防火墙 |
+| 网络配置（七） | `ip route` `netplan apply` `nmcli con mod` `ifcfg-eth0` `hostnamectl` `/etc/hosts` `ssh` `scp -r` `rsync -avz`          |
+| 编辑压缩（八） | `vim` `tar -czvf` `tar -xzvf` `zip -r` `unzip`                                                                          |
+| 软件包（九）  | `apt update` `apt install` `apt purge` `yum install` `dnf` `dpkg -i` `rpm -ivh`                                         |
+| 环境变量（十） | `env` `export` `unset` `source` `/etc/profile` `~/.bashrc`                                                              |
+| 防火墙（十一） | `ufw`(Ubuntu) `firewall-cmd`(CentOS) `iptables`                                                                         |
+| 发行版差异   | 见 [[#〇、Ubuntu 与 CentOS 的核心差异]]：sudo / 包管理 / 网络配置 / 防火墙                                                                  |
