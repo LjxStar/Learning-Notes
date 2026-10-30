@@ -60,7 +60,7 @@ ls [选项] [目录]
 | `-d` | 只显示目录本身，不展开内容                             |
 | `-i` | 显示文件 inode 号                              |
 
-> `ls -l` 使用频繁，Linux 提供简写别名 `ll`。`[CentOS]` 默认自带；~~`[Ubuntu]` 需在 `~/.bashrc` 中取消注释 `alias ll='ls -alF'` 后执行 `source ~/.bashrc` 生效。~~
+> `ls -l` 使用频繁，Linux 提供简写别名 `ll`。
 
 **常见用法：**
 
