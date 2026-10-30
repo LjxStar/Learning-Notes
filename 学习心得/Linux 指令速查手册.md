@@ -849,7 +849,7 @@ sudo iptables -D INPUT -p tcp --dport 80 -j ACCEPT   # 删除这条规则
 | 文件    | `cp -r` `mv` `rm -rf` `touch` `find -name` `which`                              |
 | 看内容   | `cat -n` `less -N` `tail -f` `head -n` `more`                                   |
 | 搜文本   | `grep -rn` `wc -l` `sed -i 's/a/b/g'` `awk '{print $1}'`                        |
-| 管道重定向 | 管道 `\|`、`>`、`>>`、`2>&1`、`/dev/null`、`tee`                                      |
+| 管道重定向 | 管道 `\|`、`>`、`>>`、`2>&1`、`/dev/null`、`tee`                                       |
 | 权限    | `chmod 755` `chmod +x` `chown -R` `chgrp` `umask`                               |
 | 网络    | `ip a` `ss -tunlp` `ping -c` `curl -I` `ssh` `scp` `netstat`                    |
 | 编辑压缩  | `vim` `tar -czvf` `tar -xzvf` `zip -r` `unzip` `gzip -d`                        |
