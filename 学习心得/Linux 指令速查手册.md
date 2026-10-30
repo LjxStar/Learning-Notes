@@ -700,7 +700,7 @@ sudo ufw allow 8080/tcp
 sudo ufw status
 ```
 
-### 2. firewalld — CentOS 7+（RHEL 系）
+### 2. firewalld — CentOS 7
 
 `[CentOS]` 用 systemctl 管理服务生命周期，用 `firewall-cmd` 管理规则。
 
@@ -732,14 +732,6 @@ iptables -F                               # 清空所有规则（危险）
 ```
 
 > 直接改 iptables 的规则**重启后丢失**。持久化：`[Ubuntu]` 安装 iptables-persistent（`sudo netfilter-persistent save`）；`[CentOS]` 安装 iptables-services 后用 `service iptables save`。日常场景直接用 ufw / firewalld 更省心。
-
-### 4. 常见需求对照：开放 8080 端口
-
-| 发行版           | 执行命令                                                                    |
-| ------------- | ----------------------------------------------------------------------- |
-| `[Ubuntu]`    | `sudo ufw allow 8080/tcp`                                               |
-| `[CentOS]` 7+ | `firewall-cmd --add-port=8080/tcp --permanent && firewall-cmd --reload` |
-| 通用底层          | `iptables -A INPUT -p tcp --dport 8080 -j ACCEPT`                       |
 
 ---
 
