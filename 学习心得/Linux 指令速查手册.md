@@ -12,7 +12,7 @@
 
 ## 〇、动手前先弄清的两件事
 
-### 1. sudo：Ubuntu 的「临时管理员权限」
+### 1. sudo — 临时管理员权限
 
 ```bash
 sudo 命令        # 只给后面这一条命令临时 root 权限
@@ -23,7 +23,7 @@ sudo -i          # 直接切换成 root（退出用 exit）
 - **CentOS** 习惯直接用 root 操作，所以本文 `[CentOS]` 的命令一般不加 `sudo`。
 - 记法：`sudo` 不是命令，是给**后面那条命令**提权的开关。
 
-### 2. 两个系统的差别
+### 2. Ubuntu / CentOS — 系统差异
 
 | 方面   | Ubuntu                              | CentOS                        |
 | ---- | ----------------------------------- | ----------------------------- |
@@ -63,13 +63,13 @@ ls -d */           # 只看当前目录下的子目录
 
 ### 2. pwd / cd — 我在哪、要去哪
 
-**（1）pwd** —— 打印当前目录的完整路径
+**（1）pwd** — 打印当前目录的完整路径
 
 ```bash
 pwd
 ```
 
-**（2）cd** —— 切换目录
+**（2）cd** — 切换目录
 
 ```bash
 cd /etc        # 绝对路径（从 / 开始写）
@@ -184,13 +184,13 @@ find /var/log -name "*.log" -mtime +30 -delete   # 确认无误再删
 
 ### 6. which / type — 这个命令是哪来的
 
-**（1）which** —— 可执行文件在哪
+**（1）which** — 可执行文件在哪
 
 ```bash
 which nginx
 ```
 
-**（2）type** —— 是别名、内建命令还是真程序
+**（2）type** — 是别名、内建命令还是真程序
 
 ```bash
 type ll
@@ -214,7 +214,7 @@ cat a.txt b.txt > c.txt # 合并两个文件
 
 ### 2. less / more — 分页查看
 
-**（1）less** —— 能上下翻、能搜索，日常首选
+**（1）less** — 能上下翻、能搜索，日常首选
 
 ```bash
 less /var/log/syslog      # 打开，按 q 退出
@@ -230,7 +230,7 @@ less +F /var/log/syslog   # 先当 tail -f 用，Ctrl+C 回到浏览模式
 | `g` / `G`          | 跳到最前 / 最后           |
 | `q`                | 退出                  |
 
-**（2）more** —— 老式分页，只能往下翻（空格翻页、`q` 退出）
+**（2）more** — 老式分页，只能往下翻（空格翻页、`q` 退出）
 
 ```bash
 more app.log
@@ -292,6 +292,7 @@ grep -A 3 "Exception" app.log   # 连带显示后面 3 行（看异常栈）
 | `-c`                  | 只输出匹配的行数                  |
 | `-E`                  | 用扩展正则，写成 `a\|b` 表示「a 或 b」 |
 | `-A` / `-B` / `-C` 数字 | 连带显示匹配行之后 / 之前 / 前后各 N 行  |
+
 ### 3. sed — 批量改文本
 
 ```bash
@@ -354,7 +355,7 @@ awk '{print $1}' access.log | sort | uniq -c | sort -nr | head   # 访问量前 
 
 ## 六、权限与属主
 
-### 1. 先看懂 `ls -l` 那一串
+### 1. ls -l — 读懂权限那一串
 
 ```text
 -rw-r--r--  1  root  root  1024  Jan 1 08:30  app.jar
@@ -395,7 +396,7 @@ chmod -R 755 /data/app   # 递归改整个目录
 
 ### 3. chown / chgrp — 改属主与属组
 
-**（1）chown** —— 改属主（可连带属组）
+**（1）chown** — 改属主（可连带属组）
 
 ```bash
 chown user a.txt               # 只改属主
@@ -403,7 +404,7 @@ chown user:group a.txt         # 属主和属组一起改
 chown -R user:group /data/app  # 递归改（部署后修权限常写这一条）
 ```
 
-**（2）chgrp** —— 只改属组
+**（2）chgrp** — 只改属组
 
 ```bash
 chgrp -R dev /data/app
@@ -428,7 +429,7 @@ umask 022      # 临时改（只对当前终端有效）
 
 ### 1. ip / ifconfig — 看 IP 和路由
 
-**（1）ip** —— 新系统默认就有
+**（1）ip** — 新系统默认就有
 
 ```bash
 ip addr               # 所有网卡和 IP（可简写 ip a）
@@ -436,7 +437,7 @@ ip -br addr           # 一行一块网卡，最清爽
 ip route              # 路由表，看默认网关
 ```
 
-**（2）ifconfig** —— 老命令，要另装 net-tools
+**（2）ifconfig** — 老命令，要另装 net-tools
 
 ```bash
 ifconfig eth0
@@ -455,9 +456,34 @@ ping -c 4 www.baidu.com    # 发 4 个包就停（不加 -c 会一直 ping）
 
 > 云服务器普遍禁 ping，ping 不通不代表服务挂了，用 `curl` 或 `ss` 验证更准。
 
-### 3. ss / netstat — 端口谁在听
+### 3. traceroute / mtr — 追踪路由、定位丢包
 
-**（1）ss** —— 快，日常用这个
+**（1）traceroute** — 逐跳列出数据包走过的路由
+
+```bash
+traceroute www.baidu.com             # 每一跳的地址和三次往返耗时
+traceroute -n www.baidu.com          # 不解析域名，只显示 IP
+traceroute -T -p 443 www.baidu.com   # 用 TCP 443 探测，绕过 ICMP 被拦的情况
+```
+
+**（2）mtr** — 相当于 traceroute + ping，持续统计每一跳的丢包率
+
+```bash
+mtr www.baidu.com            # 实时界面，按 q 退出
+mtr -r -c 10 www.baidu.com   # 跑 10 轮后输出报告，方便贴给别人分析
+```
+
+| 看到的现象        | 通常说明              |
+| ------------ | ----------------- |
+| 某一跳显示 `* * *` | 该设备不回 ICMP，后面正常就没事 |
+| 从某一跳开始持续丢包   | 这一跳或它的上游链路有问题     |
+| 只有最后一跳丢包     | 目标主机过载或做了限速       |
+
+> 安装：`[Ubuntu] sudo apt install traceroute mtr`，`[CentOS] yum install traceroute mtr`。判断丢包看**终点**、或**从某跳一直持续到终点**的丢包率；只有中间某一跳丢，多半是那台设备对 ICMP 限速了。
+
+### 4. ss / netstat — 端口谁在听
+
+**（1）ss** — 快，日常用这个
 
 ```bash
 sudo ss -tunlp                # 所有监听端口 + 对应进程（最常用，加 sudo 才看得到别人的进程）
@@ -465,7 +491,7 @@ sudo ss -tunlp | grep 8080    # 8080 被谁占了
 ss -tan                       # 所有 TCP 连接
 ```
 
-**（2）netstat** —— 老写法，要装 net-tools
+**（2）netstat** — 老写法，要装 net-tools
 
 ```bash
 netstat -tunlp
@@ -478,7 +504,7 @@ netstat -tunlp
 | `-l`     | 只看监听中的端口        |
 | `-p`     | 显示进程名和 PID      |
 
-### 4. curl — 测接口、看网页
+### 5. curl — 测接口、看网页
 
 ```bash
 curl -I https://www.baidu.com      # 只看响应头
@@ -497,7 +523,7 @@ curl -o page.html https://example.com   # 把内容存成文件
 
 > 下载大文件用 `wget -c 地址`，`-c` 支持断点续传。
 
-### 5. ssh — 登录远程服务器
+### 6. ssh — 登录远程服务器
 
 ```bash
 ssh user@192.168.1.10          # 登录
@@ -518,7 +544,7 @@ ssh-copy-id user@host          # 把公钥送到服务器
 | `Connection refused`            | 对端 sshd 没起，或端口不对             |
 | `Connection timed out`          | 防火墙 / 云安全组没放行 22 端口          |
 
-### 6. scp — 跨机器传文件
+### 7. scp — 跨机器传文件
 
 ```bash
 scp file.tar.gz user@host:/data/     # 传到远程
@@ -573,7 +599,7 @@ vim a.txt       # 打开（没有就新建）
 
 > [!tip] 打开只读文件忘了加 sudo？在末行模式敲 `:w !sudo tee %` 可以提权保存。想练手就敲 `vimtutor`，30 分钟入门。
 
-### 2. tar — 打包压缩（Linux 之间传文件的首选）
+### 2. tar — 打包压缩
 
 ```bash
 tar -czvf logs.tar.gz -C /data logs    # 打包 /data/logs，包里是相对路径
@@ -645,15 +671,15 @@ yum clean all           # 清理缓存
 
 > CentOS 7 用 `yum`，CentOS 8+ 用 `dnf`，写法一样。这些命令要用 root 执行。
 
-### 3. 装本地包
+### 3. dpkg / rpm — 装本地包
 
-**（1）dpkg** —— Ubuntu 的 `.deb`
+**（1）dpkg** — Ubuntu 的 `.deb`
 
 ```bash
 sudo dpkg -i pkg.deb        # 装完若报缺依赖，接着 sudo apt -f install
 ```
 
-**（2）rpm** —— CentOS 的 `.rpm`
+**（2）rpm** — CentOS 的 `.rpm`
 
 ```bash
 rpm -ivh pkg.rpm            # 更推荐 yum install ./pkg.rpm，会自动处理依赖
@@ -661,7 +687,7 @@ rpm -ivh pkg.rpm            # 更推荐 yum install ./pkg.rpm，会自动处理�
 
 > `.deb` 装不进 CentOS，`.rpm` 也装不进 Ubuntu。
 
-### 4. 换国内源（下载慢时）
+### 4. 换源 — 下载慢时换国内镜像
 
 ```bash
 # Ubuntu：先备份，再替换镜像域名
@@ -699,14 +725,14 @@ top 里常用的键：`P` 按 CPU 排序、`M` 按内存排序、`1` 看每个�
 
 ### 3. kill / pkill / killall — 结束进程
 
-**（1）kill** —— 按 PID 结束
+**（1）kill** — 按 PID 结束
 
 ```bash
 kill 1234            # 礼貌地结束（默认信号 15）
 kill -9 1234         # 强杀，实在不走才用
 ```
 
-**（2）pkill / killall** —— 按名字或关键字批量结束
+**（2）pkill / killall** — 按名字或关键字批量结束
 
 ```bash
 pgrep -f app.jar     # 先查 PID，确认再动手
@@ -716,7 +742,18 @@ killall nginx        # 按进程名杀
 
 > [!warning] 先 `kill PID`，等几秒没退再 `kill -9`。强杀会让进程来不及写盘、释放资源，数据库类进程尤其慎用。
 
-### 4. systemctl — 管服务
+### 4. nohup / & — 让程序在后台跑
+
+```bash
+命令 &                                     # 丢到后台
+jobs                                       # 看当前终端有哪些后台任务
+fg %1                                      # 把后台任务调回前台
+nohup java -jar app.jar > app.log 2>&1 &   # 关掉终端也不退出（部署常用）
+```
+
+> 长期跑的服务交给 `systemctl` 托管更好（能开机自启、崩了自动拉起），`nohup` 适合临时任务。
+
+### 5. systemctl — 管服务
 
 ```bash
 systemctl status nginx      # 看状态和最近日志（排障第一步）
@@ -731,34 +768,41 @@ journalctl -u nginx -f      # 实时看这个服务的日志
 
 > Ubuntu 上这些要加 `sudo`；CentOS 6 用 `service nginx start`。`enable` 只管开机自启，不会顺带启动服务。
 
-### 5. 磁盘和内存够不够
+---
+
+## 十一、系统状态
+
+### 1. df / du — 磁盘空间
 
 ```bash
-df -h             # 各分区用了多少（快满了先看这个）
-du -sh /var/log   # 某个目录占了多少空间
-free -h           # 内存，重点看 available 那一列
-uptime            # 开机多久 + 1/5/15 分钟平均负载
-uname -a          # 内核版本、系统架构
+df -h              # 各分区用了多少（快满了先看这个）
+df -i              # inode 用量（有空间却写不进文件时看它）
+du -sh /var/log    # 某个目录占了多少空间
+du -sh * | sort -h # 当前目录里谁最占地方
 ```
 
-> `df -h` 显示还有空间却写不进文件？多半是 inode 用完了，`df -i` 看一下。想知道空间被谁吃了，从 `/` 开始一层层 `du -sh *` 往下找。
+> 想知道空间被谁吃了，从 `/` 开始一层层 `du -sh *` 往下找。
 
-### 6. 让程序在后台跑
+### 2. free — 内存
 
 ```bash
-命令 &                                     # 丢到后台
-jobs                                       # 看当前终端有哪些后台任务
-fg %1                                      # 把后台任务调回前台
-nohup java -jar app.jar > app.log 2>&1 &   # 关掉终端也不退出（部署常用）
+free -h            # 重点看 available 那一列，buff/cache 是可回收的
 ```
 
-> 长期跑的服务交给 `systemctl` 托管更好（能开机自启、崩了自动拉起），`nohup` 适合临时任务。
+### 3. uptime / uname — 负载与内核
+
+```bash
+uptime             # 开机多久 + 1/5/15 分钟平均负载
+uname -a           # 内核版本、系统架构
+```
+
+> 负载要对照核数看：`nproc` 查核数，长期高于核数就是真的忙。
 
 ---
 
-## 十一、环境变量
+## 十二、环境变量
 
-### 1. 查看
+### 1. env — 查看变量
 
 ```bash
 env                # 所有环境变量
@@ -772,7 +816,7 @@ echo $PATH         # 看某一个变量
 | `LANG`      | 语言和字符集，中文乱码时调它                 |
 | `JAVA_HOME` | JDK 装在哪，Maven / Tomcat 靠它找 JDK |
 
-### 2. 临时设
+### 2. export — 临时设置
 
 ```bash
 export JAVA_HOME=/usr/local/jdk
@@ -780,7 +824,7 @@ export PATH=$PATH:/usr/local/jdk/bin   # 注意别漏掉 $PATH，否则原有路
 unset JAVA_HOME                        # 删掉这个变量
 ```
 
-### 3. 永久设
+### 3. bashrc / profile — 永久设置
 
 | 文件                      | 谁生效  | 什么时候加载        |
 | ----------------------- | ---- | ------------- |
@@ -797,7 +841,7 @@ source ~/.bashrc      # 让改动立刻生效
 
 ---
 
-## 十二、防火墙
+## 十三、防火墙
 
 > `ufw` 和 `firewalld` 都是 `iptables` 的友好外壳，底层一样。远程改防火墙，**先放行 22 端口再开启**，否则会把自己关在门外。
 
@@ -849,12 +893,12 @@ sudo iptables -D INPUT -p tcp --dport 80 -j ACCEPT   # 删除这条规则
 | 文件    | `cp -r` `mv` `rm -rf` `touch` `find -name` `which`                              |
 | 看内容   | `cat -n` `less -N` `tail -f` `head -n` `more`                                   |
 | 搜文本   | `grep -rn` `wc -l` `sed -i 's/a/b/g'` `awk '{print $1}'`                        |
-| 管道重定向 | 管道 `\|`、`>`、`>>`、`2>&1`、`/dev/null`、`tee`                                       |
+| 管道重定向 | 管道 `\|` `>` `>>` `2>&1` `/dev/null` `tee`                                     |
 | 权限    | `chmod 755` `chmod +x` `chown -R` `chgrp` `umask`                               |
-| 网络    | `ip a` `ss -tunlp` `ping -c` `curl -I` `ssh` `scp` `netstat`                    |
+| 网络    | `ip a` `ping -c` `traceroute` `mtr -r` `ss -tunlp` `curl -I` `ssh` `scp`        |
 | 编辑压缩  | `vim` `tar -czvf` `tar -xzvf` `zip -r` `unzip` `gzip -d`                        |
 | 软件包   | `apt update` `apt install` `apt purge` `yum install` `dnf` `dpkg -i` `rpm -ivh` |
 | 进程服务  | `ps -ef` `top` `kill -9` `systemctl` `journalctl -u` `nohup &`                  |
 | 系统状态  | `df -h` `du -sh` `free -h` `uptime` `uname -a`                                  |
 | 环境变量  | `env` `export` `unset` `source` `~/.bashrc` `/etc/profile`                      |
-| 防火墙   | `ufw`(Ubuntu) `firewall-cmd`(CentOS) `iptables`                                 |
+| 防火墙   | `ufw`（Ubuntu）`firewall-cmd`（CentOS）`iptables`                                |
