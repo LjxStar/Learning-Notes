@@ -1824,7 +1824,7 @@ rollback;
 
 ## 6.2 Spring 事务快速入门
 
-6.1 里的事务是**数据库层面**的手工控制：`begin` → 一组 SQL → `commit` / `rollback`。放到 Java 代码里，就意味着每个业务方法都要套一层 try-catch 再手动回滚，既啰嗦又容易漏。
+**数据库层面**的事务处理：`begin` → 一组 SQL → `commit` / `rollback`。放到 Java 代码里，就意味着每个业务方法都要套一层 try-catch 再手动回滚。
 
 Spring 把这些模板代码封装成了一个注解：**在方法上加 `@Transactional`，方法执行前自动开启事务，正常结束自动提交，抛异常自动回滚**。开发者只写业务代码，事务的开启、提交、回滚全由 Spring 通过 AOP 代理完成。
 
