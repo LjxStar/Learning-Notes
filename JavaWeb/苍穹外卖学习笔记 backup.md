@@ -1,0 +1,2355 @@
+# 一、开发前置
+
+> [!abstract] 本篇导读
+> 这是「苍穹外卖」项目的第一部分，回答四个问题：**软件是怎么做出来的**（开发流程）、**代码跑在哪些环境里**（软件环境）、**项目用了哪些技术**（技术选型）、**工程怎么搭起来**（环境搭建）。
+
+## 1.1 软件开发流程
+
+一个软件从想法到上线，通常要经过五个阶段，每个阶段由不同角色负责：
+
+1. **需求分析**（产品经理）：完成《需求规格说明书》与产品原型的编写，把“想做什么”讲清楚。
+2. **设计**（UI 工程师、架构师、高级工程师）：产出 UI 设计、数据库设计、接口设计，把“怎么做”定下来。
+3. **编码**（开发工程师）：编写项目代码，并完成单元测试。
+4. **测试**（测试工程师）：由测试人员对部署在测试环境的项目进行功能测试，并出具测试报告。
+5. **上线运维**（运维工程师）：上线前由运维人员准备服务器的软件环境安装与配置；配置完成后，将开发好的项目部署到服务器上运行。
+
+## 1.2 软件环境
+
+作为软件开发工程师，在编码的过程中不可避免地会接触多种软件环境。工作中经常遇到的三套环境分别是：**开发环境、测试环境、生产环境**。
+
+| 环境   | 英文          | 主要使用者 | 是否对外 | 主要用途        |
+| ---- | ----------- | ----- | ---- | ----------- |
+| 开发环境 | development | 开发工程师 | 否    | 日常编码、单元测试   |
+| 测试环境 | testing     | 测试工程师 | 否    | 功能测试、出具测试报告 |
+| 生产环境 | production  | 运维工程师 | 是    | 正式对外提供服务    |
+
+### （1）开发环境（development）—— 开发工程师
+
+开发阶段使用的环境，一般外部用户无法访问。
+
+比如开发中使用的 MySQL 数据库和其他常用软件，可以安装在本地，也可以安装在一台专门的服务器中。这些应用软件仅在开发过程中使用，项目测试、上线时就不再使用这套环境，这套环境就是开发环境。
+
+### （2）测试环境（testing）—— 测试工程师
+
+当开发工程师将项目的功能模块开发完毕，并且单元测试通过后，就需要将项目部署到测试服务器上，让测试人员对项目进行测试。这台专门给测试人员使用的服务器就是测试环境，用于项目测试，一般外部用户无法访问。
+
+### （3）生产环境（production）—— 运维工程师
+
+当项目开发完毕，并且由测试人员测试通过之后，就可以上线项目：将项目部署到线上环境，正式对外提供服务。这个线上环境也称为生产环境。
+
+## 1.3 技术选型
+
+本项目的技术选型从**用户层、网关层、应用层、数据层**几个方面介绍，主要用于展示项目中使用到的技术框架和中间件等。
+
+![[技术选型.png]]
+
+### （1）用户层
+
+- **系统管理后台**：H5、Vue.js、ElementUI（组件库）、Apache ECharts（展示图表）
+- **移动端应用**：微信小程序
+
+### （2）网关层
+
+**Nginx 是一个服务器**，主要用作 HTTP 服务器、**部署静态资源**，访问性能高。在 Nginx 中还有两个比较重要的作用：反向代理和负载均衡。在进行项目部署时，要实现 Tomcat 的负载均衡，就可以通过 Nginx 来实现。
+
+### （3）应用层
+
+应用层是项目的主体，各项技术各司其职：
+
+- **SpringBoot**（企业实用）：快速构建 Spring 项目，采用“约定优于配置”的思想，简化 Spring 项目的配置开发。
+- **SpringMVC**（配置繁琐）：Spring 框架的一个模块，与 Spring 无需通过中间整合层进行整合，可以无缝集成。
+- **Spring Task**：由 Spring 提供的定时任务框架，项目中用于订单状态的定时处理。
+- **HttpClient**：主要实现了对 HTTP 请求的发送。
+- **Spring Cache**：由 Spring 提供的数据缓存框架。
+- **JWT**（安全性高）：用于对应用程序上的用户进行身份验证的标记。
+- **阿里云 OSS**：对象存储服务，在项目中主要存储文件，如图片等。
+- **Swagger**（企业实用）：可以自动帮助开发人员生成接口文档，并对接口进行测试。
+- **POI**：封装了对 Excel 表格的常用操作。
+- **WebSocket**：一种通信网络协议，使客户端和服务器之间的数据交换更加简单，用于项目的来单、催单功能实现。
+
+技术栈确定之后，就该动手把工程跑起来了。环境搭建按 **前端 → 后端 → 版本控制 → 数据库** 的顺序进行。
+
+## 1.4 环境搭建
+
+### 1.4.1 前端工程（基于 Nginx）
+
+**第一步：准备 Nginx**
+
+从资料中找到前端运行环境的 Nginx，移动到**非中文目录**下。
+
+![[前端基础工程-目录结构.png]]
+
+**第二步：确认 sky 目录**
+
+**sky** 目录中存放了管理端的前端资源，具体如下：
+
+![[前端基础工程-sky文件.png]]
+
+### 1.4.2 后端工程
+
+后端工程基于 Maven 进行项目构建，并且进行分模块开发：父工程统一管理依赖版本，子模块各负其责。
+
+| 序号  | 名称           | 说明                                                    |
+| --- | ------------ | ----------------------------------------------------- |
+| 1   | sky-take-out | Maven 父工程，统一管理依赖版本，聚合其他子模块，只有一个 pom.xml 文件。           |
+| 2   | sky-common   | 子模块，存放公共类，例如：工具类、常量类、异常类等。                            |
+| 3   | sky-pojo     | 子模块，存放 Entity、VO、DTO 等。                               |
+| 4   | sky-server   | 子模块，后端服务，配置文件、配置类、拦截器、controller、service、mapper、启动类等。 |
+
+> [!info] 分层思路
+> `common` 放“谁都要用”的（工具类、常量类、异常类），`pojo` 放“数据长什么样”的（Entity / VO / DTO），`server` 放“业务怎么跑”的（配置、拦截器、controller、service、mapper）。父工程只管版本统一，本身不写业务代码。
+
+### 1.4.3* Git 版本控制
+
+### 1.4.4* 数据库环境搭建
+
+## 1.5 Swagger
+
+> [!abstract] 本节导读
+> 前后端分离之后，接口文档就是前后端协作的“合同”。本节先讲清 **Swagger 与 Knife4j 的分工**，再按 **加依赖 → 写配置 → 放行静态资源 → 加注解** 的顺序把 Knife4j 跑起来，最后掌握四个最常用的注解。
+
+### 1.5.1 Swagger 与 Knife4j 介绍
+
+#### （1）为什么需要接口文档
+
+前后端分离开发时，前端要按后端提供的接口去写页面、传参数、解析返回值。传统做法是后端手写一份 Word/Markdown 接口文档，具有不同步、不完整、不能测等问题。
+
+而 Swagger 就是来解决这三个问题的：**文档从代码里自动生成，并且可以直接在页面上调接口**。
+
+#### （2）Swagger
+
+**Swagger 是一套围绕 RESTful 接口的“规范 + 工具集”**，用于设计、描述、生成和调试接口。在 Spring Boot 项目中，它的工作方式是：
+
+1. 扫描 Controller 类和方法上的注解；
+2. 生成一份描述所有接口的 JSON（OpenAPI/Swagger 描述文件）；
+3. 由 UI 页面把这份 JSON 渲染成可读文档，并提供在线调试。
+
+所以 Swagger 提供的是**文档数据 + 基础 UI**。不过原生的 `swagger-ui` 界面比较简陋：排版拥挤、没有搜索和分组美化、离线文档导出等功能也弱，国内项目更常用它的“增强版”——Knife4j。
+
+#### （3）Knife4j
+
+**Knife4j 是基于 Swagger 的增强 UI 解决方案**（前身是 `swagger-bootstrap-ui`），底层仍然由 Swagger/springfox 生成文档数据，它只负责把这份数据**换一套更好用的界面**，并补充实用功能。
+
+
+> [!warning] 版本提醒
+> 本课程用的是 **Knife4j 3.0.2 + springfox（Swagger2 注解）**，只适用于 Spring Boot 2.x。Spring Boot 3 基于 Jakarta EE，springfox 已不再适配，需要改用 `knife4j-openapi3-jakarta-spring-boot-starter`，注解也换成 OpenAPI 3 的 `@Tag`、`@Operation`、`@Schema`。
+
+### 1.5.2 快速入门 Knife4j
+
+本项目所有配置都在 `sky-server` 模块中完成，一共五步。
+
+**（1）引入依赖**
+
+在 `sky-server/pom.xml` 中加入 Knife4j 的 starter：
+
+```xml
+<dependency>
+    <groupId>com.github.xiaoymin</groupId>
+    <artifactId>knife4j-spring-boot-starter</artifactId>
+    <version>3.0.2</version>
+</dependency>
+```
+
+**（2）编写配置类**
+
+Swagger 的核心配置是 **Docket（文档摘要）**：它告诉 Swagger “生成哪个版本的文档、文档叫什么、扫描哪些包”。
+
+苍穹外卖把这个 `Docket` Bean 直接写在了 `WebMvcConfiguration` 里（因为静态资源映射也要在这个类里做），并在类上开启 Swagger 与 Knife4j：
+
+```java
+@Configuration
+public class WebMvcConfiguration extends WebMvcConfigurationSupport {
+
+    /**
+     * 通过 Knife4j 生成接口文档
+     */
+    @Bean
+    public Docket docket() {
+        ApiInfo apiInfo = new ApiInfoBuilder()
+                .title("苍穹外卖项目接口文档")
+                .version("2.0")
+                .description("苍穹外卖项目接口文档")
+                .build();
+
+        Docket docket = new Docket(DocumentationType.SWAGGER_2)
+                .apiInfo(apiInfo)
+                .select()
+                .apis(RequestHandlerSelectors.basePackage("com.sky.controller"))
+                .paths(PathSelectors.any())
+                .build();
+        return docket;
+    }
+}
+```
+
+**（3）静态资源映射**
+
+Knife4j 的页面是打包在 jar 里的静态资源，访问地址是 `/doc.html`，它依赖 `webjars` 下的 js/css。需要在 `WebMvcConfiguration` 中重写 `addResourceHandlers`：
+
+```java
+@Override
+protected void addResourceHandlers(ResourceHandlerRegistry registry) {
+    // 放行 Knife4j 的文档页面
+    registry.addResourceHandler("/doc.html")
+            .addResourceLocations("classpath:/META-INF/resources/");
+
+    // 放行 Knife4j 依赖的静态资源
+    registry.addResourceHandler("/webjars/**")
+            .addResourceLocations("classpath:/META-INF/resources/webjars/");
+}
+```
+
+
+**（4）启动并访问**
+
+启动 `SkyApplication`，浏览器打开：
+
+```text
+http://localhost:8080/doc.html
+```
+
+能看到左侧按 Controller 分组的菜单、右侧的接口详情，就说明配置成功。点开任意接口，填好参数点“发送”，下方会显示请求头、请求体、响应状态和响应内容——这就是 Swagger 的在线调试。
+
+### 1.5.3 四个常用注解
+
+Swagger 的注解很多，入门阶段先掌握这四个，它们的分工非常清晰：
+
+| 注解                  | 作用位置                    | 常用属性                         | 作用                 |
+| ------------------- | ----------------------- | ---------------------------- | ------------------ |
+| `@Api`              | **Controller 类**        | `tags`                       | 给这个模块/分组起名，显示在左侧菜单 |
+| `@ApiOperation`     | **Controller 方法**       | `value`、`notes`              | 描述单个接口的作用          |
+| `@ApiModel`         | **DTO / VO / Entity 类** | `description`、`value`        | 描述这个数据模型是什么        |
+| `@ApiModelProperty` | **模型类的字段**              | `value`、`required`、`example` | 描述字段含义、是否必填、示例值    |
+---
+
+# 二、数据传输与对象转换
+
+> [!abstract] 本篇导读
+> 前后端分离后，数据要在“前端 → Controller → Service → Mapper → 数据库”之间来回转换。这一章先划清 **DTO / Entity / VO** 的边界，再讲 **BeanUtils 对象拷贝**，最后统一处理 **日期与 JSON 的格式化**（含消息转换器）。公共字段填充涉及 AOP，单独放在第六章的 6.1 节。
+
+## 2.1 DTO、Entity 与 VO
+
+| 名称        | 全称                   | 面向      | 职责                             |
+| --------- | -------------------- | ------- | ------------------------------ |
+| Entity/PO | 实体类 / POJO           | 数据库表    | 一对一映射数据库表，字段和数据库列保持一致          |
+| DTO       | Data Transfer Object | 前端 → 后端 | 接收前端提交的请求参数（入参），字段按接口需要裁剪或组合   |
+| VO        | View Object          | 后端 → 前端 | 给前端返回响应数据（出参），可以聚合多张表数据，过滤敏感字段 |
+
+## 2.2 BeanUtils 与对象拷贝
+
+### 2.2.1 Spring BeanUtils
+
+Spring 自带（`org.springframework.beans.BeanUtils`），SSM / Spring Boot 项目最常用，本质是**对象属性拷贝工具类**。
+
+```java
+// 源对象 source → 目标对象 target
+BeanUtils.copyProperties(source, target);
+```
+
+> [!Tip]
+> 1. 只拷贝**同名且类型兼容**的属性；属性名不同不会拷贝，也不会自动做类型转换。
+> 2. 底层依靠反射调用 getter、setter，目标实体需要提供无参构造方法与对应 setter。
+> 3. 源对象的 null 值也会覆盖目标对象。如果 source 是“只填了部分字段”的对象，拷贝后 target 的其余字段会被置空。
+> 4. 浅拷贝：属性是对象或集合时，拷贝的是引用，不是新对象。
+
+### 2.2.2 其他拷贝工具
+
+| 工具                 | 特点                               | 适用场景          |
+| ------------------ | -------------------------------- | ------------- |
+| Spring `BeanUtils` | 无额外依赖，只做同名同类型拷贝                  | 简单项目、简单转换     |
+| Hutool `BeanUtil`  | 支持忽略 null、简单类型转换、CopyOptions     | 需要灵活控制拷贝行为    |
+| MapStruct          | 编译期生成 get/set，性能最好，支持字段名映射、自定义转换 | 企业项目、字段多、性能敏感 |
+| Apache `BeanUtils` | 老项目常见，参数顺序与 Spring 相反，性能差        | 不推荐新项目使用      |
+
+**Hutool：**
+
+```java
+// 忽略 null，避免把目标对象已有值覆盖掉
+BeanUtil.copyProperties(source, target, CopyOptions.create().setIgnoreNullValue(true));
+```
+
+**MapStruct：**
+
+```java
+// 注意：这里是 org.mapstruct.Mapper，不要和 MyBatis 的 @Mapper 混淆
+@org.mapstruct.Mapper
+public interface UserConverter {
+    UserConverter INSTANCE = Mappers.getMapper(UserConverter.class);
+
+    // 字段名不一致时，用 @Mapping 指定映射关系
+    @Mapping(source = "phone", target = "mobile")
+    UserDTO toDto(UserPO po);
+}
+```
+
+MapStruct 在编译期生成实现类，运行时没有反射开销；字段名不一致、日期格式转换都可以通过注解声明。
+
+**Apache Commons BeanUtils：**
+
+```java
+// 注意参数顺序：目标对象在前，源对象在后
+BeanUtils.copyProperties(target, source);
+```
+
+参数顺序与 Spring 相反，且方法抛受检异常，阿里规范不推荐使用。
+
+## 2.3 前后端数据格式化
+
+> [!abstract] 本节导读
+> 前后端数据传输时，会出现数据格式不一致的情况，例如日期时间在 Java 里是 `LocalDateTime`，在 JSON 和 URL 参数里都是字符串。针对这两种数据形式，可选择不同的解决方案。
+
+| 数据位置          | 典型场景                                           | 常用方案                                         |
+| ------------- | ---------------------------------------------- | -------------------------------------------- |
+| URL 查询参数 / 表单 | `GET /orders?begin=2026-10-01`，表单提交，参数绑定（反序列化） | `@DateTimeFormat`、 `Converter`、`@InitBinder` |
+| JSON          | `POST` body 里的 `"createTime"`，JSON 序列化 / 反序列化  | `@JsonFormat`、`JsonSerializer`、扩展消息转换器、      |
+### 2.3.1 URL 查询参数 / 表单
+
+#### （1）@DateTimeFormat
+
+```java
+@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+private LocalDateTime createTime;
+```
+
+用于 DTO 字段或 Controller 方法参数，只影响 Spring MVC 的参数绑定。前端传 `?createTime=2026-10-26 10:00:00` 时按该格式解析。
+
+#### （2）全局 Converter / Formatter
+
+```java
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addFormatters(FormatterRegistry registry) {
+        registry.addConverter(new Converter<String, LocalDate>() {
+            @Override
+            public LocalDate convert(String source) {
+                return LocalDate.parse(source, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            }
+        });
+    }
+}
+```
+
+用于全局日期、枚举、自定义类型转换。注意 `addConverter` 是 `FormatterRegistry` 的方法，要在 `WebMvcConfigurer#addFormatters` 中注册，不能随便写在配置类里。
+
+#### （3）@InitBinder + PropertyEditor
+
+老 SSM 项目常见，用于局部注册日期编辑器：
+
+```java
+@InitBinder
+public void initBinder(WebDataBinder binder) {
+    binder.registerCustomEditor(Date.class,
+            new CustomDateEditor(new SimpleDateFormat("yyyy-MM-dd"), true));
+}
+```
+
+`true` 表示允许空值。`PropertyEditor` 是有状态的老方案，`SimpleDateFormat` 也不是线程安全的；新项目优先用 `Converter` / `Formatter`。
+
+### 2.3.2 JSON
+
+#### （4）@JsonFormat
+
+```java
+@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+private LocalDateTime createTime;
+```
+
+- 入参反序列化、出参序列化都生效。
+- `Date` 类型建议加 `timezone = "GMT+8"`；`LocalDateTime` 本身不带时区，时区属性影响不大。
+- 每个时间字段都要加，不能全局统一调整。
+
+#### （5）扩展消息转换器
+
+Spring MVC 依赖 `HttpMessageConverter` 完成“HTTP Body ↔ Java 对象”的转换。默认的 `MappingJackson2HttpMessageConverter` 使用默认 `ObjectMapper`；我们新增一个使用自定义 `JacksonObjectMapper` 的转换器，在其中注册 `LocalDateTime` / `LocalDate` / `LocalTime` 的序列化器和反序列化器，并把它放到转换器集合最前面。
+
+```java
+/**
+ * 扩展 Spring MVC 的消息转换器
+ */
+@Override
+protected void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+    // 创建消息转换器对象
+    MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+
+    // 设置对象转换器，底层使用 Jackson 将 Java 对象转为 JSON
+    converter.setObjectMapper(new JacksonObjectMapper());
+
+    // 追加到 MVC 转换器集合的最前面，保证优先使用
+    converters.add(0, converter);
+}
+```
+
+```java
+/**  
+ * 对象映射器:基于jackson将Java对象转为json，或者将json转为Java对象  
+ * 将JSON解析为Java对象的过程称为 [从JSON反序列化Java对象]  
+ * 从Java对象生成JSON的过程称为 [序列化Java对象到JSON]  
+ */
+public class JacksonObjectMapper extends ObjectMapper {
+
+    public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
+    // 课程中订单时间精确到分钟，需要秒时改为 yyyy-MM-dd HH:mm:ss
+    public static final String DEFAULT_DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm";
+    public static final String DEFAULT_TIME_FORMAT = "HH:mm:ss";
+
+    public JacksonObjectMapper() {
+        super();
+
+        // 收到未知属性时不报异常（等价于 DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES = false）
+        this.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        SimpleModule simpleModule = new SimpleModule()
+                .addDeserializer(LocalDateTime.class,
+                        new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern(DEFAULT_DATE_TIME_FORMAT)))
+                .addDeserializer(LocalDate.class,
+                        new LocalDateDeserializer(DateTimeFormatter.ofPattern(DEFAULT_DATE_FORMAT)))
+                .addDeserializer(LocalTime.class,
+                        new LocalTimeDeserializer(DateTimeFormatter.ofPattern(DEFAULT_TIME_FORMAT)))
+                .addSerializer(LocalDateTime.class,
+                        new LocalDateTimeSerializer(DateTimeFormatter.ofPattern(DEFAULT_DATE_TIME_FORMAT)))
+                .addSerializer(LocalDate.class,
+                        new LocalDateSerializer(DateTimeFormatter.ofPattern(DEFAULT_DATE_FORMAT)))
+                .addSerializer(LocalTime.class,
+                        new LocalTimeSerializer(DateTimeFormatter.ofPattern(DEFAULT_TIME_FORMAT)));
+
+        // 注册功能模块，例如可以添加自定义序列化器和反序列化器
+        this.registerModule(simpleModule);
+    }
+}
+```
+
+> [!warning] 为什么是 converters.add(0, converter)
+> Spring MVC 默认已经注册了一批消息转换器。如果直接 `add(converter)` 追加到末尾，请求会先被前面的默认转换器处理，自定义的 `ObjectMapper` 根本不会生效。放到索引 0 才能优先匹配。
+
+
+
+#### （6）自定义 JsonSerializer / JsonDeserializer
+
+特殊日期、枚举、金额、脱敏字段可以自定义序列化器：
+
+```java
+@JsonSerialize(using = PhoneMaskSerializer.class)
+private String phone;
+```
+
+```java
+public class PhoneMaskSerializer extends JsonSerializer<String> {
+
+    @Override
+    public void serialize(String value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        // 138****8000
+        gen.writeString(value.replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2"));
+    }
+}
+```
+---
+
+# 三、Redis 实现缓存
+
+## 3.1 Redis 基础
+
+### 3.1.1 什么是 Redis
+
+**Redis（Remote Dictionary Server）** 是一个开源的、基于内存的高性能 **Key-Value** 型 NoSQL 数据库。它的数据直接存储在内存中，读写速度远超传统磁盘数据库，常用于缓存、减轻数据库压力、提升系统响应速度等场景。
+
+> [!Tip]
+> 在苍穹外卖项目中，Redis 并不是用来替代 MySQL，而是作为**缓存中间件**配合使用，常见应用场景有：
+> 
+> - **缓存**：热点数据缓存，减轻 MySQL 压力，提升接口速度。商品详情、首页热点、用户信息。
+> - **计数器 & 限流**：访问量统计、点赞数；接口限流（固定窗口、滑动窗口）。
+> - **验证码**：利用 `SETEX` 存储带过期时间的短信验证码，超时自动失效
+> - **排行榜**：利用 `ZSet` 按销量、热度等分值实现热销榜
+> - **分布式锁**：利用 `SETNX` 实现多实例环境下的资源互斥
+> - **消息队列**：利用 `List` 的阻塞命令实现简单的异步任务处理
+
+### 3.1.2 Redis 特点
+
+- **基于内存，性能极高**：数据存放在内存中，读写速度极快，适合高并发场景
+- **键值型 NoSQL，支持多种数据类型**：key-value 结构，内置 String、Hash、List、Set、ZSet，能灵活应对不同业务需求
+- **单线程模型（核心命令）**：Redis 核心命令由单线程执行，避免多线程竞争。Redis 6.0+ 引入 I/O 多线程，但命令执行仍是单线程
+- **支持过期时间**：可为任意 key 设置 TTL，到期自动删除，适合临时数据
+- **支持持久化**：通过 RDB（快照）和 AOF（追加日志）将内存数据持久化到磁盘，防止重启丢失
+- **高可用与扩展**：支持主从复制、哨兵、Redis Cluster 等
+- **支持事务、Lua 脚本、发布订阅、Pipeline 以及分布式锁、限流、计数器等分布式能力**
+
+### 3.1.3 安装与配置
+
+#### （1）启动 Redis 服务端
+
+Windows 环境下，进入 Redis 安装目录，执行：
+
+```bash
+redis-server.exe redis.windows.conf
+```
+
+![[Pasted image 20261026191812.png]]
+
+> 启动后不要关闭该窗口，按 `Ctrl + C` 可停止服务。
+
+#### （2）客户端连接
+
+新开终端，进入同一目录，执行：
+
+```bash
+redis-cli.exe -h localhost -p 6379 -a 123456
+```
+
+参数说明：
+- `-h`：主机地址，默认 `127.0.0.1`
+- `-p`：端口号，默认 `6379`
+- `-a`：密码（如未设置可省略）
+
+本机默认端口且已设置密码时也可简写：`redis-cli.exe -a 123456`
+
+#### （3）设置密码
+
+编辑 `redis.windows.conf`，修改：
+
+```text
+requirepass 123456
+```
+
+重启后未带密码连接会提示 `NOAUTH Authentication required`。
+
+#### （4）图形化工具
+
+推荐使用以下工具便于调试：
+
+- **RedisInsight**（官方推荐，免费跨平台）
+- **Another Redis Desktop Manager**（开源轻量）
+- **Redis Desktop Manager**
+
+### 3.1.4 常用数据类型与命令
+
+> 命令不区分大小写，**key 严格区分大小写**。下表只列高频命令，其余用法可查询 [Redis中文网](https://www.redis.net.cn/)
+
+#### （1）String —— 字符串
+
+最基础的类型，value 可以是字符串、数字或 JSON。Redis 中所有 value 本质都是字符串，`INCR`/`DECR` 这类命令只是把字符串按整数解析后运算。
+
+| 命令                                  | 说明                             |
+| ----------------------------------- | ------------------------------ |
+| `SET key value`                     | 设置值，key 已存在则覆盖（可存 JSON 字符串）    |
+| `GET key`                           | 获取值，key 不存在返回 `(nil)`          |
+| `SETEX key seconds value`           | 设置值并同时指定过期时间（秒），验证码、Token 常用   |
+| `SETNX key value`                   | 仅 key 不存在时设置，常用于分布式锁           |
+| `INCR key` / `INCRBY key increment` | 数值自增 1 / 自增指定步长，value 必须能解析为整数 |
+| `DECR key` / `DECRBY key decrement` | 数值自减 1 / 自减指定步长（与自增方向相反，成对记忆）  |
+
+```text
+SET dish:1 '{"name":"宫保鸡丁","price":38}'   # 缓存菜品对象
+GET dish:1
+SETEX code:13800138000 60 1234               # 验证码 60 秒后自动失效
+SETNX lock:order:1001 1                      # 抢锁，已存在则不生效
+
+INCR view:dish:1                             # 浏览量 +1
+INCRBY view:dish:1 10                        # 浏览量 +10（批量刷热度）
+DECR stock:dish:1                            # 库存 -1
+DECRBY stock:dish:1 2                        # 库存 -2（下单 2 份）
+```
+
+> [!Tip]
+> 自增/自减是**原子操作**，天然适合做计数器。如果 key 不存在，`INCR` 会先把它当成 `0` 再自增；如果 value 不是整数会直接报错。
+
+**适用场景：** 对象缓存、验证码、计数器（浏览量、库存、点赞）、Token。
+
+#### （2）Hash —— 哈希
+
+适合存储对象，可单独读写某个字段。
+
+| 命令                     | 说明                         |
+| ---------------------- | -------------------------- |
+| `HSET key field value` | 设置字段，可一次设置多个 `field value` |
+| `HGET key field`       | 获取字段                       |
+| `HKEYS key`            | 获取全部**字段名**                |
+| `HVALS key`            | 获取全部**字段值**                |
+| `HLEN key`             | 字段数量                       |
+| `HDEL key field ...`   | 删除字段                       |
+
+```text
+HSET cart:1 dish:1001 2                  # 购物车里加 2 份宫保鸡丁
+HSET cart:1 dish:1002 1                  # 再加 1 份
+HGET cart:1 dish:1001                    # "2"
+HKEYS cart:1                             # dish:1001 dish:1002
+HVALS cart:1                             # 2 1
+HLEN cart:1                              # 2
+HDEL cart:1 dish:1002                    # 从购物车移除
+```
+
+> [!Note]
+> `HGETALL key` 会一次返回全部 `field` 和 `value`（交替出现）。字段很多时它会一次性返回大量数据、阻塞主线程，所以这里只保留 `HKEYS`/`HVALS`，实际按需用 `HGET` 取即可。
+
+**适用场景：** 购物车、用户资料、对象的部分字段更新。
+
+#### （3）List —— 列表
+
+有序、可重复，底层为双向链表，支持两端操作。记忆口诀：**left = 头部，right = 尾部**，方向相反的命令成对出现。
+
+| 命令                                            | 说明                                        |
+| --------------------------------------------- | ----------------------------------------- |
+| `LPUSH key value ...` / `RPUSH key value ...` | 从**头部** / **尾部**插入，可一次插入多个                |
+| `LPOP key` / `RPOP key`                       | 从**头部** / **尾部**弹出一个（非阻塞，没元素立即返回 `(nil)`） |
+| `BLPOP key timeout` / `BRPOP key timeout`     | 从**头部** / **尾部**阻塞弹出，列表为空时最多等 `timeout` 秒 |
+| `LRANGE key start stop`                       | 按索引范围查询，`0 -1` 表示全部（索引 0 是头部）             |
+| `LLEN key`                                    | 列表长度                                      |
+
+```text
+RPUSH order:queue order_1001        # 新订单从尾部入队
+RPUSH order:queue order_1002
+LRANGE order:queue 0 -1             # 头部→尾部：order_1001 order_1002
+
+LPOP order:queue                    # 从头部取 → order_1001（先进先出，最早订单先处理）
+RPOP order:queue                    # 从尾部取 → order_1002（后进先出，同一端进出就是栈）
+
+BLPOP order:queue 5                 # 队列空时阻塞等待 5 秒，超时返回 (nil)
+LLEN order:queue                    # 0
+```
+
+> [!Tip]
+> 一条命令有多种写法：`LPUSH q a b c` 依次插入 a、b、c，最终列表是 `c b a`（后插入的在头部）；`LRANGE` 的 `start`/`stop` 是 0-based 且包含 `stop`，负数表示从尾部数，`-1` 就是最后一个元素。
+
+**适用场景：** 消息队列（`RPUSH` + `BLPOP`）、最新列表/朋友圈时间线（`LPUSH` + `LRANGE 0 9`）、栈（同一端进出）。
+
+#### （4）Set —— 集合
+
+无序、不可重复，支持交、并、差三种集合运算（结果都自动去重）。
+
+| 命令                     | 说明                         |
+| ---------------------- | -------------------------- |
+| `SADD key member ...`  | 添加成员，已存在的自动忽略              |
+| `SMEMBERS key`         | 获取全部成员                     |
+| `SISMEMBER key member` | 判断成员是否存在，返回 `1`/`0`        |
+| `SCARD key`            | 成员数量（基数，cardinality）       |
+| `SREM key member ...`  | 移除成员                       |
+| `SINTER key1 key2 ...` | **交集**：同时存在于所有集合中的成员       |
+| `SUNION key1 key2 ...` | **并集**：出现在任意一个集合中的成员（自动去重） |
+| `SDIFF key1 key2 ...`  | **差集**：在第一个集合中、且不在后面集合中的成员 |
+
+```text
+SADD user:1:tags 川菜 火锅 甜品          # 用户 1 的口味标签
+SADD user:2:tags 川菜 烧烤              # 用户 2 的口味标签
+
+SCARD user:1:tags                       # 3
+SISMEMBER user:1:tags 烧烤              # 0，用户 1 没有这个标签
+SISMEMBER user:2:tags 川菜              # 1
+
+SINTER user:1:tags user:2:tags          # 川菜 → 共同标签，可做"猜你喜欢"
+SUNION user:1:tags user:2:tags          # 川菜 火锅 甜品 烧烤 → 合并去重，可做全量标签统计
+SDIFF user:1:tags user:2:tags           # 火锅 甜品 → 用户 1 有、用户 2 没有
+SDIFF user:2:tags user:1:tags           # 烧烤 → 方向反过来结果就不同
+
+SREM user:1:tags 甜品
+SMEMBERS user:1:tags                    # 川菜 火锅
+```
+
+> [!Tip]
+> 差集最容易被忽略：`SDIFF A B` 是"**A 有、B 没有**"。常见用法是 `SDIFF 全量用户 已下单用户` 求出待推荐人群。
+
+**适用场景：** 标签、共同关注/共同好友、抽奖去重、UV 统计。
+
+#### （5）ZSet —— 有序集合
+
+成员唯一，每个成员带 `score`，按分值自动排序（分值可重复，分值相同则按成员字典序）。
+
+| 命令                                      | 说明                                                   |
+| --------------------------------------- | ---------------------------------------------------- |
+| `ZADD key score member ...`             | 添加或更新成员及其分值                                          |
+| `ZINCRBY key increment member`          | 成员分值自增，返回自增后的分值                                      |
+| `ZRANGE key start stop [WITHSCORES]`    | 按分值**升序**查询：索引 `0` 是头部（分值最低），`-1` 是尾部（分值最高）          |
+| `ZREVRANGE key start stop [WITHSCORES]` | 按分值**降序**查询：索引 `0` 是头部（分值最高），`-1` 是尾部（分值最低，与上一条正好相反） |
+| `ZRANK key member`                      | 升序排名，`0` 表示分值最低的那一个                                  |
+| `ZREVRANK key member`                   | 降序排名，`0` 表示分值最高的那一个（榜单名次，与上一条正好相反）                   |
+| `ZREM key member ...`                   | 移除成员                                                 |
+
+> [!Note] `[WITHSCORES]` 到底加不加
+> 不加 `WITHSCORES`：只返回 member，适合"我只要名单"。
+> 加了 `WITHSCORES`：成对返回 `member score member score ...`，适合排行榜要显示销量。
+> 另外 `ZRANGE`/`ZREVRANGE` 只管**排序方向**（谁在头部），`ZRANK`/`ZREVRANK` 只管**取某成员的名次**，两组命令一起用时方向要对上（降序榜单就配 `ZREVRANGE` + `ZREVRANK`）。
+
+```text
+ZINCRBY dish:sales 1 dish:1001            # 宫保鸡丁卖 1 份
+ZINCRBY dish:sales 3 dish:1002            # 销量 +3
+ZADD dish:sales 2 dish:1003               # 直接给定分值
+
+ZRANGE dish:sales 0 -1 WITHSCORES         # 升序，从低分到高分 → dish:1001(1) dish:1003(2) dish:1002(3)
+ZREVRANGE dish:sales 0 9 WITHSCORES       # 降序，Top10 热销榜 → dish:1002(3) dish:1003(2) dish:1001(1)
+
+ZRANK dish:sales dish:1002                # 2（升序最后一名，分值最高）
+ZREVRANK dish:sales dish:1002             # 0（榜单第 1 名，最热销）
+
+ZREM dish:sales dish:1003
+```
+
+**适用场景：** 销量/热度排行榜、延迟队列（score 存时间戳）、按分数区间取数据。
+
+#### （6）通用命令
+
+| 命令                   | 说明                                                   |
+| -------------------- | ---------------------------------------------------- |
+| `KEYS pattern`       | 按通配符遍历 key                                           |
+| `EXISTS key`         | 判断 key 是否存在，返回 `1`/`0`                               |
+| `TYPE key`           | 查看 key 的数据类型（string/hash/list/set/zset，不存在返回 `none`） |
+| `DEL key ...`        | 删除 key（可一次删多个）                                       |
+| `TTL key`            | 剩余秒数：`-1` 永不过期，`-2` key 不存在                          |
+| `EXPIRE key seconds` | 设置过期时间（秒），`-1` 表示删除过期时间（永久有效）                        |
+
+```text
+EXISTS dish:1                 # 1，缓存已存在
+TYPE dish:1                   # string
+DEL dish:2                    # 删除缓存
+TTL code:13800138000          # 55，验证码还剩 55 秒
+EXPIRE dish:2 3600            # 菜品缓存 1 小时后过期
+KEYS dish:*                   # dish:1  dish:2 ...
+```
+
+> [!Warning] `KEYS` 与 `SCAN`
+> `KEYS *` 会遍历整个库并阻塞 Redis 主线程，数据量大时线上服务直接卡死，**生产环境禁止使用**。需要遍历 key 时用 `SCAN cursor MATCH pattern COUNT count` 分批扫描，Spring Data Redis 中对应 `scan(ScanOptions)`。
+
+> Redis 默认有 16 个数据库（`0` ~ `15`），项目中一般只用 `0` 号库。
+
+## 3.2 Spring Data Redis
+
+Spring Boot 中推荐使用 **Spring Data Redis** 操作 Redis。它对底层 Jedis/Lettuce 封装，提供 `RedisTemplate` 和 `StringRedisTemplate`，集成最为顺手。
+
+### 3.2.1 快速入门
+
+#### （1）引入依赖
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+```
+
+> 默认使用 **Lettuce** 客户端，基于 Netty，线程安全且性能较好。
+
+#### （2）配置连接信息
+
+```yaml
+spring:
+  data:        # Spring Boot 3.x
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password: 123456
+      database: 0
+```
+
+> Spring Boot 2.x 用 `spring.redis.*`，Spring Boot 3.x 用 `spring.data.redis.*`。
+
+#### （3）配置 RedisTemplate
+
+默认 `RedisTemplate` 用 JDK 序列化，存入的数据在图形化工具中不可读。一般改成 key 用 String、value 用 JSON 序列化。
+
+```java
+@Configuration
+public class RedisConfig {
+
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(factory);
+
+        // key 序列化器：字符串
+        RedisSerializer<String> stringSerializer = new StringRedisSerializer();
+		template.setKeySerializer(stringSerializer);
+		template.setHashKeySerializer(stringSerializer);
+		
+        // value 序列化器：Jackson JSON
+        GenericJackson2JsonRedisSerializer jsonSerializer = genericJackson2JsonRedisSerializer();
+        template.setValueSerializer(jsonSerializer);
+        template.setHashValueSerializer(jsonSerializer);
+
+        // 必须调用，初始化相关参数
+        template.afterPropertiesSet();
+        return template;
+    }
+
+    /**
+     * 自定义 ObjectMapper，解决泛型、反序列化丢失类型问题
+     */
+    private GenericJackson2JsonRedisSerializer genericJackson2JsonRedisSerializer() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        // 启用类型记录，序列化后带 @class，反序列化自动识别类型
+        objectMapper.activateDefaultTyping(
+                LaissezFaireSubTypeValidator.instance,
+                ObjectMapper.DefaultTyping.NON_FINAL,
+                JsonTypeInfo.As.PROPERTY
+        );
+        return new GenericJackson2JsonRedisSerializer(objectMapper);
+    }
+}
+```
+
+> [!Tip] 建议
+> 实际项目中更常用 `StringRedisTemplate`。配合 `ObjectMapper` 手动将对象转 JSON 存储、再反序列化，既可读性好又能减少类型信息冗余。
+
+### 3.2.2 常用操作
+
+注入 `StringRedisTemplate`，各数据类型通过对应的 `opsForXxx()` 取得操作对象。
+
+```java
+@Autowired
+private StringRedisTemplate stringRedisTemplate;
+```
+
+**（1）opsForValue()**
+
+String 用 `StringRedisTemplate.opsForValue()` 取得 `ValueOperations<String, String>` 对象，再调用下表中的方法。
+
+| Redis 命令                            | Spring 方法                                                  | 说明                             |
+| ----------------------------------- | ---------------------------------------------------------- | ------------------------------ |
+| `SET key value`                     | `set(key, value)`                                          | 设置值                            |
+| `GET key`                           | `get(key)`                                                 | 获取值，不存在返回 `null`               |
+| `SETEX key seconds value`           | `set(key, value, seconds, TimeUnit.SECONDS)`               | 设置值并指定过期时间                     |
+| `SETNX key value`                   | `setIfAbsent(key, value)`                                  | 仅 key 不存在时设置，返回 `true` 表示设置成功   |
+| `INCR key` / `INCRBY key n`         | `increment(key)` / `increment(key, delta)`                 | 自增 1 / 自增指定步长                   |
+| `DECR key` / `DECRBY key n`         | `decrement(key)` / `decrement(key, delta)`                 | 自减 1 / 自减指定步长（与自增方向相反）          |
+
+```java
+ValueOperations<String, String> ops = stringRedisTemplate.opsForValue();
+
+String json = objectMapper.writeValueAsString(dish);
+ops.set("dish:1", json);
+String dishJson = ops.get("dish:1");
+ops.set("code:13800138000", "1234", 60, TimeUnit.SECONDS);
+Boolean locked = ops.setIfAbsent("lock:order:1001", "1", 10, TimeUnit.SECONDS);
+
+ops.increment("view:dish:1");
+ops.increment("view:dish:1", 10);
+ops.decrement("stock:dish:1");
+ops.decrement("stock:dish:1", 2);
+```
+
+**（2）opsForHash()**
+
+Hash 用 `StringRedisTemplate.opsForHash()` 取得 `HashOperations<String, Object, Object>` 对象，字段名、字段值都按 `Object` 处理。
+
+| Redis 命令               | Spring 方法                            | 说明                              |
+| ---------------------- | ------------------------------------ | ------------------------------- |
+| `HSET key field value` | `put(key, field, value)`              | 设置字段，可用 `putAll(key, Map)` 批量设置 |
+| `HGET key field`       | `get(key, field)`                     | 获取字段，返回 `Object`（需自己转换类型）       |
+| `HKEYS key`            | `keys(key)`                           | 获取全部字段名，返回 `Set`                |
+| `HVALS key`            | `values(key)`                         | 获取全部字段值，返回 `List`               |
+| `HLEN key`             | `size(key)`                           | 字段数量                            |
+| `HDEL key field ...`   | `delete(key, fields...)`              | 删除字段，可一次删多个                     |
+
+```java
+HashOperations<String, Object, Object> hashOps = stringRedisTemplate.opsForHash();
+
+hashOps.put("cart:1", "dish:1001", "2");
+hashOps.put("cart:1", "dish:1002", "1");
+
+Object count = hashOps.get("cart:1", "dish:1001");
+Set<Object> fields = hashOps.keys("cart:1");
+List<Object> values = hashOps.values("cart:1");
+Long size = hashOps.size("cart:1");
+hashOps.delete("cart:1", "dish:1002");
+```
+
+**（3）opsForList()**
+
+List 用 `StringRedisTemplate.opsForList()` 取得 `ListOperations<String, String>` 对象，方法名用 `left` / `right` 区分头部与尾部。
+
+| Redis 命令                              | Spring 方法                                                             | 说明                              |
+| ------------------------------------- | --------------------------------------------------------------------- | ------------------------------- |
+| `LPUSH key value` / `RPUSH key value` | `leftPush(key, value)` / `rightPush(key, value)`                      | 从**头部** / **尾部**插入             |
+| `LPOP key` / `RPOP key`               | `leftPop(key)` / `rightPop(key)`                                      | 从**头部** / **尾部**弹出（非阻塞，没元素返回 `null`） |
+| `BLPOP key timeout` / `BRPOP key timeout` | `leftPop(key, timeout, TimeUnit)` / `rightPop(key, timeout, TimeUnit)` | 从**头部** / **尾部**阻塞弹出，超时返回 `null` |
+| `LRANGE key start stop`               | `range(key, start, stop)`                                             | 范围查询，`0 -1` 表示全部（索引 0 是头部）      |
+| `LLEN key`                            | `size(key)`                                                           | 列表长度                            |
+
+```java
+ListOperations<String, String> listOps = stringRedisTemplate.opsForList();
+
+listOps.rightPush("order:queue", "order_1001");
+listOps.rightPush("order:queue", "order_1002");
+listOps.leftPush("order:queue", "order_1003");
+
+String first = listOps.leftPop("order:queue");
+String last = listOps.rightPop("order:queue");
+String blocked = listOps.leftPop("order:queue", 5, TimeUnit.SECONDS);
+String blockedTail = listOps.rightPop("order:queue", 5, TimeUnit.SECONDS);
+
+List<String> all = listOps.range("order:queue", 0, -1);
+Long len = listOps.size("order:queue");
+```
+
+**（4）opsForSet()**
+
+Set 用 `StringRedisTemplate.opsForSet()` 取得 `SetOperations<String, String>` 对象，交、并、差分别是 `intersect`、`union`、`difference`。
+
+| Redis 命令               | Spring 方法                 | 说明                    |
+| ---------------------- | ------------------------- | --------------------- |
+| `SADD key member ...`  | `add(key, members...)`    | 添加成员，返回新增个数           |
+| `SMEMBERS key`         | `members(key)`            | 获取全部成员                |
+| `SISMEMBER key member` | `isMember(key, member)`   | 判断成员是否存在，返回 `Boolean` |
+| `SCARD key`            | `size(key)`               | 成员数量                  |
+| `SREM key member ...`  | `remove(key, members...)` | 移除成员                  |
+| `SINTER key1 key2`     | `intersect(key1, key2)`   | **交集**                |
+| `SUNION key1 key2`     | `union(key1, key2)`       | **并集**                |
+| `SDIFF key1 key2`      | `difference(key1, key2)`  | **差集**                |
+
+```java
+SetOperations<String, String> setOps = stringRedisTemplate.opsForSet();
+
+setOps.add("user:1:tags", "川菜", "火锅", "甜品");
+setOps.add("user:2:tags", "川菜", "烧烤");
+
+Set<String> members = setOps.members("user:1:tags");
+Boolean exists = setOps.isMember("user:1:tags", "烧烤");
+Long card = setOps.size("user:1:tags");
+setOps.remove("user:1:tags", "甜品");
+
+Set<String> common = setOps.intersect("user:1:tags", "user:2:tags");
+Set<String> merged = setOps.union("user:1:tags", "user:2:tags");
+Set<String> only1 = setOps.difference("user:1:tags", "user:2:tags");
+Set<String> only2 = setOps.difference("user:2:tags", "user:1:tags");
+```
+
+**（5）opsForZSet()**
+
+ZSet 用 `StringRedisTemplate.opsForZSet()` 取得 `ZSetOperations<String, String>` 对象，`WithScores` 系列方法额外带上分值，返回的 `TypedTuple` 用 `getValue()` / `getScore()` 取值。
+
+| Redis 命令                                  | Spring 方法                                                          | 说明                                   |
+| ---------------------------------------- | ------------------------------------------------------------------ | ------------------------------------ |
+| `ZADD key score member`                  | `add(key, member, score)`                                          | 添加或更新成员分值                            |
+| `ZINCRBY key delta member`               | `incrementScore(key, member, delta)`                               | 分值自增，返回新分值                           |
+| `ZRANGE ... [WITHSCORES]`                | `range(key, start, stop)` / `rangeWithScores(key, start, stop)`    | 升序查询：从**低分**到高分，`0 -1` 表示全部         |
+| `ZREVRANGE ... [WITHSCORES]`             | `reverseRange(key, start, stop)` / `reverseRangeWithScores(...)`   | 降序查询：从**高分**到低分（与上一条方向相反）            |
+| `ZRANK key member`                       | `rank(key, member)`                                                | 升序排名（0-based，`0` = 分值最低）             |
+| `ZREVRANK key member`                    | `reverseRank(key, member)`                                         | 降序排名（0-based，`0` = 分值最高，即榜单第一名）      |
+| `ZREM key member ...`                    | `remove(key, members...)`                                          | 移除成员                                 |
+
+```java
+ZSetOperations<String, String> zSetOps = stringRedisTemplate.opsForZSet();
+
+zSetOps.add("dish:sales", "dish:1003", 2);
+zSetOps.incrementScore("dish:sales", "dish:1001", 1);
+zSetOps.incrementScore("dish:sales", "dish:1002", 3);
+
+Set<String> asc = zSetOps.range("dish:sales", 0, -1);
+Set<ZSetOperations.TypedTuple<String>> ascWithScore =
+        zSetOps.rangeWithScores("dish:sales", 0, -1);
+Set<String> desc = zSetOps.reverseRange("dish:sales", 0, 9);
+Set<ZSetOperations.TypedTuple<String>> top10 =
+        zSetOps.reverseRangeWithScores("dish:sales", 0, 9);
+
+for (ZSetOperations.TypedTuple<String> tuple : top10) {
+    System.out.println(tuple.getValue() + " 销量：" + tuple.getScore());
+}
+
+Long rank = zSetOps.rank("dish:sales", "dish:1002");
+Long hot = zSetOps.reverseRank("dish:sales", "dish:1002");
+zSetOps.remove("dish:sales", "dish:1003");
+```
+
+**（6）`stringRedisTemplate`**
+
+通用命令直接用 `stringRedisTemplate` 本身的方法完成。
+
+| 方法                                 | 对应命令   | 说明                                      |
+| -------------------------------- | ------ | --------------------------------------- |
+| `hasKey(key)`                    | `EXISTS` | 判断 key 是否存在，返回 `Boolean`                |
+| `type(key)`                      | `TYPE`   | 获取数据类型，返回 `STRING` / `HASH` / `LIST` 等枚举 |
+| `delete(key)`                    | `DEL`    | 删除 key，返回删除个数                          |
+| `expire(key, timeout, TimeUnit)` | `EXPIRE` | 设置过期时间                                  |
+| `getExpire(key, TimeUnit.SECONDS)` | `TTL`  | 剩余秒数，`-1` 永不过期，`-2` 不存在                |
+| `keys(pattern)`                  | `KEYS`   | 按 pattern 遍历 key（仅本地调试用）                |
+
+```java
+stringRedisTemplate.hasKey("dish:1");
+stringRedisTemplate.type("dish:1");
+stringRedisTemplate.delete("dish:2");
+stringRedisTemplate.expire("dish:2", 3600, TimeUnit.SECONDS);
+stringRedisTemplate.getExpire("code:13800138000", TimeUnit.SECONDS);
+Set<String> keys = stringRedisTemplate.keys("dish:*");
+```
+
+### 3.2.3 手动实现缓存
+
+#### （1）查询缓存
+
+```java
+@Service
+@RequiredArgsConstructor
+public class DishServiceImpl implements DishService {
+
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final DishMapper dishMapper;
+
+    private static final String DISH_KEY = "dish:";
+    private static final Duration DISH_TTL = Duration.ofMinutes(30);
+
+    @Override
+    public DishVO getById(Long id) {
+        String key = DISH_KEY + id;
+
+        Object cached = redisTemplate.opsForValue().get(key);
+        if (cached != null) {
+            return (DishVO) cached;
+        }
+
+        DishVO dishVO = dishMapper.getById(id);
+        if (dishVO == null) {
+            return null;
+        }
+
+        Duration ttl = DISH_TTL.plusSeconds(ThreadLocalRandom.current().nextLong(300));
+        redisTemplate.opsForValue().set(key, dishVO, ttl);
+        return dishVO;
+    }
+}
+```
+
+> 使用 StringRedisTemplate 时不会自动完成对象与 JSON 的转换，需要手动借助 ObjectMapper，通过 writeValueAsString 序列化存入、readValue 反序列化取出。
+
+#### （2）更新、删除后清理缓存
+
+```java
+@Override
+public void update(DishDTO dishDTO) {
+    dishMapper.update(dishDTO);
+    dishMapper.deleteFlavors(dishDTO.getId());
+    dishMapper.insertFlavors(dishDTO);
+    redisTemplate.delete(DISH_KEY + dishDTO.getId());
+    redisTemplate.delete("dish:category:" + dishDTO.getCategoryId());
+}
+```
+
+> 更新时**删缓存**而不是写缓存：写缓存得拼出和查询时一模一样的对象结构，很容易漏字段；删掉之后下一次查询自然会回填最新值。
+
+#### （3）批量清理
+
+```java
+Set<String> keys = new HashSet<>();
+ScanOptions options = ScanOptions.scanOptions().match("dish:category:*").count(100).build();
+try (Cursor<String> cursor = redisTemplate.scan(options)) {
+    while (cursor.hasNext()) {
+        keys.add(cursor.next());
+    }
+}
+if (!keys.isEmpty()) {
+    redisTemplate.delete(keys);
+}
+```
+
+#### （4）缓存穿透、击穿、雪崩
+
+| 问题  | 现象                               | 处理思路                                            |
+| --- | -------------------------------- | ----------------------------------------------- |
+| 穿透  | 查一个**根本不存在**的数据，每次都打到 MySQL      | 参数校验；缓存空值（存 `""`，TTL 短一些，如 1 分钟）；布隆过滤器过滤不存在的 id |
+| 击穿  | 某个**热点 key** 恰好过期，瞬间大量请求涌向 MySQL | 热点数据不设过期或异步续期；加载时加互斥锁（`SETNX`），只放一个请求去查库        |
+| 雪崩  | **大批 key 同时过期**或 Redis 宕机，流量全打到库 | TTL 加随机；Redis 集群/哨兵保证高可用；接口限流、降级，查库兜底           |
+
+## 3.3 Spring Cache 实现缓存
+
+Spring Cache 是 Spring 提供的**基于注解的缓存抽象**：在方法上加一个注解，就能完成查询、写入、清理三类缓存操作，不必手动拼 key、调 `RedisTemplate`。它本身不实现缓存，底层可切换 EHCache、Caffeine、Redis 等，业务代码不用改。
+
+### 3.3.1 环境准备
+
+#### （1）引入依赖
+
+```xml
+<!-- 缓存抽象 -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-cache</artifactId>
+</dependency>
+<!-- 缓存实现：以 Redis 为例 -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+```
+
+> `spring-boot-starter-cache` 只提供抽象，缓存最终落在哪里由实现决定：引入 Spring Data Redis 后，Boot 会自动配置 `RedisCacheManager`，缓存直接写进 Redis。
+
+#### （2）开启缓存注解
+
+启动类加 `@EnableCaching`：
+
+```java
+@SpringBootApplication
+@EnableCaching // 开启缓存注解功能
+public class SkyApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(SkyApplication.class, args);
+    }
+}
+```
+
+#### （3）配置 RedisCacheManager
+
+Spring Data Redis 的自定义序列化适配器仅作用于 `StringRedisTemplate`，它和 Spring Cache 使用的 `RedisCacheManager` 是两套独立体系。Spring Cache 不手动配置 `RedisCacheManager` 也可正常运行，但默认使用 JDK 序列化，在 Redis 可视化工具中显示乱码；并且缓存默认未配置 TTL，会永久保存。因此一般需要自定义 `RedisCacheManager`，统一使用 JSON 序列化并设置缓存过期时间。
+
+```java
+@Configuration
+public class CacheConfig {
+
+    @Bean
+    public RedisCacheManager cacheManager(RedisConnectionFactory factory) {
+        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofMinutes(30))
+                .serializeKeysWith(RedisSerializationContext.SerializationPair
+                        .fromSerializer(new StringRedisSerializer()))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair
+                        .fromSerializer(new GenericJackson2JsonRedisSerializer()));
+
+        return RedisCacheManager.builder(factory)
+                .cacheDefaults(config)
+                .withCacheConfiguration("hotDish", config.entryTtl(Duration.ofMinutes(5)))
+                .build();
+    }
+}
+```
+
+- `cacheDefaults`：所有缓存名的默认配置
+- `withCacheConfiguration`：给某个 `cacheName` 单独设 TTL，适合热点与普通缓存分级
+- 写入 Redis 的 key 默认就是 `cacheName::key`，无需自己拼前缀
+
+### 3.3.2 常用注解
+
+| 注解               | 说明                                             |
+| ---------------- | ---------------------------------------------- |
+| `@EnableCaching` | 开启缓存注解功能，通常加在启动类上                              |
+| `@Cacheable`     | 先查缓存：命中直接返回，未命中才执行方法，并把返回值写入缓存                 |
+| `@CachePut`      | 一定执行方法，并把返回值写入缓存（新增、更新用）                       |
+| `@CacheEvict`    | 删除缓存：指定 key 删一条，`allEntries = true` 清空该名称下所有缓存 |
+
+三个缓存注解的公共属性：
+
+| 属性                     | 作用                                       | 说明                                                             |
+| ---------------------- | ---------------------------------------- | -------------------------------------------------------------- |
+| `cacheNames` / `value` | 缓存名称                                     | 一个名称下可以挂很多 key，写入 Redis 后结构为 `cacheName::key`，如 `userCache::1` |
+| `key`                  | 缓存 key，支持 SpEL                           | 不写时默认用方法参数生成 `SimpleKey`；多个参数时务必自己指定                           |
+| `condition`            | 满足条件才走缓存逻辑                               | 方法执行**前**判断，此时拿不到 `#result`                                    |
+| `unless`               | 满足条件时**不写入**缓存（`@Cacheable`/`@CachePut`） | 方法执行**后**判断，可以使用 `#result`                                     |
+| `allEntries`           | `@CacheEvict` 专用，清空整个 cacheName          | 配合 `cacheNames` 使用，不用写 `key`                                   |
+
+> [!Note] 三个注解的执行顺序
+> - `@Cacheable`：算 key → 判 `condition` → 查缓存 → 命中直接返回 → 未命中执行方法 → 判 `unless` → 写入缓存
+> - `@CachePut`：**一定**执行方法 → 判 `unless` → 写入缓存
+> - `@CacheEvict`：默认执行方法 → 删除缓存；`beforeInvocation = true` 则先删再执行
+
+> [!Important] 注解属性区分
+> - `condition`：**方法执行前判断**，条件不满足 → 不读缓存、也不写缓存
+> - `unless`：**方法执行完、拿到返回值后判断**，条件满足 → 不写入缓存
+
+
+### 3.3.3 入门案例
+
+以 User 的增删改查为例，三个注解分别对应写、读、删三个动作：
+
+| 业务动作    | 注解            | 缓存行为                          |
+| ------- | ------------- | ----------------------------- |
+| 新增 / 修改 | `@CachePut`   | 一定执行方法，把返回值写进缓存               |
+| 查询      | `@Cacheable`  | 先读缓存，命中直接返回；未命中才查库并回填         |
+| 删除      | `@CacheEvict` | 执行方法后删掉对应 key，或清空整个 cacheName |
+
+#### （1）@CachePut
+
+```java
+@PostMapping
+@CachePut(cacheNames = "userCache", key = "#user.id") // 写入 userCache::1
+public User save(@RequestBody User user) {
+    userMapper.insert(user);
+    return user;
+}
+```
+
+一定会执行方法，执行完毕后，把返回值写入缓存；**新增、更新**场景都用它，保证缓存与数据库一致。
+
+> [!Warning] 新增时的 key 依赖自增主键
+> `key = "#user.id"` 要求 `insert` 之后 id 已经回填（MyBatis 的 `useGeneratedKeys = "true"`）。如果 id 还是 `null`，SpEL 算出的 key 为空，Spring 会直接抛异常，所以实体类主键必须让数据库自增后用回填值。
+
+#### （2）@Cacheable
+
+```java
+@GetMapping
+@Cacheable(cacheNames = "userCache", key = "#id") // 读取 userCache::1
+public User getById(Long id) {
+    return userMapper.getById(id);
+}
+```
+
+命中缓存时方法体不执行；未命中才查库并回填，**适合读多写少的详情、列表接口**。
+
+#### （3）@CacheEvict
+
+```java
+@DeleteMapping
+@CacheEvict(cacheNames = "userCache", key = "#id") // 删除 userCache::1
+public void deleteById(Long id) {
+    userMapper.deleteById(id);
+}
+
+@DeleteMapping("/delAll")
+@CacheEvict(cacheNames = "userCache", allEntries = true) // 清空 userCache 下所有 key
+public void deleteAll() {
+    userMapper.deleteAll();
+}
+```
+
+方法执行后，删除指定 key 的缓存；若担心方法抛异常导致缓存残留，可改为 `beforeInvocation = true`，在方法执行前先删。
+批量操作大多无法逐一列出 key，用 `allEntries = true` 一把清空最省事。
+
+### 3.3.4 key 与 SpEL
+
+**（1）SpEL 里能引用的对象**
+
+| 表达式                    | 含义                                  |
+| ---------------------- | ----------------------------------- |
+| `#id`、`#userDTO`       | 按方法参数名引用                            |
+| `#p0` / `#a0`          | 第 1 个参数；`#p1` / `#a1` 是第 2 个，不依赖参数名 |
+| `#root.args[0]`        | 第 1 个参数，等价于 `#p0`                   |
+| `#root.methodName`     | 当前方法名                               |
+| `#root.target`         | 当前所在 Bean 对象                        |
+| `#root.caches[0].name` | 第一个缓存名称（cacheName）                  |
+| `#result`              | 方法返回值，**仅 unless 可用，condition 不能用** |
+
+**（2）常用 key 写法对照**
+
+| 写法                                              | 生成的 key                                     |
+| ----------------------------------------------- | ------------------------------------------- |
+| `key = "#id"`                                   | `userCache::1`                              |
+| `key = "#userDTO.id"`                           | `userCache::1`（取入参对象内部属性）                   |
+| `key = "'user:' + #id"`                         | `userCache::user:1`（固定前缀拼接，常量字符串必须单引号）      |
+| `key = "#root.methodName + ':' + #id"`          | `userCache::getUser:1`（带上方法名，区分不同接口同 id 场景） |
+| `key = "#id + ':' + #type"`                     | `userCache::1:2`（多参数组合 key）                 |
+| `key = "T(java.util.Objects).hash(#id, #type)"` | 参数太多、key 过长时，调用 Java 静态方法求哈希                |
+
+**（3）常用写法示例**
+
+```java
+// 1. 基础类型参数作为key
+@Cacheable(cacheNames = "userCache", key = "#id")
+public User getUser(Long id) {}
+
+// 2. 取对象参数里的属性作为key
+@Cacheable(cacheNames = "userCache", key = "#userDTO.id")
+public User getUser(UserDTO userDTO) {}
+
+// 3. 拼接带固定前缀的key（SpEL常量要单引号）
+@Cacheable(cacheNames = "userCache", key = "'user:' + #id")
+public User getUser(Long id) {}
+
+// 4. condition：id<=0，不走缓存（不查、不存）
+@Cacheable(cacheNames = "userCache", key = "#id", condition = "#id > 0")
+public User getUser(Long id) {}
+
+// 5. unless：查询结果为null，不存入缓存，避免缓存穿透
+@Cacheable(cacheNames = "userCache", key = "#id", unless = "#result == null")
+public User getUser(Long id) {}
+
+// 6. sync=true：并发同key，串行查库，防止缓存击穿
+@Cacheable(cacheNames = "userCache", key = "#id", sync = true)
+public User getUser(Long id) {}
+
+// 7. @CachePut：新增/修改，方法必执行，更新缓存
+@CachePut(cacheNames = "userCache", key = "#user.id", unless = "#result == null")
+public User updateUser(User user) {}
+
+// 8. @CacheEvict：删除指定key缓存
+@CacheEvict(cacheNames = "userCache", key = "#id")
+public void deleteUser(Long id) {}
+
+// 9. @CacheEvict allEntries=true：清空userCache下全部缓存，慎用
+@CacheEvict(cacheNames = "userCache", allEntries = true)
+public void clearUserCache() {}
+```
+
+### 3.3.6 注解 vs 手动
+
+| 维度     | Spring Cache                     | 手动 RedisTemplate               |
+| ------ | -------------------------------- | ------------------------------ |
+| 代码量    | 一个注解搞定                           | 查、写、删都要自己写                     |
+| key 控制 | 受 SpEL 限制，格式固定为 `cacheName::key` | 完全自由，可分层设计（`dish:category:11`） |
+| TTL    | 按 cacheName 统一配置                 | 每个 key 可以不同，还能加随机值             |
+| 批量操作   | 只能整块清空（`allEntries`）             | `SCAN` + `delete` 精细清理         |
+| 内部调用   | 走代理才生效，同类调用会失效                   | 普通方法调用，不受限制                    |
+| 适合场景   | 标准增删改查、详情接口                      | 特殊 key 结构、热点数据、自增计数、分布式锁       |
+
+实际项目中二者经常搭配使用：简单的缓存读写、更新、失效逻辑直接使用 Spring Cache 注解开发；而复杂的缓存清理、计数器、分布式锁等场景，依旧使用 `StringRedisTemplate` 手动编码实现。
+
+---
+
+# 四、HttpClient
+
+## 4.1 什么是 HttpClient
+
+HttpClient 是 Apache HttpComponents 提供的 HTTP 客户端工具包，让 Java 程序可以像浏览器一样主动发起 HTTP/HTTPS 请求并读取响应，支持连接池、超时、重试、代理等能力，是 Java 里最常用的 HTTP 客户端之一。
+
+> [!Tip] 它解决什么问题
+> 扫码支付、地图、短信验证码、天气、物流查询这类功能，业务系统自己并不实现，而是去调用第三方提供的 HTTP 接口：用 HttpClient 把请求发出去，再把返回的 JSON 解析成对象。苍穹外卖里的微信登录、微信支付，底层就是用 HttpClient 调用微信接口完成的。
+
+## 4.2 环境准备与基本步骤
+
+引入坐标（版本由 Spring Boot 的依赖管理统一控制，无需写 `version`）：
+
+```xml
+<dependency>
+    <groupId>org.apache.httpcomponents</groupId>
+    <artifactId>httpclient</artifactId>
+</dependency>
+```
+
+一次完整的调用分五步：
+
+1. 创建 `CloseableHttpClient`（内部维护连接池，应当复用，不要每次请求都新建）
+2. 创建请求对象 `HttpGet` / `HttpPost`，设置 URL、请求头、请求体
+3. 调用 `httpClient.execute(request)`，得到 `CloseableHttpResponse`
+4. 从响应里读状态码和响应体，必要时反序列化成对象
+5. 关闭响应与客户端，释放连接
+
+## 4.3 GET 请求
+
+先搭 GET 的工具类：`doGet` 只负责拼请求，真正的"执行 + 判状态码 + 读响应体"放在私有的 `execute` 里：
+
+```java
+public class HttpClientUtil {
+
+    public static String doGet(String url) throws Exception {
+        return execute(new HttpGet(url));
+    }
+
+    public static String doGet(String url, Map<String, String> params) throws Exception {
+        URIBuilder uriBuilder = new URIBuilder(url);
+        params.forEach(uriBuilder::addParameter);
+        return execute(new HttpGet(uriBuilder.build()));
+    }
+
+    private static String execute(HttpUriRequest request) throws Exception {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault();
+             CloseableHttpResponse response = httpClient.execute(request)) {
+
+            int statusCode = response.getStatusLine().getStatusCode();
+            String body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+            if (statusCode < 200 || statusCode >= 300) {
+                throw new IllegalStateException("请求失败，状态码：" + statusCode + "，响应：" + body);
+            }
+            return body;
+        }
+    }
+}
+```
+
+GET 的参数都拼在 URL 上，参数多或者带中文时不要手动拼接：`URIBuilder` 会自动做 URL 编码，业务代码只传一个 Map 就行。
+
+调用方式（以查询天气为例，换成任何 GET 接口都一样）：
+
+```java
+String json = HttpClientUtil.doGet("https://api.example.com/v1/weather?city=110000");
+System.out.println(json);
+```
+
+## 4.4 POST 请求
+
+POST 与 GET 的区别在**请求体格式**：JSON、普通表单、带文件的表单分别用 `StringEntity`、`UrlEncodedFormEntity`、`MultipartEntityBuilder`。
+
+### （1）JSON 请求体（`application/json`）
+
+```java
+public static String doPostJson(String url, String json) throws Exception {
+    HttpPost httpPost = new HttpPost(url);
+    httpPost.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
+
+    try (CloseableHttpClient httpClient = HttpClients.createDefault();
+         CloseableHttpResponse response = httpClient.execute(httpPost)) {
+
+        int statusCode = response.getStatusLine().getStatusCode();
+        String body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+        if (statusCode < 200 || statusCode >= 300) {
+            throw new IllegalStateException("请求失败，状态码：" + statusCode + "，响应：" + body);
+        }
+        return body;
+    }
+}
+```
+
+调用（请求体用 Jackson 序列化，`ContentType.APPLICATION_JSON` 自带 UTF-8，不用手写 Content-Type）：
+
+```java
+Map<String, Object> payload = new LinkedHashMap<>();
+payload.put("orderId", 1001);
+payload.put("amount", 38.00);
+
+String result = HttpClientUtil.doPostJson(
+        "https://api.example.com/v1/orders",
+        objectMapper.writeValueAsString(payload));
+```
+
+### （2）普通表单（`application/x-www-form-urlencoded`）
+
+浏览器原生表单提交的格式，参数会被 URL 编码，中文按 UTF-8 处理：
+
+```java
+public static String doPostForm(String url, Map<String, String> params) throws Exception {
+    List<NameValuePair> form = new ArrayList<>();
+    params.forEach((name, value) -> form.add(new BasicNameValuePair(name, value)));
+
+    HttpPost httpPost = new HttpPost(url);
+    httpPost.setEntity(new UrlEncodedFormEntity(form, StandardCharsets.UTF_8));
+
+    try (CloseableHttpClient httpClient = HttpClients.createDefault();
+         CloseableHttpResponse response = httpClient.execute(httpPost)) {
+
+        int statusCode = response.getStatusLine().getStatusCode();
+        String body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+        if (statusCode < 200 || statusCode >= 300) {
+            throw new IllegalStateException("请求失败，状态码：" + statusCode + "，响应：" + body);
+        }
+        return body;
+    }
+}
+```
+
+调用（登录、OAuth 换 token 这类接口最常见的写法）：
+
+```java
+Map<String, String> params = new LinkedHashMap<>();
+params.put("username", "admin");
+params.put("password", "123456");
+
+String result = HttpClientUtil.doPostForm("https://api.example.com/v1/login", params);
+```
+
+### （3）带文件的表单（`multipart/form-data`）
+
+文件上传、头像修改这类接口用它，文本参数和文件放在同一个请求里。需要额外引入 `httpmime`（版本同样由 Boot 管理）：
+
+```xml
+<dependency>
+    <groupId>org.apache.httpcomponents</groupId>
+    <artifactId>httpmime</artifactId>
+</dependency>
+```
+
+```java
+public static String doPostMultipart(String url,
+                                     Map<String, String> params,
+                                     Map<String, File> files) throws Exception {
+    MultipartEntityBuilder builder = MultipartEntityBuilder.create()
+            .setCharset(StandardCharsets.UTF_8);
+
+    params.forEach((name, value) ->
+            builder.addTextBody(name, value, ContentType.TEXT_PLAIN));
+    files.forEach((name, file) ->
+            builder.addBinaryBody(name, file, ContentType.DEFAULT_BINARY, file.getName()));
+
+    HttpPost httpPost = new HttpPost(url);
+    httpPost.setEntity(builder.build());
+
+    try (CloseableHttpClient httpClient = HttpClients.createDefault();
+         CloseableHttpResponse response = httpClient.execute(httpPost)) {
+
+        int statusCode = response.getStatusLine().getStatusCode();
+        String body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+        if (statusCode < 200 || statusCode >= 300) {
+            throw new IllegalStateException("请求失败，状态码：" + statusCode + "，响应：" + body);
+        }
+        return body;
+    }
+}
+```
+
+调用（文本参数与文件可以混在一起，字段名要和接口约定的一致）：
+
+```java
+Map<String, String> params = new LinkedHashMap<>();
+params.put("bizType", "avatar");
+
+Map<String, File> files = new LinkedHashMap<>();
+files.put("file", new File("D:/upload/avatar.png"));
+
+String result = HttpClientUtil.doPostMultipart(
+        "https://api.example.com/v1/upload", params, files);
+```
+
+## 4.5 *实战案例
+
+> [!Note] 场景：校验收货地址是否超出配送范围
+> 用户提交订单时，需要判断收货地址是否在商家 5 km 配送范围内。做法是：把商家地址和收货地址分别转成经纬度，再算两点之间的**驾车距离**，超过 5000 米就抛出业务异常。
+
+### （1）需求与接口
+
+一次校验要调用百度地图开放平台的两个 Web 服务 API：
+
+| 用途       | 接口地址                                                 | 关键返回字段                                        |
+| -------- | ---------------------------------------------------- | --------------------------------------------- |
+| 地址 → 经纬度 | `https://api.map.baidu.com/geocoding/v3`             | `result.location.lng` / `result.location.lat` |
+| 两点驾车距离   | `https://api.map.baidu.com/directionlite/v1/driving` | `result.routes[0].distance`（单位：米）             |
+
+### （2）注册与获取 AK
+
+1. 打开百度地图开放平台并注册登录：<https://lbsyun.baidu.com/>
+2. 进入控制台创建应用：<https://lbsyun.baidu.com/apiconsole/key>，应用类型选「服务端」，IP 白名单调试阶段可以先填 `*`。
+3. 创建完成后在应用列表里复制 **AK**。
+
+![[创建应用.png]]
+
+![[获取AK.png]]
+
+相关文档：
+
+- 地理编码 v3：<https://lbsyun.baidu.com/docs/webapi?title=geocoding/guide/webservice-geocoding>
+- 轻量级路线规划（驾车）：<https://lbsyun.baidu.com/docs/webapi?title=directionlite/guide/webservice-lwrouteplanapi/dirve>
+
+### （3）配置 application.yml
+
+```yaml
+sky:
+  shop:
+    address: 北京市海淀区上地十街10号
+  baidu:
+    ak: 你的服务端 AK
+```
+
+![[配置yml.png]]
+
+### （4）在 OrderServiceImpl 中编写校验方法
+
+注入配置，并调用`doGet(url, params)`——参数里有中文地址，交给 `URIBuilder` 编码：
+
+```java
+@Value("${sky.shop.address}")
+private String shopAddress;
+
+@Value("${sky.baidu.ak}")
+private String ak;
+
+/**
+ * 校验收货地址是否超出配送范围
+ */
+private void checkOutOfRange(String address) throws Exception {
+    Map<String, String> map = new HashMap<>();
+    map.put("ak", ak);
+    map.put("output", "json");
+
+    // 1. 商家地址 -> 经纬度
+    map.put("address", shopAddress);
+    String shopCoordinate = HttpClientUtil.doGet("https://api.map.baidu.com/geocoding/v3", map);
+
+    JSONObject jsonObject = JSON.parseObject(shopCoordinate);
+    if (!"0".equals(jsonObject.getString("status"))) {
+        throw new OrderBusinessException("店铺地址解析失败");
+    }
+    JSONObject location = jsonObject.getJSONObject("result").getJSONObject("location");
+    String shopLngLat = location.getString("lat") + "," + location.getString("lng");
+
+    // 2. 收货地址 -> 经纬度
+    map.put("address", address);
+    String userCoordinate = HttpClientUtil.doGet("https://api.map.baidu.com/geocoding/v3", map);
+
+    jsonObject = JSON.parseObject(userCoordinate);
+    if (!"0".equals(jsonObject.getString("status"))) {
+        throw new OrderBusinessException("收货地址解析失败");
+    }
+    location = jsonObject.getJSONObject("result").getJSONObject("location");
+    String userLngLat = location.getString("lat") + "," + location.getString("lng");
+
+    // 3. 驾车路线规划，取第一条路线的距离（米）
+    Map<String, String> routeParam = new HashMap<>();
+    routeParam.put("ak", ak);
+    routeParam.put("origin", shopLngLat);
+    routeParam.put("destination", userLngLat);
+    routeParam.put("steps_info", "0");
+
+    String json = HttpClientUtil.doGet("https://api.map.baidu.com/directionlite/v1/driving", routeParam);
+
+    jsonObject = JSON.parseObject(json);
+    if (!"0".equals(jsonObject.getString("status"))) {
+        throw new OrderBusinessException("配送路线规划失败");
+    }
+
+    JSONArray routes = jsonObject.getJSONObject("result").getJSONArray("routes");
+    Integer distance = routes.getJSONObject(0).getInteger("distance");
+    if (distance > 5000) {
+        throw new OrderBusinessException("超出配送范围");
+    }
+}
+```
+
+- 百度接口用 `status` 表示业务结果，`"0"` 才是成功，HTTP 200 也可能返回失败。
+- 经纬度顺序是 **纬度,经度**（`lat,lng`），路线规划的 `origin` / `destination` 都按这个格式传。
+
+### （5）在 submitOrder 中调用
+
+```java
+// 拼接完整收货地址：省 + 市 + 区 + 详细地址
+String address = addressBook.getProvinceName() + addressBook.getCityName()
+        + addressBook.getDistrictName() + addressBook.getDetail();
+
+// 超出配送范围会抛出 OrderBusinessException
+checkOutOfRange(address);
+```
+
+`checkOutOfRange` 声明了 `throws Exception`（因为 `doGet` 抛的是受检异常），`submitOrder` 里同样要往外抛，或统一交给全局异常处理器。
+
+微信登录、微信支付的后端请求也是同一套路，只是接口和参数不同，原理见 [[#5.4 微信登录]] 与 [[#5.5 订单支付]]。
+
+---
+
+# 五、微信小程序开发
+
+## 5.1 小程序介绍
+
+小程序是微信提供的一种开放能力，开发者可以在这套能力上快速开发应用，让用户在微信内直接获取和传播，使用体验接近原生 App。
+
+![[小程序介绍.png]]
+
+**注册主体决定能开通哪些能力。** 个人、企业、政府、媒体、其他组织都可以注册小程序，但不同主体开放的权限不同，最典型的一条是：**个人主体无法开通微信支付**，要做支付必须是企业、政府或其他组织。
+
+![[注册主体.png]]
+
+围绕小程序，微信官方提供了开发文档、开发者工具、设计指南和体验 DEMO，开发完成后也有固定的上线流程（上传 → 审核 → 发布）。
+
+- 小程序官方入口：<https://mp.weixin.qq.com/cgi-bin/wx>
+- 开发文档：<https://developers.weixin.qq.com/miniprogram/dev/framework/>
+
+## 5.2 准备工作
+
+开发前需要完成三件事：注册小程序、完善小程序信息、下载开发者工具。
+
+### （1）注册小程序
+
+注册地址：<https://mp.weixin.qq.com/wxopen/waregister?action=step1>
+
+![[注册小程序.png]]
+
+### （2）完善小程序信息
+
+用注册的账号登录后台 <https://mp.weixin.qq.com/>，两种登录方式选其一即可。
+
+登录后先完善小程序名称、头像、服务类目等信息，再到「开发管理 → 开发设置」里记下 **AppID**，创建项目时要用。
+
+![[查看AppID.png]]
+
+### （3）下载开发者工具
+
+下载地址：<https://developers.weixin.qq.com/miniprogram/dev/devtools/stable.html>
+
+安装后扫码登录，新建或导入项目，界面主要分为模拟器、代码编辑区、调试器三部分。
+
+![[开发者工具布局.png]]
+
+> [!Warning] 开发阶段必须勾选「不校验合法域名」
+> 小程序默认只能请求已备案的 HTTPS 域名，本地调试请求 `http://localhost:8080` 会直接失败。需要在开发者工具「详情 → 本地设置」里勾选**不校验合法域名、web-view（业务域名）、TLS 版本以及 HTTPS 证书**。
+
+![[不校验合法域名.png]]
+
+## 5.3 入门案例
+
+### 5.3.1 目录结构
+
+一个小程序主体由根目录下的三个文件描述，各个页面统一放在 `pages` 目录。
+
+![[小程序主体文件.png]]
+
+| 文件         | 是否必须 | 作用                     |
+| ---------- | ---- | ---------------------- |
+| `app.js`   | 必须   | 小程序逻辑代码                |
+| `app.json` | 必须   | 全局配置，如页面路径、窗口样式、tabBar |
+| `app.wxss` | 否    | 全局样式表，类似于 CSS          |
+
+每个页面由四个同名文件组成，例如 `pages/index/index.js`：
+
+![[页面四个文件.png]]
+
+| 文件 | 是否必须 | 作用 |
+| --- | --- | --- |
+| `.js` | 必须 | 页面业务逻辑 |
+| `.wxml` | 必须 | 页面结构，类似于 HTML |
+| `.json` | 否 | 页面配置，会覆盖全局的同名配置 |
+| `.wxss` | 否 | 页面样式表，相当于 CSS |
+
+### 5.3.2 编写与编译
+
+**（1）编写页面结构**
+
+打开 `pages/index/index.wxml`：
+
+```wxml
+<view class="container">
+  <view>{{msg}}</view>
+
+  <view>
+    <button type="default" bindtap="getUserInfo">获取用户信息</button>
+    <image style="width: 100px; height: 100px;" src="{{avatarUrl}}"></image>
+    {{nickName}}
+  </view>
+
+  <view>
+    <button type="primary" bindtap="wxlogin">微信登录</button>
+    授权码：{{code}}
+  </view>
+
+  <view>
+    <button type="warn" bindtap="sendRequest">发送请求</button>
+    响应结果：{{result}}
+  </view>
+</view>
+```
+
+`{{}}` 是数据绑定，`bindtap` 绑定点击事件，事件名对应 js 中定义的方法。
+
+**（2）编写业务逻辑**
+
+打开 `pages/index/index.js`：
+
+```js
+Page({
+  data: {
+    msg: 'hello world',
+    avatarUrl: '',
+    nickName: '',
+    code: '',
+    result: ''
+  },
+
+  getUserInfo() {
+    wx.getUserProfile({
+      desc: '获取用户信息',
+      success: (res) => {
+        this.setData({
+          avatarUrl: res.userInfo.avatarUrl,
+          nickName: res.userInfo.nickName
+        })
+      }
+    })
+  },
+
+  wxlogin() {
+    wx.login({
+      success: (res) => {
+        console.log('授权码：' + res.code)
+        this.setData({ code: res.code })
+      }
+    })
+  },
+
+  sendRequest() {
+    wx.request({
+      url: 'http://localhost:8080/user/shop/status',
+      method: 'GET',
+      success: (res) => {
+        console.log('响应结果：' + res.data.data)
+        this.setData({ result: res.data.data })
+      }
+    })
+  }
+})
+```
+
+`data` 是页面数据，必须通过 `this.setData()` 修改才会触发视图刷新；`wx.request()` 用来发 HTTP 请求，`res.data` 就是后端返回的 JSON。
+
+**（3）编译运行**
+
+点击工具栏的「编译」，模拟器就会渲染页面：
+
+![[运行效果.png]]
+
+- 点「获取用户信息」，弹出授权窗口，同意后显示头像和昵称。
+- 点「微信登录」，调用 `wx.login()` 拿到授权码并显示在页面上。
+- 点「发送请求」前要**先启动后端项目**，否则请求失败。
+
+![[发送请求结果.png]]
+
+### 5.3.3 发布小程序
+
+1. 在开发者工具中点「上传」，填写版本号和备注，把代码传到微信服务器。此时得到的是**开发版**，还不算上线。
+2. 进入微信公众平台的「版本管理」，把该版本**提交审核**。
+3. 审核通过后点击「发布」，版本变成**线上版**，用户才能在微信里搜索并使用这个小程序。
+
+![[版本管理.png]]
+
+## 5.4 微信登录
+
+### 5.4.1 微信登录流程
+
+![[微信登录流程图.png]]
+
+整个流程可以概括为：**小程序拿 code，后端拿 code 换 openid，再签发自己的 token。**
+
+1. 小程序调用 `wx.login()` 获取**临时登录凭证 code**，每次都不一样且只能使用一次。
+2. 小程序通过 `wx.request()` 把 code 发给自己后端。
+3. 后端用 HttpClient 请求微信的 `auth.code2Session` 接口，携带 `appid`、`secret`、`code`。
+4. 微信返回 `openid` 和 `session_key`，若小程序绑定了开放平台还会返回 `unionid`。
+5. 后端拿 openid 查用户表：不存在就自动注册，存在就取出用户。
+6. 后端生成自定义登录态（JWT token），连同用户信息返回给小程序。
+7. 小程序把 token 存入 storage。
+8. 之后每次业务请求都在请求头带上 token，后端解析 token 得到用户 id，完成身份校验。
+
+两个关键接口：
+
+- `wx.login()`：小程序端 API，只负责拿 code，不做解密。
+- `auth.code2Session`：微信服务端接口，用 code 换 openid 和 session_key。**appsecret 只能放在后端**，绝不能写在小程序里。
+
+**Postman 测试：**
+
+**（1）获取授权码**
+
+在小程序里点确定拿到 code，每个 code 只能用一次，每次测试都要重新获取。
+
+![[获取授权码.png]]
+
+**（2）明确请求方式、路径和参数**
+
+![[code2Session接口.png]]
+
+**（3）发送请求**
+
+响应中可以拿到 `openid` 和 `session_key`。
+
+![[code2Session结果.png]]
+
+> [!Warning]
+> 同一个 code 重复请求会返回错误 code been used，回到模拟器重新获取一个 code 即可。
+
+## 5.5 订单支付
+
+### 5.5.1 微信支付介绍
+
+用户下单后需要付款，苍穹外卖选择的是**微信支付**。要开通微信支付必须先注册**商户号**，而商户号要求企业资质和营业执照，个人无法申请。因此这部分的目标不是真的收钱，而是看懂支付流程、会读官方接口文档、能把第三方接口对接到自己的系统里。
+
+微信支付有多种产品，本项目使用**小程序支付（JSAPI）**。
+
+![[微信支付产品.png]]
+
+参考：<https://pay.weixin.qq.com/static/product/product_index.shtml>
+
+![[微信支付接入流程.png]]
+
+![[小程序支付时序图.png]]
+
+对应时序图，后端需要关注两个接口：
+
+**JSAPI 下单**：商户系统调用，在微信支付后台生成预支付交易单（时序图第 5 步）。
+
+![[JSAPI下单.png]]
+
+**小程序调起支付**：用下单返回的 `prepay_id`，由前端调起微信支付（时序图第 10 步）。
+
+![[调起支付.png]]
+
+> [!Tip] 和第四章的关系
+> 微信支付、微信登录的后端调用，本质上还是「用 HttpClient 请求第三方的 HTTPS 接口，再把返回的 JSON/XML 解析成对象」，用的就是第四章封装的 `HttpClientUtil`；百度地图那个案例的调用方式完全一样，区别只在接口地址和参数，见 [[#4.5 *实战案例|4.5 实战案例]]。
+
+### 5.5.2 微信支付准备工作
+
+#### （1）如何保证数据安全
+
+有两个环节对数据安全要求很高：一是商户系统调用微信的下单接口，二是支付成功后微信向商户系统推送结果。
+
+微信采用加密、解密、签名的方式保证安全，因此需要提前准备**微信支付平台证书**和**商户私钥文件**，后续代码会用到。
+
+![[支付证书.png]]
+
+#### （2）如何调用到商户系统
+
+微信后台要回调商户系统，本质上也是一次 HTTP 请求。但本地电脑只有局域网 IP，微信服务器访问不到。
+
+解决办法是**内网穿透**：用 cpolar 把本机 8080 端口映射到一个公网临时域名，微信就能请求到本机服务。
+
+**第一步：安装 cpolar**
+
+资料中已提供安装包，一直下一步即可。
+
+**第二步：指定 authtoken**
+
+登录 cpolar 后台复制 authtoken，执行 `cpolar authtoken <你的 token>` 完成认证。
+
+![[cpolar-authtoken.png]]
+
+**第三步：启动隧道**
+
+执行 `cpolar http 8080`，命令行会输出一个公网地址。
+
+![[cpolar临时域名.png]]
+
+**第四步：验证**
+
+用临时域名访问 `http://<临时域名>/doc.html`，能打开接口文档就说明映射生效。
+
+![[临时域名验证.png]]
+
+> [!Tip] 临时域名会变
+> 免费隧道的域名每次重启都会变，项目里写死的回调地址要同步修改；需要固定地址可以购买 cpolar 的保留隧道。
+
+---
+
+# 六、其他技术要点
+
+这一章收拢项目中零散但常用的技术点：AOP 公共字段填充、阿里云 OSS 分层解耦、Spring Task 定时任务、MD5 加密与 Knife4j 接口分组。
+
+## 6.1 AOP 与公共字段自动填充
+
+### 6.1.1 为什么需要公共字段自动填充
+
+`employee`、`dish`、`category` 等表都有 `create_time`、`create_user`、`update_time`、`update_user` 四个公共字段。如果每个 Service 的 insert / update 都手动 set，代码重复、容易漏，后期改规则要改很多处。
+
+### 6.1.2 实现思路
+
+1. 自定义注解 `@AutoFill`，用 `value` 标明是 INSERT 还是 UPDATE；
+2. 在 Mapper 的 `insert` / `update` 方法上打注解；
+3. 切面拦截“mapper 包下且带 `@AutoFill`”的方法，在 `@Before` 中通过反射赋值；
+4. 当前用户 id 从 `BaseContext`（ThreadLocal）取，时间取 `LocalDateTime.now()`。
+
+### 6.1.3 代码实现
+
+#### （1）自定义注解与枚举
+
+```java
+/**
+ * 自定义注解，用于标识某个 Mapper 方法需要进行公共字段自动填充
+ */
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface AutoFill {
+    // 数据库操作类型：INSERT / UPDATE
+    OperationType value();
+}
+```
+
+```java
+/**
+ * 数据库操作类型
+ */
+public enum OperationType {
+
+    /** 更新操作 */
+    UPDATE,
+
+    /** 插入操作 */
+    INSERT
+}
+```
+
+#### （2）切面类
+
+```java
+/**
+ * 自定义切面，实现公共字段自动填充
+ */
+@Aspect
+@Component
+@Slf4j
+public class AutoFillAspect {
+
+    /**
+     * 切入点：mapper 包下所有带 @AutoFill 的方法
+     */
+    @Pointcut("execution(* com.sky.mapper.*.*(..)) && @annotation(com.sky.annotation.AutoFill)")
+    public void autoFillPointCut() {
+    }
+
+    /**
+     * 前置通知：在 Mapper 方法执行前完成赋值
+     */
+    @Before("autoFillPointCut()")
+    public void autoFill(JoinPoint joinPoint) {
+        log.info("开始进行公共字段自动填充...");
+
+        // 1. 获取方法上的注解，得到操作类型
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        AutoFill autoFill = signature.getMethod().getAnnotation(AutoFill.class);
+        OperationType operationType = autoFill.value();
+
+        // 2. 获取方法参数中的实体对象（约定第一个参数是实体）
+        Object[] args = joinPoint.getArgs();
+        if (args == null || args.length == 0) {
+            return;
+        }
+        Object entity = args[0];
+
+        // 3. 准备赋值的数据
+        LocalDateTime now = LocalDateTime.now();
+        Long currentId = BaseContext.getCurrentId();
+
+        // 4. 根据操作类型反射赋值
+        if (operationType == OperationType.INSERT) {
+            // 插入：4 个公共字段都要赋值
+            try {
+                Method setCreateTime = entity.getClass()
+                        .getDeclaredMethod(AutoFillConstant.SET_CREATE_TIME, LocalDateTime.class);
+                Method setCreateUser = entity.getClass()
+                        .getDeclaredMethod(AutoFillConstant.SET_CREATE_USER, Long.class);
+                Method setUpdateTime = entity.getClass()
+                        .getDeclaredMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
+                Method setUpdateUser = entity.getClass()
+                        .getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
+
+                setCreateTime.invoke(entity, now);
+                setCreateUser.invoke(entity, currentId);
+                setUpdateTime.invoke(entity, now);
+                setUpdateUser.invoke(entity, currentId);
+            } catch (Exception e) {
+                log.error("公共字段自动填充失败", e);
+            }
+        } else if (operationType == OperationType.UPDATE) {
+            // 更新：只赋修改人、修改时间
+            try {
+                Method setUpdateTime = entity.getClass()
+                        .getDeclaredMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
+                Method setUpdateUser = entity.getClass()
+                        .getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
+
+                setUpdateTime.invoke(entity, now);
+                setUpdateUser.invoke(entity, currentId);
+            } catch (Exception e) {
+                log.error("公共字段自动填充失败", e);
+            }
+        }
+    }
+}
+```
+
+> `AutoFillConstant` 中存放的是 setter 方法名常量，例如 `SET_CREATE_TIME = "setCreateTime"`。
+
+#### （3）在 Mapper 方法上使用
+
+```java
+@Mapper
+public interface EmployeeMapper {
+
+    @AutoFill(OperationType.INSERT)
+    void insert(Employee employee);
+
+    @AutoFill(OperationType.UPDATE)
+    void update(Employee employee);
+}
+```
+
+- 注解只有一个属性 `value`，所以可以简写成 `@AutoFill(OperationType.INSERT)`。
+- 加在 Mapper 而不是 Service：一个 Service 方法可能调用多个 Mapper；加在 Mapper 上，所有走该 SQL 的入口都能统一填充，且此时实体已经组装完成。
+
+## 6.2 阿里云 OSS 分层解耦
+
+### （1）整体调用链路
+
+> **属性类承载配置 → 配置类读取属性、创建 OSS 客户端 → 工具类持有客户端，封装上传 / 删除方法对外提供**
+
+`application.yml` → `OssProperties`（绑定配置）→ `OssConfig`（创建 `OSSClient` Bean）→ `OssUtil`（注入客户端，封装方法）→ Controller 调用 `OssUtil.upload()`
+
+### （2）属性类 OssProperties
+
+专门接收 yml 中的 OSS 参数，只存配置，**不创建客户端、不写上传逻辑**。
+
+```java
+@Data
+@Component
+@ConfigurationProperties(prefix = "aliyun.oss")
+public class OssProperties {
+    private String endpoint;
+    private String accessKeyId;
+    private String accessKeySecret;
+    private String bucketName;
+}
+```
+
+```yaml
+aliyun:
+  oss:
+    endpoint: oss-cn-beijing.aliyuncs.com
+    access-key-id: xxx
+    access-key-secret: xxx
+    bucket-name: xxx
+```
+
+> [!Tip]
+> - 前缀 `aliyun.oss` 加字段名，对应 yml 的 `access-key-id`，这叫**松散绑定**
+> - `@ConfigurationProperties` 的类要被 Spring 管理才会生效，具有以下三种开启方式：
+> 	1. 在配置类上加 `@EnableConfigurationProperties(OssProperties.class)`
+> 	2. 在启动类上加 `@ConfigurationPropertiesScan`
+> 	3. 给属性类加 `@Component`。
+
+### （3）配置类 OssConfig
+
+读取属性类，创建 `OSSClient` 实例并交给 Spring 容器管理。
+
+```java
+@Configuration
+@EnableConfigurationProperties(OssProperties.class)
+public class OssConfig {
+
+    @Bean
+    public OSS ossClient(OssProperties ossProperties) {
+        return new OSSClientBuilder().build(
+                ossProperties.getEndpoint(),
+                ossProperties.getAccessKeyId(),
+                ossProperties.getAccessKeySecret());
+    }
+}
+```
+
+- 返回类型写接口 `OSS`，便于替换实现和单元测试。
+- `OSSClient` 是线程安全的，做成单例 Bean 全局复用，不要每次上传都 `new`。
+
+### （4）工具类 OssUtil
+
+注入 OSS 客户端，封装上传、删除、获取地址等方法，给 Controller / Service 调用。
+
+```java
+@Component
+@Slf4j
+public class OssUtil {
+
+    @Autowired
+    private OSS ossClient;
+
+    @Autowired
+    private OssProperties ossProperties;
+
+    /**
+     * 上传文件，返回可访问的 URL
+     */
+    public String upload(MultipartFile file) {
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || !originalFilename.contains(".")) {
+            throw new RuntimeException("文件名不合法");
+        }
+
+        // 扩展名，例如 .jpg
+        String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        // UUID 重命名，避免同名覆盖
+        String objectName = UUID.randomUUID().toString().replace("-", "") + extension;
+
+        try (InputStream inputStream = file.getInputStream()) {
+            ossClient.putObject(ossProperties.getBucketName(), objectName, inputStream);
+        } catch (IOException e) {
+            log.error("文件上传失败", e);
+            throw new RuntimeException("文件上传失败");
+        }
+
+        // bucket 为公共读时可直接拼接访问地址
+        return "https://" + ossProperties.getBucketName()
+                + "." + ossProperties.getEndpoint() + "/" + objectName;
+    }
+
+    /**
+     * 删除文件
+     */
+    public void delete(String objectName) {
+        ossClient.deleteObject(ossProperties.getBucketName(), objectName);
+    }
+}
+```
+
+## 6.3 Spring Task 定时任务
+
+> [!abstract] 本节导读
+> 定时任务解决的是“到点自动做某件事”。本节按 **开启 → 写任务 → 配时间** 的顺序讲清 Spring Task，再补上 fixedRate 的注意事项和 cron 表达式规则。
+
+Spring Task 是 Spring 3.0 之后提供的任务调度模块，用注解就能定义定时任务，不必额外引入 Quartz。苍穹外卖用它做两件事：**定时处理超时未支付订单、定时处理一直处于派送中的订单**。
+
+### 6.3.1 快速入门
+
+（1）**加依赖**：`spring-boot-starter` 已包含，**无需额外坐标**。
+
+```xml
+<dependency> 
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter</artifactId>
+</dependency>
+```
+
+（2）**开启调度**：在配置类或启动类上加 `@EnableScheduling`。
+
+```java
+/**
+ * 开启 Spring Task；也可以把这个注解直接加在启动类上。
+ */
+@Configuration
+@EnableScheduling
+public class SpringTaskConfig {
+}
+```
+
+（3）**写任务**：在被 Spring 管理的 Bean 的方法上加 `@Scheduled`，并给出行触发规则。
+
+```java
+@Slf4j
+@Component
+public class CronTask {
+
+    /**
+     * cron 表达式：每秒执行一次
+     */
+    @Scheduled(cron = "0/1 * * * * ?")
+    public void cron() {
+        log.info("定时执行，时间：{}", DateUtil.now());
+    }
+}
+```
+
+启动后控制台每秒打印一行日志，说明定时任务已经生效。
+
+> [!warning] @Scheduled 的使用限制
+> 方法必须是**无参、返回 void**，且**不能是 `private`**（Spring 要通过代理调用它）；所在类必须交给 Spring 管理，例如加 `@Component`。不满足这几点，任务不会报错，只会静默不执行。
+
+### 6.3.2 三种固定周期写法
+
+除了 cron，`@Scheduled` 还支持按毫秒数控制周期：
+
+| 属性             | 含义   | 计时起点           | 适用场景             |
+| -------------- | ---- | -------------- | ---------------- |
+| `fixedRate`    | 固定速率 | 上一次**开始执行**的时间 | 要求触发间隔稳定         |
+| `fixedDelay`   | 固定延迟 | 上一次**执行结束**的时间 | 任务耗时不固定，希望做完再歇一会 |
+| `initialDelay` | 首次延迟 | 应用启动时          | 配合前两者，避开启动时的资源竞争 |
+
+```java
+@Slf4j
+@Component
+public class ScheduledTask {
+
+    /**
+     * fixedRate：固定速率，每 5 秒触发一次
+     */
+    @Scheduled(fixedRate = 5000)
+    public void fixedRateTask() {
+        log.info("fixedRate，时间：{}", DateUtil.now());
+    }
+
+    /**
+     * fixedDelay：固定延迟，上一次执行结束后再等 2 秒
+     */
+    @Scheduled(fixedDelay = 2000)
+    public void fixedDelayTask() {
+        log.info("fixedDelay，时间：{}", DateUtil.now());
+    }
+
+    /**
+     * initialDelay：首次执行延迟 5 秒，之后每 5 秒一次
+     */
+    @Scheduled(initialDelay = 5000, fixedRate = 5000)
+    public void initialDelayTask() {
+        log.info("initialDelay + fixedRate，时间：{}", DateUtil.now());
+    }
+}
+```
+
+> [!Tip] fixedRate 的小陷阱
+> 方法执行时间超过间隔时，上一次刚结束就立刻开始下一次，看起来像“一直在跑”；而 Spring 默认只有 1 个调度线程，一个长任务还会挡住其他定时任务。所以耗时不固定的任务优先用 `fixedDelay` 或 cron；任务确实多时，可以用 `spring.task.scheduling.pool.size` 加大调度线程池。
+
+### 6.3.3 cron 表达式
+
+cron 表达式是一个描述“什么时候触发”的字符串，由空格分隔成 6 或 7 个域，每个域代表一个时间维度。
+
+**（1）cron 组成**
+
+Spring 的 `@Scheduled` 只认 6 位（不写年），Quartz 才是 7 位，顺序固定：
+
+| 位置  | 1    | 2    | 3    | 4    | 5              | 6             | 7         |
+| --- | ---- | ---- | ---- | ---- | -------------- | ------------- | --------- |
+| 含义  | 秒    | 分    | 时    | 日    | 月              | 周             | 年（可选）     |
+| 取值  | 0-59 | 0-59 | 0-23 | 1-31 | 1-12 或 JAN-DEC | 1-7 或 SUN-SAT | 1970-2099 |
+
+**（2）通配符**
+
+| 符号  | 含义              | 例子                            |
+| --- | --------------- | ----------------------------- |
+| `*` | 任意值             | 出现在“分”上就是每分钟                  |
+| `?` | 不关心，只能用在“日”和“周” | `0 0 2 * * ?`                 |
+| `-` | 区间              | `0 0 2-4 * * ?`，2 点到 4 点每小时整点 |
+| `/` | 起始 / 步长         | `0/5 * * * * ?`，从 0 秒起每 5 秒   |
+| `,` | 列举              | `0 0 8,12,18 * * ?`，8、12、18 点 |
+| `L` | 最后一天 / 最后一个     | `0 0 2 L * ?`，每月最后一天          |
+| `W` | 最近的工作日          | `0 0 2 15W * ?`，15 号最近的工作日    |
+| `#` | 第几个周几           | `0 0 2 ? * 1#1`，每月第一个周一       |
+
+`?` 只能出现在“日”和“周”上，而且这两个域必须一个写值、另一个写 `?`：它们都在限定“哪一天”，同时给值会冲突。所以“每周一凌晨 2 点”写 `0 0 2 ? * MON`，不能写 `0 0 2 * * MON`。
+
+**（3）常用案例**
+
+| 表达式             | 含义             |
+| --------------- | -------------- |
+| `0/1 * * * * ?` | 每秒             |
+| `0 0/5 * * * ?` | 每 5 分钟         |
+| `0 0 * * * ?`   | 每小时整点          |
+| `0 0 1 * * ?`   | 每天凌晨 1 点       |
+| `0 30 9 * * ?`  | 每天 9:30        |
+| `0 0 2 ? * MON` | 每周一凌晨 2 点      |
+| `0 0 2 1 * ?`   | 每月 1 日凌晨 2 点   |
+| `0 0 0 1 1 ?`   | 每年 1 月 1 日 0 点 |
+
+## 6.4 MD5 加密
+
+MD5 属于单向散列算法，可把任意长度的数据转换成固定 128 位的哈希值，该过程不可逆，常用来校验信息完整性。登录时应将用户输入的明文密码进行哈希计算，再与数据库中的密文比对，而不是对密文进行解密。
+
+Spring 提供了 `DigestUtils` 可对密码进行加密：
+
+```java
+// 前端传来的明文密码
+String password = loginDTO.getPassword();
+
+// MD5 加密后再与数据库中的密文比较
+String md5Password = DigestUtils.md5DigestAsHex(password.getBytes(StandardCharsets.UTF_8));
+if (!md5Password.equals(employee.getPassword())) {
+    // 密码错误
+    throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
+}
+```
+
+> [!Tip]
+> 无盐 MD5 计算速度快，安全性不足，极易遭受彩虹表、撞库攻击，不适合正式生产环境。生产项目优先选用 BCrypt、Argon2；课程中使用 MD5 仅作简化演示。数据库严禁存储明文密码，一旦数据泄露，所有用户密码会直接暴露。
+
+## 6.5 Knife4j 接口分组
+
+### （1）为什么分组？
+
+管理端接口（`/admin/**`）和用户端接口（`/user/**`）如果都放在一个文档里，接口多、难查找。Swagger 的 `Docket` 支持 `groupName`，一个 Docket 就是一个分组。
+
+### （2）配置多个 Docket
+
+在 `WebMvcConfiguration` 中分别扫描 `com.sky.controller.admin` 和 `com.sky.controller.user`：
+
+```java
+/**
+ * 管理端接口文档
+ */
+@Bean
+public Docket docket1() {
+    ApiInfo apiInfo = new ApiInfoBuilder()
+            .title("苍穹外卖项目接口文档")
+            .version("2.0")
+            .description("苍穹外卖项目接口文档")
+            .build();
+
+    return new Docket(DocumentationType.SWAGGER_2)
+            .groupName("管理端相关接口")
+            .apiInfo(apiInfo)
+            .select()
+            .apis(RequestHandlerSelectors.basePackage("com.sky.controller.admin"))
+            .paths(PathSelectors.any())
+            .build();
+}
+
+/**
+ * 用户端接口文档
+ */
+@Bean
+public Docket docket2() {
+    ApiInfo apiInfo = new ApiInfoBuilder()
+            .title("苍穹外卖项目接口文档")
+            .version("2.0")
+            .description("苍穹外卖项目接口文档")
+            .build();
+
+    return new Docket(DocumentationType.SWAGGER_2)
+            .groupName("用户端相关接口")
+            .apiInfo(apiInfo)
+            .select()
+            .apis(RequestHandlerSelectors.basePackage("com.sky.controller.user"))
+            .paths(PathSelectors.any())
+            .build();
+}
+```
+
+- 两个 `@Bean` 方法名不能重复（`docket1`、`docket2`），否则 Bean 名冲突。
+- 每个 Docket 都要单独设置 `groupName`、`apiInfo`、`apis`。
+
+配置好 Docket 后重启服务，访问 `http://localhost:8080/doc.html`。页面的左侧菜单顶部会出现分组下拉框，可在“管理端相关接口”和“用户端相关接口”之间切换。
