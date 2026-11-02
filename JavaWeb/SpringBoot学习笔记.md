@@ -1639,8 +1639,6 @@ public class PageResult<T> {
 
 ## 5.2 手动分页
 
-### 5.2.1 原始方式
-
 以 `GET /emps?page=1&pageSize=10` 为例，Service 层需要**额外查询一次总记录数**，且「算偏移量 → 查总数 → 查数据 → 封装」的流程比较固定，代码冗余。
 
 ```java
