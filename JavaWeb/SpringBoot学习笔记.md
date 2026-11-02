@@ -1822,9 +1822,91 @@ rollback;
 > [!NOTE]
 > 四大特性里，**原子性和持久性由数据库自己保证**，应用层不用操心；**一致性靠业务代码约束**（比如转账前后总额必须相等）；**隔离性由隔离级别控制**，也是最容易出问题的一环——隔离级别越高越安全，但并发性能越低。
 
-## 6.2 Spring 事务 @Transactional
+## 6.2 Spring 事务快速入门
 
-### 6.2.1 注解位置与作用
+6.1 里的事务是**数据库层面**的手工控制：`begin` → 一组 SQL → `commit` / `rollback`。放到 Java 代码里，就意味着每个业务方法都要套一层 try-catch 再手动回滚，既啰嗦又容易漏。
+
+Spring 把这些模板代码封装成了一个注解：**在方法上加 `@Transactional`，方法执行前自动开启事务，正常结束自动提交，抛异常自动回滚**。开发者只写业务代码，事务的开启、提交、回滚全由 Spring 通过 AOP 代理完成。
+
+### 6.2.1 依赖与自动配置
+
+事务能力不需要额外引依赖——只要项目里用到了数据库，`spring-tx` 一定已经在 classpath 上了：
+
+| 依赖                           | 说明                                                         |
+| ---------------------------- | ---------------------------------------------------------- |
+| `spring-boot-starter-jdbc`   | 提供 `DataSource`、`JdbcTemplate`，以及 `DataSourceTransactionManager` |
+| `mybatis-spring-boot-starter` | 是上者的超集，MyBatis 项目引它即可，事务能力一并带入                              |
+| `spring-tx`                  | Spring 事务抽象（`PlatformTransactionManager`、`@Transactional`），上面两者都会传递引入 |
+
+Spring Boot 启动时由 `TransactionAutoConfiguration` 自动完成两件事：
+
+1. **创建事务管理器 bean**：检测到唯一的 `DataSource` 后，自动注册 `JdbcTransactionManager`（`DataSourceTransactionManager` 的子类）；
+2. **开启注解驱动事务**：相当于自动加上了 `@EnableTransactionManagement`，扫描 `@Transactional` 并为对应的 bean 生成 AOP 代理。
+
+> [!IMPORTANT]
+> 只有在「**容器里恰好有一个 `PlatformTransactionManager`**」时才是零配置。多数据源、或使用 JPA / 分布式事务时，需要自己声明事务管理器并指定给 `@Transactional`（或使用 `@Primary`），否则启动就会报 `No qualifying bean of type 'PlatformTransactionManager'`。
+
+### 6.2.2 三步写出第一个事务
+
+以「保存员工 + 保存该员工的工作经历」为例，两条 SQL 必须同生共死：
+
+1. **Service 实现类交给 Spring 管理**：类上加 `@Service`（代理只能为容器里的 bean 生成）；
+2. **在需要原子性的方法上加 `@Transactional`**；
+3. **让异常抛出去**：不要在方法内部把异常 `try-catch` 掉，否则 Spring 感知不到失败，事务照样提交。
+
+```java
+@Slf4j
+@Service
+public class EmpServiceImpl implements EmpService {
+
+    @Autowired
+    private EmpMapper empMapper;
+    @Autowired
+    private EmpExprMapper empExprMapper;
+
+    @Override
+    @Transactional   // ① 方法进入即开启事务
+    public void save(Emp emp) {
+        // ② 两条 insert 处于同一个事务中
+        empMapper.save(emp);
+
+        List<EmpExpr> exprList = emp.getExprList();
+        exprList.forEach(expr -> expr.setEmpId(emp.getId()));
+        empExprMapper.saveBatch(exprList);
+
+        // ③ 模拟第二步之后业务失败，异常抛到方法外
+        if (true) {
+            throw new RuntimeException("模拟保存工作经历失败");
+        }
+    }
+}
+```
+
+调用 `save()` 后观察数据库：
+
+- **有异常时**：控制台打出异常堆栈，`emp` 和 `emp_expr` 两张表**都没有**新增数据——事务回滚成功；
+- **去掉 `throw` 后**：两张表都有数据——事务提交成功。
+
+把「两次写库必须同时成功」的场景跑通一次，就掌握了 Spring 事务 90% 的用法。剩下的细节（注解能标在哪、异常吞掉了怎么补救、嵌套调用怎么算）见 6.3。
+
+### 6.2.3 自检：事务为什么没生效
+
+新手最常见的困惑是「加了 `@Transactional` 但数据照样写进去了」。按下面三条逐一核对，能覆盖绝大多数情况：
+
+| 检查项                    | 说明                                             |
+| ---------------------- | ---------------------------------------------- |
+| 类是否在容器里                | 缺 `@Service` / `@Component` 等注解时，对象是 `new` 出来的，没人给它生成代理 |
+| 方法是否 `public` 且从外部调用    | 非 `public` 方法、或本类内部 `this.xxx()` 自调用，都绕过代理，注解形同虚设 |
+| 异常是否被吞掉                | 方法内 `try-catch` 后既不重抛也不标记回滚，Spring 认为方法「正常结束」    |
+
+想直接看到事务的生灭过程，打开事务日志即可（配置见 6.3.4）：日志中出现 `Creating new transaction`、`Committing JDBC transaction`、`Rolling back JDBC transaction` 等关键字，就说明事务确实开启并结束了；一条都没有，就说明代理根本没拦截到，回到上面三条排查。
+
+> [!TIP]
+> 快速验证技巧：写一个 `@SpringBootTest` 测试方法，在 `@Transactional` 业务方法最后故意 `throw new RuntimeException()`，跑完后用 `select` 确认两张表都没有新数据，比点点点可靠得多。
+
+## 6.3 Spring 事务 @Transactional
+
+### 6.3.1 注解位置与作用
 
 `@Transactional` 的语义是：**方法执行前开启事务，方法执行完毕提交事务；执行过程中出现异常则回滚事务。** 标注位置有三个层次：
 
@@ -1866,7 +1948,7 @@ public class EmpServiceImpl implements EmpService {
 >
 > ④ 最隐蔽：如果 `save()` 内部调用了本类的另一个带 `@Transactional` 的方法，调用走的是 `this` 而不是 Spring 代理对象，事务**根本不会开启**。需要自调用生效时，可以注入自己`@Lazy`或从容器里 `AopContext.currentProxy()` 取代理。
 
-### 6.2.2 回滚规则 rollbackFor
+### 6.3.2 回滚规则 rollbackFor
 
 Spring 事务默认只对 `RuntimeException` 和 `Error` 回滚；受检异常（如 `IOException`、`SQLException`）默认不回滚，事务会提交。  
 异常必须传播到事务代理边界之外，事务拦截器才能感知；如果方法内部 `try-catch` 捕获后未重新抛出，即使是运行时异常，默认也不会回滚。  
@@ -1889,7 +1971,7 @@ public class EmpServiceImpl implements EmpService {
 > `RuntimeException` 包含 `NullPointerException`、`IllegalArgumentException` 等；受检异常指 `IOException`、`SQLException` 这类编译期就能发现的异常。日常开发**建议统一写 `rollbackFor = Exception.class`**，免得抛了个受检异常，数据只写了一半。
 
 
-### 6.2.3 传播行为 propagation
+### 6.3.3 传播行为 propagation
 
 在 Spring 事务管理中，**事务传播机制**是针对事务嵌套场景的核心解决方案，它定义了**多个事务方法嵌套调用时事务边界的控制规则**——当一个事务方法（如用户注册）调用另一个事务方法（如日志记录）时，被调用方法如何处理现有事务上下文（如加入已有事务、创建新事务或不使用事务）
 
@@ -1965,7 +2047,7 @@ public class LogServiceImpl implements LogService {
 }
 ```
 
-### 6.2.4 事务日志
+### 6.3.4 事务日志
 
 在 `application.yml` 中开启事务管理日志，就能在控制台看到与事务相关的日志信息（开启、提交、回滚）。
 
