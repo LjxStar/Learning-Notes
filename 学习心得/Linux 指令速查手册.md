@@ -7,7 +7,7 @@
 - 忘记用法时，执行 `命令 --help` 查看简要说明，或执行 `man 命令` 查看完整手册（按 `q` 退出）。 
 - 提示符 `$` 表示普通用户，`#` 表示 root 用户。
 - 涉及系统差异时，会分别注明 Ubuntu 与 CentOS。
- - 【AI 辅助说明】本文由 AI 生成初稿，本人进行修改、校对、整理与补充。
+- 【AI 辅助说明】本文由 AI 生成初稿，本人进行修改、校对、整理与补充。
 
 ---
 
@@ -22,7 +22,7 @@ sudo 命令        # 仅对当前这一条命令提权
 sudo -i          # 切换到 root 用户（退出用 exit）
 ```
 
-> [!info] root 用户与 sudo
+> [!question] root 用户与 sudo 是什么？
 > root 是 Linux 的超级管理员，拥有系统的全部权限。Ubuntu 默认禁止 root 直接登录，日常管理通过 `sudo` 临时提权；CentOS 则习惯直接使用 root 操作。
 
 - **Ubuntu**：安装软件、修改 `/etc` 下的配置通常都要加 `sudo`。第一次执行时会要求输入**当前用户**的密码。
@@ -69,7 +69,7 @@ ls -d */           # 只列出当前目录下的子目录
 
 > 许多系统为 `ls -l` 设置了别名 `ll`，直接输入 `ll` 也可以。
 
-> [!info] 隐藏文件
+> [!question] 隐藏文件 ？
 > 以 `.` 开头的文件默认不会显示，多为配置文件，例如 `~/.bashrc`。此外，`.` 表示当前目录，`..` 表示上级目录。
 
 ### 2. pwd / cd —— 查看与切换目录
@@ -90,34 +90,28 @@ cd ~           # 返回当前用户的家目录（只输入 cd 效果相同）
 cd -           # 返回上一次所在的目录
 ```
 
-
 > [!tip] 路径输入到一半时按 `Tab` 键可自动补全，这是减少输入错误的关键习惯。执行 `rm`、`mv` 前先用 `pwd` 确认当前目录，可以避免误操作。
 
 ### 3. mkdir —— 创建目录
 
 ```bash
 mkdir data                 # 创建单个目录
-mkdir -p /data/app/logs    # 父目录不存在时一并创建
+mkdir -p /data/app/logs    # -p：父目录不存在时一并创建，目录已存在也不报错
 mkdir dir{1..5}            # 一次创建 dir1 至 dir5
-mkdir -m 700 private       # 创建时指定权限
+mkdir -m 700 private       # -m：创建时直接指定权限
 ```
 
-| 选项 | 说明 |
-| --- | --- |
-| `-p` | 递归创建多级目录；目录已存在时不报错 |
-| `-m` | 创建时直接指定权限 |
-
-> [!info] 花括号扩展
+> [!question] 花括号扩展 ？
 > `dir{1..5}` 中的 `{1..5}` 是 Shell 提供的花括号扩展，会在执行前展开为 `dir1 dir2 dir3 dir4 dir5`。这是 Shell 的语法，不是 `mkdir` 的选项。
 
 ### 4. rmdir —— 删除空目录
 
 ```bash
 rmdir olddir       # 只能删除空目录，目录中有内容时会报错
-rmdir dir1 dir2    # 一次删多个空的目录
+rmdir dir1 dir2    # 一次删除多个空目录
 ```
 
-> [!note] 实际工作中更常用 `rm -r 目录`。`rmdir` 仅用于删除空目录，了解其用途即可。
+> 实际工作中更常用 `rm -r 目录`。`rmdir` 仅用于删除空目录，了解其用途即可。
 
 ---
 
@@ -376,7 +370,7 @@ awk '{sum+=$1} END{print sum}' a.txt   # 累加第 1 列并输出总和
 命令 < 文件            将文件内容作为命令的输入
 ```
 
-> [!info] 标准输出与标准错误
+> [!question] 标准输出与标准错误？
 > 文件描述符是进程访问文件的编号。Linux 为每个进程默认打开三个文件描述符：`0` 标准输入（stdin）、`1` 标准输出（stdout）、`2` 标准错误（stderr）。
 > `2>&1` 表示让文件描述符 2 指向文件描述符 1 当前指向的位置，因此正常输出和错误输出会写入同一个文件。
 
@@ -471,7 +465,7 @@ umask 022      # 临时修改（仅对当前终端有效）
 
 ## 七、网络诊断
 
-> [!info] 与 Windows 的差异
+> [!question] 与 Windows 的差异？
 > Windows 使用 `ipconfig` 查看 IP 地址，Linux 使用 `ip addr`。`ifconfig` 是较旧的命令，需要额外安装 net-tools。
 
 ### 1. ip / ifconfig —— 查看 IP 地址和路由
@@ -606,7 +600,7 @@ ssh-keygen -t ed25519          # 生成密钥对（-t 指定算法），一路�
 ssh-copy-id user@host          # 将公钥上传到服务器
 ```
 
-> [!info] 公钥与私钥
+> [!question] 公钥与私钥 ？
 > `ssh-keygen` 生成一对密钥：私钥保存在本机 `~/.ssh/` 目录，公钥上传到服务器。登录时，服务器用公钥验证客户端是否持有对应的私钥，私钥本身不会在网络中传输。ed25519 是较新且更安全的密钥算法。
 
 | 报错                              | 通常原因                          |
@@ -634,9 +628,6 @@ vim a.txt       # 打开文件（不存在则新建）
 | 命令模式 | 打开文件即进入；按 `Esc` 返回 | 移动光标、删除、复制粘贴、撤销等 |
 | 插入模式 | 在命令模式按 `i`（光标前）、`a`（光标后）、`o`（下一行） | 输入并编辑文本 |
 | 末行模式 | 在命令模式按 `:` | 保存、退出、替换等 |
-
-> [!warning] 容易混淆的地方
-> `dd`、`yy`、`p`、`u` 在命令模式下直接按键，不需要加冒号；`:w`、`:q` 在末行模式下执行，必须加冒号。
 
 **命令模式常用按键**
 
@@ -825,14 +816,14 @@ top -p 1234        # 只监控指定 PID
 htop               # 界面更友好的版本，需要先安装
 ```
 
-| 按键 | 作用 |
-| --- | --- |
-| `P` | 按 CPU 使用率排序 |
-| `M` | 按内存使用率排序 |
+| 按键  | 作用               |
+| --- | ---------------- |
+| `P` | 按 CPU 使用率排序      |
+| `M` | 按内存使用率排序         |
 | `1` | 显示每个 CPU 核心的使用情况 |
-| `q` | 退出 |
+| `q` | 退出               |
 
-> [!info] 如何理解 top 的输出
+> [!question] 如何理解 top 的输出？
 > - `load average`：1、5、15 分钟内的平均负载，需要结合 CPU 核心数判断。
 > - `%CPU` / `%MEM`：进程占用的 CPU / 物理内存百分比。
 > - `RES`：进程实际占用的物理内存；`VIRT`：进程使用的虚拟内存总量。
@@ -870,7 +861,7 @@ fg %1                                      # 将编号为 1 的后台任务调�
 nohup java -jar app.jar > app.log 2>&1 &   # 关闭终端后程序仍继续运行（部署常用）
 ```
 
-> [!info] `nohup` 与 `&` 的区别
+> [!question] `nohup` 与 `&` 的区别？
 > `&` 只是将程序放到后台运行，终端关闭时进程可能收到 SIGHUP 信号而退出。`nohup` 会让进程忽略 SIGHUP，因此两者常一起使用。
 
 > [!tip] 长期运行的服务建议交给 `systemctl` 管理（支持开机自启、异常退出后自动重启）；`nohup` 更适合临时任务。
@@ -976,7 +967,7 @@ export PATH=$PATH:/usr/local/jdk/bin   # 注意保留 $PATH，否则原有路径
 unset JAVA_HOME                        # 删除变量
 ```
 
-> [!info] `$变量名`
+> [!question] `$变量名`  ？
 > `$变量名` 表示引用变量的值。`PATH=$PATH:/new/dir` 的含义是：在原有 `PATH` 的基础上追加 `/new/dir`。
 
 > [!warning] `PATH=$PATH:新目录` 中的 `$PATH` 不能省略，否则原有路径会全部丢失，当前终端将无法找到大部分命令。重新打开终端可以恢复。
@@ -1073,19 +1064,19 @@ sudo iptables -D INPUT -p tcp --dport 80 -j ACCEPT   # 删除对应规则
 
 ## 附：速查总表
 
-| 类别 | 常用命令 |
-| --- | --- |
-| 目录 | `ls -lh`、`cd -`、`pwd`、`mkdir -p`、`rmdir` |
-| 文件 | `cp -r`、`mv`、`rm -rf`、`touch`、`find -name`、`which` |
-| 查看内容 | `cat -n`、`less -N`、`tail -f`、`head -n`、`more` |
-| 搜索文本 | `grep -rn`、`wc -l`、`sed -i 's/a/b/g'`、`awk '{print $1}'` |
-| 管道重定向 | 管道符、`>`、`>>`、`2>&1`、`/dev/null`、`tee` |
-| 权限 | `chmod 755`、`chmod +x`、`chown -R`、`chgrp`、`umask` |
-| 网络 | `ip a`、`ping -c`、`traceroute`、`mtr -r`、`ss -tunlp`、`curl -I`、`ssh`、`scp` |
-| 编辑压缩 | `vim`、`tar -czvf`、`tar -xzvf`、`zip -r`、`unzip`、`gzip -d` |
-| 软件包 | `apt update`、`apt install`、`apt purge`、`yum install`、`dnf`、`dpkg -i`、`rpm -ivh` |
-| 进程服务 | `ps -ef`、`top`、`kill -9`、`systemctl`、`journalctl -u`、`nohup &` |
-| 系统状态 | `df -h`、`du -sh`、`free -h`、`uptime`、`uname -a` |
-| 环境变量 | `env`、`export`、`unset`、`source`、`~/.bashrc`、`/etc/profile` |
-| 防火墙 | `ufw`（Ubuntu）、`firewall-cmd`（CentOS）、`iptables` |
+| 类别    | 常用命令                                                                            |
+| ----- | ------------------------------------------------------------------------------- |
+| 目录    | `ls -lh`、`cd -`、`pwd`、`mkdir -p`、`rmdir`                                        |
+| 文件    | `cp -r`、`mv`、`rm -rf`、`touch`、`find -name`、`which`                              |
+| 查看内容  | `cat -n`、`less -N`、`tail -f`、`head -n`、`more`                                   |
+| 搜索文本  | `grep -rn`、`wc -l`、`sed -i 's/a/b/g'`、`awk '{print $1}'`                        |
+| 管道重定向 | 管道符、`>`、`>>`、`2>&1`、`/dev/null`、`tee`                                           |
+| 权限    | `chmod 755`、`chmod +x`、`chown -R`、`chgrp`、`umask`                               |
+| 网络    | `ip a`、`ping -c`、`traceroute`、`mtr -r`、`ss -tunlp`、`curl -I`、`ssh`、`scp`        |
+| 编辑压缩  | `vim`、`tar -czvf`、`tar -xzvf`、`zip -r`、`unzip`、`gzip -d`                        |
+| 软件包   | `apt update`、`apt install`、`apt purge`、`yum install`、`dnf`、`dpkg -i`、`rpm -ivh` |
+| 进程服务  | `ps -ef`、`top`、`kill -9`、`systemctl`、`journalctl -u`、`nohup &`                  |
+| 系统状态  | `df -h`、`du -sh`、`free -h`、`uptime`、`uname -a`                                  |
+| 环境变量  | `env`、`export`、`unset`、`source`、`~/.bashrc`、`/etc/profile`                      |
+| 防火墙   | `ufw`（Ubuntu）、`firewall-cmd`（CentOS）、`iptables`                                 |
 
