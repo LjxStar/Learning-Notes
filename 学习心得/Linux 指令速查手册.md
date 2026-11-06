@@ -29,17 +29,15 @@ sudo -i          # 切换到 root 用户（退出用 exit）
 - **CentOS**：习惯直接以 root 操作，因此 CentOS 相关命令一般不加 `sudo`。
 - 记忆方法：`sudo` 本身是一个命令，作用是为其后面的命令临时提权。
 
-> [!tip] 第一次执行 `sudo` 时，输入密码的过程中屏幕不会显示任何字符。这是正常的安全设计，输入完成后按回车即可。
-
 ### 2. Ubuntu 与 CentOS 的系统差异
 
-| 方面 | Ubuntu | CentOS |
-| --- | --- | --- |
-| 软件包管理 | `apt` | `yum`（7）/ `dnf`（8+） |
-| 本地安装包 | `.deb`，使用 `dpkg -i` | `.rpm`，使用 `rpm -ivh` |
-| 防火墙 | `ufw`（默认未启用） | `firewalld`（默认启用） |
-| 服务管理 | `systemctl` | `systemctl`（7+）/ `service`（6） |
-| 查看网卡 | `ip addr`（`ifconfig` 需另装 net-tools） | 同左 |
+| 方面    | Ubuntu                              | CentOS                        |
+| ----- | ----------------------------------- | ----------------------------- |
+| 软件包管理 | `apt`                               | `yum`（7）/ `dnf`（8+）           |
+| 本地安装包 | `.deb`，使用 `dpkg -i`                 | `.rpm`，使用 `rpm -ivh`          |
+| 防火墙   | `ufw`（默认未启用）                        | `firewalld`（默认启用）             |
+| 服务管理  | `systemctl`                         | `systemctl`（7+）/ `service`（6） |
+| 查看网卡  | `ip addr`（`ifconfig` 需另装 net-tools） | 同左                            |
 
 > [!tip] 提示 `command not found`
 > 先判断是软件未安装，还是命令所在目录不在 `PATH` 中。前者需要安装软件包，后者可用 `which` 或 `type` 检查。
