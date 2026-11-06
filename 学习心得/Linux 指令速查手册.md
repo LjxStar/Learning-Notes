@@ -775,7 +775,7 @@ journalctl -u nginx -f      # 实时看这个服务的日志
 ### 1. df / du — 磁盘空间
 
 ```bash
-df -h              # 各分区用了多少（快满了先看这个）
+df -h              # 各分区用了多少（以G/M/K格式展示）
 df -i              # inode 用量（有空间却写不进文件时看它）
 du -sh /var/log    # 某个目录占了多少空间
 du -sh * | sort -h # 当前目录里谁最占地方
