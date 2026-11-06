@@ -789,7 +789,8 @@ du -sh * | sort -h # 当前目录里谁最占地方
 ### 2. free — 内存
 
 ```bash
-free -h            # 重点看 available 那一列，buff/cache 是可回收的
+free -h
+# 重点看 available 那一列，buff/cache 是可回收的
 ```
 
 ### 3. uptime / uname — 负载与内核
