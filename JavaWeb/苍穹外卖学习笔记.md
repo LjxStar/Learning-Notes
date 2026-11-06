@@ -484,7 +484,7 @@ Windows 环境下，进入 Redis 安装目录，执行：
 redis-server.exe redis.windows.conf
 ```
 
-![[Pasted image 20261026191812.png]]
+![[redis服务.png]]
 
 > 启动后不要关闭该窗口，按 `Ctrl + C` 可停止服务。
 
