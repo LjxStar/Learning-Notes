@@ -1,17 +1,17 @@
 # Linux 常用命令速查手册（Ubuntu & CentOS）
 
-> [!info] 阅读约定
-> - 命令中的 `文件`、`目录`、`PID` 等均为占位符，使用时请替换为实际值；`PID` 指进程 ID。
-> - 命令格式为 `命令 [选项] [参数]`。选项通常以 `-` 开头，多个短选项可以合并书写，例如 `ls -lh`。
-> - 忘记用法时，执行 `命令 --help` 查看简要说明，或执行 `man 命令` 查看完整手册（按 `q` 退出）。
-> - 提示符 `$` 表示普通用户，`#` 表示 root 用户。
-> - 标注 `[CentOS]` 的写法仅适用于 CentOS；未标注的写法在两个系统上通用。
-> - 本文以 bash 为例。Shell 是接收并解释命令的程序，bash 是 Linux 上最常见的 Shell。
-> - 【AI 辅助说明】本文由 AI 生成初稿，本人进行修改、校对、整理与补充。
+**阅读约定**
+
+- 命令中的 `文件`、`目录`、`PID` 等均为占位符，使用时请替换为实际值；`PID` 指进程 ID。 
+- 命令格式为 `命令 [选项] [参数]`。选项通常以 `-` 开头，多个短选项可以合并书写，例如 `ls -lh`。 
+- 忘记用法时，执行 `命令 --help` 查看简要说明，或执行 `man 命令` 查看完整手册（按 `q` 退出）。 
+- 提示符 `$` 表示普通用户，`#` 表示 root 用户。
+- 涉及系统差异时，会分别注明 Ubuntu 与 CentOS。
+ - 【AI 辅助说明】本文由 AI 生成初稿，本人进行修改、校对、整理与补充。
 
 ---
 
-## 〇、动手前先弄清的两件事
+## 〇、动手前需要了解的两件事
 
 ### 1. sudo —— 临时获取管理员权限
 
@@ -26,8 +26,8 @@ sudo -i          # 切换到 root 用户（退出用 exit）
 > root 是 Linux 的超级管理员，拥有系统的全部权限。Ubuntu 默认禁止 root 直接登录，日常管理通过 `sudo` 临时提权；CentOS 则习惯直接使用 root 操作。
 
 - **Ubuntu**：安装软件、修改 `/etc` 下的配置通常都要加 `sudo`。第一次执行时会要求输入**当前用户**的密码。
-- **CentOS**：习惯直接以 root 操作，因此本文中标注 `[CentOS]` 的命令一般不加 `sudo`。
-- 记忆方法：`sudo` 不是命令，而是为**后面那条命令**临时提权的工具。
+- **CentOS**：习惯直接以 root 操作，因此 CentOS 相关命令一般不加 `sudo`。
+- 记忆方法：`sudo` 本身是一个命令，作用是为其后面的命令临时提权。
 
 > [!tip] 第一次执行 `sudo` 时，输入密码的过程中屏幕不会显示任何字符。这是正常的安全设计，输入完成后按回车即可。
 
@@ -271,6 +271,10 @@ less -N app.log           # 显示行号
 less +F /var/log/syslog   # 以类似 tail -f 的方式持续输出，按 Ctrl+C 返回浏览模式
 ```
 
+> [!summary] 常用选项
+> - `-N`：显示行号。
+> - `+F`：持续跟踪文件末尾，类似 `tail -f`。
+
 | 按键 | 作用 |
 | --- | --- |
 | 空格 / `PageDown` | 向下翻一屏 |
@@ -287,7 +291,7 @@ less +F /var/log/syslog   # 以类似 tail -f 的方式持续输出，按 Ctrl+C
 more app.log
 ```
 
-> [!note] `more` 的功能是 `less` 的子集，只能向下翻页（空格翻页，`q` 退出）。日常使用 `less` 即可，能看懂脚本中的 `more` 就够了。
+> [!note] `more` 的功能是 `less` 的子集，只能向下翻页（空格翻页，`q` 退出）。日常使用 `less` 即可；脚本中出现 `more` 时，能识别其作用即可。
 
 ### 3. tail —— 查看文件末尾或实时跟踪日志
 
@@ -419,7 +423,7 @@ awk '{sum+=$1} END{print sum}' a.txt   # 累加第 1 列并输出总和
 ```
 
 > [!info] 标准输出与标准错误
-> Linux 为每个进程默认打开三个文件描述符：`0` 标准输入（stdin）、`1` 标准输出（stdout）、`2` 标准错误（stderr）。
+> 文件描述符是进程访问文件的编号。Linux 为每个进程默认打开三个文件描述符：`0` 标准输入（stdin）、`1` 标准输出（stdout）、`2` 标准错误（stderr）。
 > `2>&1` 表示让文件描述符 2 指向文件描述符 1 当前指向的位置，因此正常输出和错误输出会写入同一个文件。
 
 **常见组合**
@@ -428,11 +432,11 @@ awk '{sum+=$1} END{print sum}' a.txt   # 累加第 1 列并输出总和
 ps -ef | grep java               # 在进程列表中查找 java
 grep -c ERROR app.log            # 统计包含 ERROR 的行数（等价于 grep ERROR app.log | wc -l）
 tail -f app.log | grep ERROR     # 实时过滤错误日志
-awk '{print $1}' access.log | sort | uniq -c | sort -nr | head   # 访问量前 10 的 IP
+awk '{print $1}' access.log | sort | uniq -c | sort -nr | head   # 访问量最高的 10 个 IP
 命令 > /dev/null 2>&1            # 丢弃所有输出（/dev/null 是空设备）
 ```
 
-> [!example] 统计访问量前 10 的 IP
+> [!example] 统计访问量最高的 10 个 IP
 > 1. `awk '{print $1}'`：取出每行的第 1 列，即客户端 IP。
 > 2. `sort`：排序，使相同 IP 相邻。
 > 3. `uniq -c`：去重并统计出现次数。
@@ -473,7 +477,7 @@ awk '{print $1}' access.log | sort | uniq -c | sort -nr | head   # 访问量前 
 | 4 | r-- | 只读 |
 
 > [!info] 硬链接数
-> `ls -l` 的第二列是硬链接数，表示有多少个文件名指向同一个 inode。普通文件通常为 1；目录至少为 2（目录自身和其中的 `.`）。
+> `ls -l` 的第二列是硬链接数，表示有多少个文件名指向同一个 inode。普通文件通常为 1；目录至少为 2（目录名本身和其中的 `.`），每增加一个子目录再加 1（子目录中的 `..` 指向该目录）。
 
 ### 2. chmod —— 修改权限
 
@@ -502,6 +506,10 @@ chown user:group a.txt         # 同时修改属主和属组
 chown -R user:group /data/app  # 递归修改（部署后修正权限常用）
 ```
 
+> [!summary] 常用选项
+> - `-R`：递归修改目录及其内容。
+> - `-v`：显示处理过程。
+
 **（2）chgrp —— 只修改属组**
 
 ```bash
@@ -522,8 +530,8 @@ umask 022      # 临时修改（仅对当前终端有效）
 
 > [!summary] 计算方式
 > - 新文件的基础权限为 `666`（默认不带执行权限），新目录为 `777`。
-> - 实际权限 = 基础权限减去 umask 中对应的权限位。
-> - `umask` 为 `022` 时：文件为 `666 - 022 = 644`，目录为 `777 - 022 = 755`。
+> - 实际权限 = 从基础权限中按位去掉 umask 指定的权限。
+> - `umask` 为 `022` 时：新文件为 `644`，新目录为 `755`。
 
 ---
 
@@ -567,7 +575,7 @@ ping -c 4 www.baidu.com    # 发送 4 个数据包后停止（不加 -c 会一�
 | 现象 | 通常说明 |
 | --- | --- |
 | `Request timeout` | 对端不可达，或对端 / 中间设备禁用了 ICMP |
-| 能 ping 通 IP，但不能 ping 通域名 | DNS 解析有问题，检查 `/etc/resolv.conf` |
+| 能 ping 通 IP，但不能 ping 通域名 | DNS（域名系统）解析有问题，检查 `/etc/resolv.conf` |
 
 > [!summary] 常用选项
 > - `-c 次数`：发送指定数量的数据包后停止。
@@ -575,7 +583,7 @@ ping -c 4 www.baidu.com    # 发送 4 个数据包后停止（不加 -c 会一�
 > - `-W 秒数`：设置等待响应的超时时间。
 
 > [!info] ICMP 与云服务器
-> `ping` 使用 ICMP 协议发送回显请求并等待回复。云服务器通常禁用 ICMP，因此 ping 不通并不代表服务不可用，可以改用 `curl` 或 `ss` 验证。
+> `ping` 使用 ICMP（互联网控制消息协议）发送回显请求并等待回复。云服务器通常禁用 ICMP，因此 ping 不通并不代表服务不可用，可以改用 `curl` 或 `ss` 验证。
 
 ### 3. traceroute / mtr —— 追踪路由与定位丢包
 
@@ -639,14 +647,14 @@ netstat -tunlp
 
 ```bash
 curl -I https://www.baidu.com      # 只查看响应头
-curl -v http://localhost:8080/api  # 输出完整请求过程，排障首选
+curl -v http://localhost:8080/api  # 输出完整请求过程，排查故障的首选
 curl -s ifconfig.me                # 查看本机公网出口 IP
 curl -o page.html https://example.com   # 将内容保存为文件
 ```
 
 | 选项 | 说明 |
 | --- | --- |
-| `-I` | 只获取响应头 |
+| `-I` | 只获取响应头（状态码、内容类型等信息） |
 | `-v` | 显示请求和响应的完整过程 |
 | `-o 文件` | 将内容保存到指定文件 |
 | `-s` | 静默模式，不显示进度信息 |
@@ -664,20 +672,25 @@ ssh -p 2222 user@host          # 指定端口
 ssh user@host "df -h"          # 执行一条命令后退出
 ```
 
+> [!summary] 常用选项
+> - `-p 端口`：指定远程 SSH 端口。
+> - `-i 私钥文件`：指定用于认证的私钥文件。
+> - `-v`：显示调试信息，排查连接问题时使用。
+
 **配置免密登录**
 
 ```bash
-ssh-keygen -t ed25519          # 生成密钥对，一路回车使用默认值
+ssh-keygen -t ed25519          # 生成密钥对（-t 指定算法），一路回车使用默认值
 ssh-copy-id user@host          # 将公钥上传到服务器
 ```
 
 > [!info] 公钥与私钥
 > `ssh-keygen` 生成一对密钥：私钥保存在本机 `~/.ssh/` 目录，公钥上传到服务器。登录时，服务器用公钥验证客户端是否持有对应的私钥，私钥本身不会在网络中传输。ed25519 是较新且更安全的密钥算法。
 
-| 报错 | 多半是 |
+| 报错 | 通常原因 |
 | --- | --- |
 | `Permission denied (publickey)` | 公钥未上传，或 `~/.ssh` 权限过宽（应为 700） |
-| `Connection refused` | 对端 sshd 未启动，或端口不正确 |
+| `Connection refused` | 对端 sshd（SSH 服务端进程）未启动，或端口不正确 |
 | `Connection timed out` | 防火墙 / 云安全组未放行 22 端口 |
 
 ### 7. scp —— 跨机器传输文件
@@ -690,6 +703,11 @@ scp -r dir user@host:/data/          # 上传整个目录
 scp user@host:/var/log/app.log ./    # 从远程下载到当前目录
 scp -P 2222 file user@host:/data/    # 指定端口（注意是大写 P）
 ```
+
+> [!summary] 常用选项
+> - `-r`：递归复制整个目录。
+> - `-P 端口`：指定远程端口（大写）。
+> - `-i 私钥文件`：指定用于认证的私钥文件。
 
 > [!warning] `scp` 使用大写 `-P` 指定端口，而 `ssh` 使用小写 `-p`，两者容易混淆。
 
@@ -748,7 +766,7 @@ vim a.txt       # 打开文件（不存在则新建）
 
 ### 2. tar —— 打包与压缩
 
-`tar` 用于将多个文件打包成一个归档文件，常与 gzip 等压缩工具配合使用。
+`tar` 用于将多个文件打包成一个归档文件，常与 gzip 等压缩工具配合使用。归档文件是包含多个文件及其目录结构的单一文件。
 
 ```bash
 tar -czvf logs.tar.gz -C /data logs    # 打包 /data/logs，包内保存相对路径
@@ -766,7 +784,7 @@ tar -tzvf logs.tar.gz                  # 查看包内文件，不解压
 | `-f` | 指定归档文件名，习惯放在最后 |
 | `-C 目录` | 打包或解压前切换到指定目录 |
 
-> [!tip] 记住两个常用组合即可：打包使用 `-czvf`，解压使用 `-xzvf`。打包时先进入目标目录的上级目录，或使用 `-C` 指定目录，否则包内可能包含完整路径。
+> [!tip] 掌握两个常用组合即可：打包使用 `-czvf`，解压使用 `-xzvf`。打包时先进入目标目录的上级目录，或使用 `-C` 指定目录，否则包内可能包含多余的上级目录路径。
 
 > [!warning] 解压前先用 `-tzvf` 查看包内文件，确认不会覆盖现有文件。
 
@@ -794,6 +812,11 @@ gzip -d app.log.gz    # 解压（等价于 gunzip）
 zcat app.log.gz       # 不解压，直接查看内容
 ```
 
+> [!summary] 常用选项
+> - `-d`：解压，等价于 `gunzip`。
+> - `-k`：保留原文件。
+> - `-c`：将结果输出到标准输出，保留原文件。
+
 > [!warning] `gzip` 只能压缩单个文件，且默认会删除原文件。需要打包目录时使用 `tar`。
 
 ---
@@ -813,7 +836,7 @@ apt search nginx             # 搜索软件包（不需要 sudo）
 ```
 
 > [!summary] 常用子命令
-> - `update`：更新软件源索引，不升级已安装的软件；升级使用 `upgrade`。
+> - `update`：更新软件源索引（本地保存的可用软件包列表），不升级已安装的软件；升级使用 `upgrade`。
 > - `install`：安装软件包；`-y` 自动确认。
 > - `remove`：卸载软件包，保留配置文件；`purge` 连配置文件一起删除。
 > - `-f install`：修复依赖关系。
@@ -873,6 +896,8 @@ sudo apt update
 > 软件源是包管理器下载软件包的服务器地址。默认源位于境外时下载可能较慢，可以替换为国内镜像（如阿里云、清华大学镜像站）。
 
 > [!warning] 更换前必须备份；源版本要与系统版本匹配（例如 CentOS 7 使用 `Centos-7.repo`），版本不匹配会导致大量报错。
+
+> [!note] Ubuntu 24.04 及之后版本默认使用 `/etc/apt/sources.list.d/ubuntu.sources`（deb822 格式），不再使用 `/etc/apt/sources.list`；更换源时请修改对应文件。
 
 ---
 
@@ -978,7 +1003,7 @@ journalctl -u nginx -f      # 实时查看该服务的日志
 > - `status`：查看服务状态和最近日志。
 
 > [!info] systemd 与 journalctl
-> `systemctl` 是 systemd 的管理工具，用于管理服务、挂载点、定时器等系统资源。`journalctl` 用于查看 systemd 收集的日志；`-u` 指定 systemd 单元（unit，通常就是服务名），`-f` 实时跟踪。
+> systemd 是 Linux 的系统和服务管理器。`systemctl` 是它的管理工具，用于管理服务、挂载点、定时器等系统资源。`journalctl` 用于查看 systemd 收集的日志；`-u` 指定 systemd 单元（unit，通常就是服务名），`-f` 实时跟踪。
 
 > [!tip] `enable` 只设置开机自启，不会立即启动服务；需要同时执行 `systemctl start nginx`。Ubuntu 上这些命令通常需要加 `sudo`；CentOS 6 使用 `service nginx start`。
 
@@ -987,6 +1012,8 @@ journalctl -u nginx -f      # 实时查看该服务的日志
 ## 十一、系统状态
 
 ### 1. df / du —— 查看磁盘空间
+
+`df` 用于查看各分区的磁盘使用情况；分区是磁盘上划分出的独立存储区域。
 
 ```bash
 df -h              # 查看各分区的使用情况
@@ -1003,9 +1030,9 @@ du -sh * | sort -h # 查看当前目录下各项目的大小，并从小到大�
 
 > [!info] inode 是什么
 > inode（索引节点）是文件系统中用于存储文件元数据（描述文件属性的数据）的数据结构。每个文件或目录都对应一个 inode，其中记录文件类型、权限、属主、大小、时间戳以及数据块的位置，但不包含文件名和文件内容。文件名保存在目录项（目录中记录文件名与 inode 对应关系的条目）中，并指向对应的 inode。
-> 因此可能出现「磁盘仍有剩余空间，却提示 No space left on device」的情况——这是 inode 耗尽，而不是磁盘空间不足。使用 `df -i` 可以检查。
+> 因此可能出现「磁盘仍有剩余空间，却提示 No space left on device」的情况——这通常是 inode 耗尽，而不是磁盘空间不足。使用 `df -i` 可以检查。
 
-> [!tip] `du -sh *` 只统计当前目录下的项目；`sort -h` 能按 K/M/G 正确排序。
+> [!tip] `du -sh *` 只统计当前目录下可见的项目（不含隐藏文件）；`sort -h` 能按 K/M/G 正确排序。
 
 ### 2. free —— 查看内存使用情况
 
@@ -1057,7 +1084,7 @@ echo $PATH         # 查看指定变量的值
 | `PATH` | 命令的搜索路径，命令找不到时先检查它 |
 | `HOME` | 当前用户的家目录 |
 | `LANG` | 语言和字符集，中文乱码时调整它 |
-| `JAVA_HOME` | JDK 的安装目录，Maven / Tomcat 依靠它查找 JDK |
+| `JAVA_HOME` | JDK（Java 开发工具包）的安装目录，Maven / Tomcat 依靠它查找 JDK |
 
 ### 2. export —— 临时设置环境变量
 
@@ -1086,7 +1113,7 @@ source ~/.bashrc      # 使修改立即生效
 ```
 
 > [!info] 登录 Shell 与非登录 Shell
-> `~/.bashrc` 在每次打开交互式终端时加载；`/etc/profile` 和 `/etc/profile.d/*.sh` 在登录 Shell 启动时加载。桌面环境中的终端通常是非登录 Shell，因此个人配置多写在 `~/.bashrc`。
+> 登录 Shell 是用户登录系统时启动的 Shell。`~/.bashrc` 在每次打开交互式终端时加载；`/etc/profile` 和 `/etc/profile.d/*.sh` 在登录 Shell 启动时加载。桌面环境中的终端通常是非登录 Shell，因此个人配置多写在 `~/.bashrc`。
 
 > [!tip] 修改后如果不执行 `source`，改动只会在新打开的终端中生效，这是初学者常遇到的问题。
 
