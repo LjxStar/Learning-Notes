@@ -775,13 +775,15 @@ journalctl -u nginx -f      # 实时看这个服务的日志
 ### 1. df / du — 磁盘空间
 
 ```bash
-df -h              # 各分区用了多少（-h 以G/M/K格式展示）
-df -i              # inode 用量（有空间却写不进文件时看它）
+df -h              # 各分区用了多少
+df -i              # inode 用量
 du -sh /var/log    # 某个目录占了多少空间
 du -sh * | sort -h # 当前目录里谁最占地方
 ```
 
-> 
+> 其中：
+> -h 适用于 df 和 du，以G/M/K格式展示
+> inode，每一个文件 / 目录，**占用 1 个 inode** inode 里面记录：文件大小、权限、磁盘块位置、修改时间；**不存文件内容、不存文件名**
 
 ### 2. free — 内存
 
