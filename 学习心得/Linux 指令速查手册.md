@@ -896,10 +896,7 @@ journalctl -u nginx -f      # 实时查看该服务的日志
 > - `enable` / `disable`：设置 / 取消开机自启。
 > - `status`：查看服务状态和最近日志。
 
-> [!info] systemd 与 journalctl
-> systemd 是 Linux 的系统和服务管理器。`systemctl` 是它的管理工具，用于管理服务、挂载点、定时器等系统资源。`journalctl` 用于查看 systemd 收集的日志；`-u` 指定 systemd 单元（unit，通常就是服务名），`-f` 实时跟踪。
-
-> [!tip] `enable` 只设置开机自启，不会立即启动服务；需要同时执行 `systemctl start nginx`。Ubuntu 上这些命令通常需要加 `sudo`；CentOS 6 使用 `service nginx start`。
+> [!tip] `enable` 只设置开机自启，不会立即启动服务；需要同时执行 `systemctl start nigix`。Ubuntu 上这些命令通常需要加 `sudo`；CentOS 6 使用 `service nginx start`。
 
 ---
 
@@ -922,9 +919,8 @@ du -sh * | sort -h # 查看当前目录下各项目的大小，并从小到大�
 > - `-s`：仅 `du` 支持，只输出汇总大小，不展开子目录明细。
 > - `-a`：`du` 的选项，同时显示文件和目录。
 
-> [!info] inode 是什么
-> inode（索引节点）是文件系统中用于存储文件元数据（描述文件属性的数据）的数据结构。每个文件或目录都对应一个 inode，其中记录文件类型、权限、属主、大小、时间戳以及数据块的位置，但不包含文件名和文件内容。文件名保存在目录项（目录中记录文件名与 inode 对应关系的条目）中，并指向对应的 inode。
-> 因此可能出现「磁盘仍有剩余空间，却提示 No space left on device」的情况——这通常是 inode 耗尽，而不是磁盘空间不足。使用 `df -i` 可以检查。
+> [!question] inode 是什么？
+> inode（索引节点）是文件系统中用于存储**文件元数据**的数据结构。每个文件或目录都对应一个 inode，其中记录文件类型、权限、属主、大小、时间戳以及数据块的位置，但不包含文件名和文件内容。文件名保存在目录项中，并指向对应的 inode。
 
 > [!tip] `du -sh *` 只统计当前目录下可见的项目（不含隐藏文件）；`sort -h` 能按 K/M/G 正确排序。
 
@@ -941,9 +937,6 @@ free -h
 > - `buff/cache`：内核缓冲区和缓存，可在需要时回收。
 > - `available`：估计可供新程序使用的内存，重点看这一列。
 
-> [!info] 为什么 free 很小但系统并不卡
-> Linux 会尽量利用空闲内存做磁盘缓存，以提高读写性能。`buff/cache` 在程序需要内存时可以被回收，因此判断内存是否紧张应看 `available`，而不是 `free`。
-
 ### 3. uptime / uname —— 查看负载与内核信息
 
 ```bash
@@ -956,9 +949,6 @@ nproc              # 查看 CPU 核心数
 > - `-a`：显示全部信息。
 > - `-r`：只显示内核版本。
 > - `-m`：显示硬件架构，如 `x86_64`。
-
-> [!info] 平均负载
-> 平均负载表示系统中处于可运行状态和不可中断状态的进程数量平均值，分别统计 1、5、15 分钟。需要与 CPU 核心数对比：长期高于核心数，说明系统负载过高。
 
 ---
 
@@ -1006,9 +996,6 @@ echo 'export PATH=$PATH:/data/bin' >> ~/.bashrc
 source ~/.bashrc      # 使修改立即生效
 ```
 
-> [!info] 登录 Shell 与非登录 Shell
-> 登录 Shell 是用户登录系统时启动的 Shell。`~/.bashrc` 在每次打开交互式终端时加载；`/etc/profile` 和 `/etc/profile.d/*.sh` 在登录 Shell 启动时加载。桌面环境中的终端通常是非登录 Shell，因此个人配置多写在 `~/.bashrc`。
-
 > [!tip] 修改后如果不执行 `source`，改动只会在新打开的终端中生效，这是初学者常遇到的问题。
 
 ---
@@ -1037,7 +1024,6 @@ sudo ufw disable                 # 关闭防火墙
 | `enable` / `disable` | 启用 / 关闭防火墙 |
 | `status` | 查看状态和规则 |
 
-> [!info] ufw 的默认状态
 > Ubuntu 默认未启用 ufw，`status` 显示 `inactive` 即表示未启用。ufw 的规则立即生效并持久化，重启后不会丢失。
 
 ### 2. firewall-cmd —— CentOS 7 及以上的防火墙
@@ -1080,10 +1066,7 @@ sudo iptables -D INPUT -p tcp --dport 80 -j ACCEPT   # 删除对应规则
 | `--dport 端口` | 指定目标端口 |
 | `-j 动作` | 指定动作，如 ACCEPT、DROP |
 
-> [!info] 链（Chain）
-> iptables 的规则按「链」组织，常用的有 `INPUT`（进入本机的数据包）、`OUTPUT`（本机发出的数据包）和 `FORWARD`（转发的数据包）。
-
-> [!warning] 这样添加的规则重启后会丢失。需要持久化时使用 `iptables-save` 保存并在开机时恢复；日常管理建议使用 ufw 或 firewalld。
+> 这样添加的规则重启后会丢失。需要持久化时使用 `iptables-save` 保存并在开机时恢复；日常管理建议使用 ufw 或 firewalld。
 
 > [!note] 云服务器还有一层安全组
 > 阿里云、腾讯云、AWS 等云平台提供安全组，相当于在实例外层再加一道防火墙。系统内已放行端口但仍无法访问时，通常需要在安全组中放行对应端口。
