@@ -757,11 +757,11 @@ nohup java -jar app.jar > app.log 2>&1 &   # 关掉终端也不退出（部署�
 ### 5. systemctl — 管服务
 
 ```bash
-systemctl status nginx      # 看状态和最近日志（排障第一步）
+systemctl status nginx      # 看状态和最近日志
 systemctl start nginx       # 启动
 systemctl stop nginx        # 停止
 systemctl restart nginx     # 重启
-systemctl reload nginx      # 只重载配置，不断开连接（改完配置优先用它）
+systemctl reload nginx      # 只重载配置，不断开连接
 systemctl enable nginx      # 开机自启
 systemctl disable nginx     # 取消开机自启
 journalctl -u nginx -f      # 实时看这个服务的日志
