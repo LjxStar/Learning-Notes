@@ -759,8 +759,7 @@ yum list installed      # 查看已安装的软件包
 yum clean all           # 清理缓存
 ```
 
-> [!info] yum 与 dnf
-> CentOS 7 使用 `yum`，CentOS 8 及以上使用 `dnf`，两者命令写法基本一致。这些命令需要 root 权限执行。
+> CentOS 7 用 `yum`，CentOS 8+ 用 `dnf`，写法一样。这些命令要用 root 执行。
 
 ### 3. dpkg / rpm —— 安装本地软件包
 
@@ -792,12 +791,7 @@ sudo sed -i 's@//.*archive.ubuntu.com@//mirrors.aliyun.com@g' /etc/apt/sources.l
 sudo apt update
 ```
 
-> [!info] 软件源与镜像
-> 软件源是包管理器下载软件包的服务器地址。默认源位于境外时下载可能较慢，可以替换为国内镜像（如阿里云、清华大学镜像站）。
-
 > [!warning] 更换前必须备份；源版本要与系统版本匹配（例如 CentOS 7 使用 `Centos-7.repo`），版本不匹配会导致大量报错。
-
-> [!note] Ubuntu 24.04 及之后版本默认使用 `/etc/apt/sources.list.d/ubuntu.sources`（deb822 格式），不再使用 `/etc/apt/sources.list`；更换源时请修改对应文件。
 
 ---
 
