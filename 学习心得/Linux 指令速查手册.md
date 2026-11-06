@@ -153,8 +153,6 @@ mv old.txt old.txt.bak   # 备份式重命名
 | --- | --- |
 | `-i` | 目标文件已存在时先确认（覆盖不可恢复，建议养成习惯） |
 
-
-
 ### 3. rm —— 删除文件或目录
 
 ```bash
@@ -214,7 +212,7 @@ which nginx
 type ll
 ```
 
-> [!info] PATH 是什么
+> [!question] PATH 是什么？
 > `PATH` 是 Shell 用于查找命令的目录列表，各目录之间用冒号分隔。执行命令时，Shell 会按顺序在这些目录中查找对应的可执行文件。
 
 > [!tip] 命令已安装却提示 `command not found` 时，先用 `which` 或 `type` 检查。若找不到，通常是命令所在目录不在 `PATH` 中。
