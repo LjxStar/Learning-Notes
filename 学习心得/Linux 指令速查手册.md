@@ -611,29 +611,11 @@ ssh-copy-id user@host          # 将公钥上传到服务器
 > [!info] 公钥与私钥
 > `ssh-keygen` 生成一对密钥：私钥保存在本机 `~/.ssh/` 目录，公钥上传到服务器。登录时，服务器用公钥验证客户端是否持有对应的私钥，私钥本身不会在网络中传输。ed25519 是较新且更安全的密钥算法。
 
-| 报错 | 通常原因 |
-| --- | --- |
+| 报错                              | 通常原因                          |
+| ------------------------------- | ----------------------------- |
 | `Permission denied (publickey)` | 公钥未上传，或 `~/.ssh` 权限过宽（应为 700） |
-| `Connection refused` | 对端 sshd（SSH 服务端进程）未启动，或端口不正确 |
-| `Connection timed out` | 防火墙 / 云安全组未放行 22 端口 |
-
-### 7. scp —— 跨机器传输文件
-
-`scp` 基于 SSH 传输文件，适合在本地与远程服务器之间复制文件。
-
-```bash
-scp file.tar.gz user@host:/data/     # 上传到远程服务器
-scp -r dir user@host:/data/          # 上传整个目录
-scp user@host:/var/log/app.log ./    # 从远程下载到当前目录
-scp -P 2222 file user@host:/data/    # 指定端口（注意是大写 P）
-```
-
-> [!summary] 常用选项
-> - `-r`：递归复制整个目录。
-> - `-P 端口`：指定远程端口（大写）。
-> - `-i 私钥文件`：指定用于认证的私钥文件。
-
-> [!warning] `scp` 使用大写 `-P` 指定端口，而 `ssh` 使用小写 `-p`，两者容易混淆。
+| `Connection refused`            | 对端 sshd（SSH 服务端进程）未启动，或端口不正确  |
+| `Connection timed out`          | 防火墙 / 云安全组未放行 22 端口           |
 
 ---
 
