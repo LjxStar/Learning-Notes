@@ -392,13 +392,6 @@ awk '{print $1}' access.log | sort | uniq -c | sort -nr | head   # 访问量最�
 命令 > /dev/null 2>&1            # 丢弃所有输出（/dev/null 是空设备）
 ```
 
-> [!example] 统计访问量最高的 10 个 IP
-> 1. `awk '{print $1}'`：取出每行的第 1 列，即客户端 IP。
-> 2. `sort`：排序，使相同 IP 相邻。
-> 3. `uniq -c`：去重并统计出现次数。
-> 4. `sort -nr`：按次数从大到小排序。
-> 5. `head`：取前 10 行。
-
 > [!warning] `>` 会立即清空目标文件，文件名写错就会丢失数据。
 > 如果既要保存输出又要查看结果，使用 `tee`：`命令 | tee out.log`；需要追加时使用 `tee -a`。
 
