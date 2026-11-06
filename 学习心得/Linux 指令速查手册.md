@@ -746,11 +746,7 @@ apt search nginx             # 搜索软件包（不需要 sudo）
 > - `-f install`：修复依赖关系。
 > - `search`：搜索软件包。
 
-> [!info] 依赖
-> 依赖是指一个软件包正常运行所需的其他软件包。安装时若缺少依赖，包管理器会提示，或由 `-f install` 自动修复。
-
-> [!info] apt 与 apt-get
-> `apt` 和 `apt-get` 的功能基本一致，日常使用 `apt` 即可。`apt` 的输出格式不保证稳定，不适合写入脚本；脚本中应使用 `apt-get`。
+> `apt` 和 `apt-get` 功能基本一样，日常敲 `apt` 就行。`apt` 不该用在脚本里（输出格式不保证稳定），脚本里写 `apt-get`。
 
 ### 2. yum / dnf —— CentOS 的包管理器
 
