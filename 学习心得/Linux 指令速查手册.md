@@ -39,9 +39,6 @@ sudo -i          # 切换到 root 用户（退出用 exit）
 | 服务管理  | `systemctl`                         | `systemctl`（7+）/ `service`（6） |
 | 查看网卡  | `ip addr`（`ifconfig` 需另装 net-tools） | 同左                            |
 
-> [!tip] 提示 `command not found`
-> 先判断是软件未安装，还是命令所在目录不在 `PATH` 中。前者需要安装软件包，后者可用 `which` 或 `type` 检查。
-
 ---
 
 ## 一、目录操作
