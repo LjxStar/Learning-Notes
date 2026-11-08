@@ -191,7 +191,8 @@ find /var/log -name "*.log" -mtime +30 -delete   # 确认无误后删除
 **（1）which —— 查看可执行文件的位置**
 
 ```bash
-which nginx
+which ls   # 输出 /usr/bin/ls
+which -a python3   # 列出 PATH 里全部匹配到的版本
 ```
 
 **（2）type —— 判断命令是别名、内建命令还是外部程序**
