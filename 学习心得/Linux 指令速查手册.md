@@ -557,7 +557,7 @@ ss -tan                       # 查看所有 TCP 连接
 **（2）netstat —— 旧命令，需要安装 net-tools**
 
 ```bash
-netstat -tunlp
+sudo netstat -tunlp
 ```
 
 | 选项 | 说明 |
