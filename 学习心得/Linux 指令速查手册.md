@@ -157,7 +157,7 @@ rm -i a.txt     # 删除前逐个询问
 | `-i` | 删除前逐个询问，适合删除重要文件 |
 
 > [!warning] Linux 没有回收站，删除后无法恢复。
-> `rm -rf /` 会删除系统文件，导致系统损坏。执行前应使用 `pwd` 和 `ls` 核对路径，路径中包含变量时尤其要谨慎。
+> `rm -rf /` 会尝试删除系统文件（新版 coreutils 默认启用 `--preserve-root` 保护并拒绝执行），但绝对不要尝试。执行前应使用 `pwd` 和 `ls` 核对路径，路径中包含变量时尤其要谨慎。
 
 ### 4. touch —— 创建空文件
 
@@ -220,10 +220,11 @@ cat -n a.txt            # 输出并显示行号
 cat a.txt b.txt > c.txt # 合并两个文件
 ```
 
-> [!summary] 常用选项
-> - `-n`：为所有行显示行号。
-> - `-b`：为非空行显示行号。
-> - `-A`：显示制表符、换行符等不可见字符。
+| 选项 | 说明 |
+| --- | --- |
+| `-n` | 为所有行显示行号 |
+| `-b` | 只为非空行显示行号 |
+| `-A` | 显示制表符、行尾 `$` 等不可见字符（等价于 `-vET`） |
 
 > [!warning] `cat` 只适合查看小文件。大文件会迅速滚过屏幕，无法看清开头，应改用 `less`。
 
@@ -232,7 +233,7 @@ cat a.txt b.txt > c.txt # 合并两个文件
 **（1）less —— 支持上下翻页和搜索，日常首选**
 
 ```bash
-less /var/log/syslog      # 打开文件，按 q 退出
+less /var/log/syslog      # 打开文件，按 q 退出（CentOS 对应 /var/log/messages）
 less -N app.log           # 显示行号
 less +F /var/log/syslog   # 以类似 tail -f 的方式持续输出，按 Ctrl+C 返回浏览模式
 ```
@@ -273,13 +274,10 @@ tail -f app.log | grep ERROR   # 实时过滤错误日志
 ### 4. head —— 查看文件开头
 
 ```bash
-head app.log          # 显示前 10 行
-head -n 20 app.log    # 显示前 20 行
+head app.log          # 默认显示前 10 行
+head -n 20 app.log    # -n：显示前 20 行
+head -c 100 app.log   # -c：按字节数显示开头部分
 ```
-
-> [!summary] 常用选项
-> - `-n 数字`：显示前 N 行，默认为 10 行。
-> - `-c 数字`：按字节数显示开头部分。
 
 ---
 
@@ -292,6 +290,13 @@ wc -l app.log     # 行数（最常用）
 wc -w app.log     # 单词数
 wc -c app.log     # 字节数
 ```
+
+| 选项 | 说明 |
+| --- | --- |
+| `-l` | 统计行数，最常用于统计记录条数 |
+| `-w` | 统计单词数（以空白字符分隔） |
+| `-c` | 统计字节数 |
+| `-m` | 统计字符数，中文等多字节字符与 `-c` 结果不同 |
 
 ### 2. grep —— 按关键字搜索文本
 
@@ -346,11 +351,14 @@ awk '$3 > 100' data.txt                # 输出第 3 列大于 100 的行
 awk '{sum+=$1} END{print sum}' a.txt   # 累加第 1 列并输出总和
 ```
 
-> [!summary] 基本语法
-> - `$0`：整行内容；`$1`、`$2`……：第 1 列、第 2 列。
-> - `-F 分隔符`：指定列分隔符，默认按空白字符（空格或制表符）分列。
-> - `BEGIN{}`：处理第一行之前执行；`END{}`：处理完最后一行后执行。
-> - `{print $1}`：对每一行执行的动作。
+| 写法 | 说明 |
+| --- | --- |
+| `$0` | 整行内容 |
+| `$1`、`$2`…… | 第 1 列、第 2 列 |
+| `-F 分隔符` | 指定列分隔符，默认按空白字符（空格或制表符）分列 |
+| `BEGIN{}` | 处理第一行之前执行 |
+| `END{}` | 处理完最后一行后执行 |
+| `{print $1}` | 对每一行执行的动作 |
 
 ---
 
@@ -456,7 +464,7 @@ umask          # 查看当前值，通常为 022
 umask 022      # 临时修改（仅对当前终端有效）
 ```
 
->  掩码 `022` 下，新文件是 `644`、新目录是 `755`（目录默认带 `x`，文件默认不带）。
+> 掩码 `022` 下，新文件是 `644`、新目录是 `755`（目录默认带 `x`，文件默认不带）。
 
 ---
 
@@ -494,15 +502,18 @@ ifconfig eth0
 ping -c 4 www.baidu.com    # 发送 4 个数据包后停止（不加 -c 会一直发送）
 ```
 
+| 选项 | 说明 |
+| --- | --- |
+| `-c 次数` | 发送指定数量的数据包后停止 |
+| `-i 秒数` | 设置发送间隔，默认 1 秒 |
+| `-W 秒数` | 设置等待响应的超时时间 |
+
+**常见现象**
+
 | 现象 | 通常说明 |
 | --- | --- |
-| `Request timeout` | 对端不可达，或对端 / 中间设备禁用了 ICMP |
+| 无响应（`100% packet loss`） | 对端不可达，或对端 / 中间设备禁用了 ICMP |
 | 能 ping 通 IP，但不能 ping 通域名 | DNS（域名系统）解析有问题，检查 `/etc/resolv.conf` |
-
-> [!summary] 常用选项
-> - `-c 次数`：发送指定数量的数据包后停止。
-> - `-i 秒数`：设置发送间隔，默认 1 秒。
-> - `-W 秒数`：设置等待响应的超时时间。
 
 ### 3. traceroute / mtr —— 追踪路由与定位丢包
 
@@ -511,7 +522,7 @@ ping -c 4 www.baidu.com    # 发送 4 个数据包后停止（不加 -c 会一�
 ```bash
 traceroute www.baidu.com             # 显示每一跳的地址和三次往返耗时
 traceroute -n www.baidu.com          # 不解析域名，只显示 IP
-traceroute -T -p 443 www.baidu.com   # 使用 TCP 443 探测，绕过 ICMP 被拦截的情况
+sudo traceroute -T -p 443 www.baidu.com   # 使用 TCP 443 探测，绕过 ICMP 被拦截的情况（TCP 模式需要 root）
 ```
 
 **（2）mtr —— 结合 traceroute 与 ping，持续统计每一跳的丢包率**
@@ -554,7 +565,10 @@ netstat -tunlp
 | `-t` / `-u` | 分别显示 TCP / UDP |
 | `-n` | 直接显示端口号，不做名称解析 |
 | `-l` | 只显示处于监听状态的端口 |
+| `-a` | 显示所有连接，不加 `-l` 时包含已建立的连接 |
 | `-p` | 显示进程名和 PID |
+
+> `ss` 与 `netstat` 的选项基本通用。`ss` 直接读取内核数据，速度快，新系统默认自带；`netstat` 属于 net-tools，需要额外安装。
 
 ### 5. curl —— 测试接口与查看网页
 
@@ -585,10 +599,11 @@ ssh -p 2222 user@host          # 指定端口
 ssh user@host "df -h"          # 执行一条命令后退出
 ```
 
-> [!summary] 常用选项
-> - `-p 端口`：指定远程 SSH 端口。
-> - `-i 私钥文件`：指定用于认证的私钥文件。
-> - `-v`：显示调试信息，排查连接问题时使用。
+| 选项 | 说明 |
+| --- | --- |
+| `-p 端口` | 指定远程 SSH 端口，默认 22 |
+| `-i 私钥文件` | 指定用于认证的私钥文件 |
+| `-v` | 显示调试信息，排查连接问题时使用 |
 
 **配置免密登录**
 
@@ -602,9 +617,28 @@ ssh-copy-id user@host          # 将公钥上传到服务器
 
 | 报错                              | 通常原因                          |
 | ------------------------------- | ----------------------------- |
-| `Permission denied (publickey)` | 公钥未上传，或 `~/.ssh` 权限过宽（应为 700） |
+| `Permission denied (publickey)` | 公钥未上传，或服务端 `~/.ssh` 权限过宽（应为 700，`authorized_keys` 为 600） |
 | `Connection refused`            | 对端 sshd（SSH 服务端进程）未启动，或端口不正确  |
 | `Connection timed out`          | 防火墙 / 云安全组未放行 22 端口           |
+
+### 7. scp —— 在本地与远程之间传输文件
+
+`scp` 基于 SSH 传输文件，写法与 `cp` 类似，冒号前是远程主机。
+
+```bash
+scp app.jar user@host:/data/            # 上传到远程目录
+scp user@host:/var/log/app.log ./       # 从远程下载到当前目录
+scp -r user@host:/data/logs ./backup    # 递归传输整个目录（传输目录必须加 -r）
+scp -P 2222 app.jar user@host:/data/    # 指定 SSH 端口（注意是大写 P）
+```
+
+| 选项 | 说明 |
+| --- | --- |
+| `-r` | 递归复制整个目录 |
+| `-P 端口` | 指定远程 SSH 端口，大写 `P` 与小写 `p`（保留时间戳）不同 |
+| `-i 私钥文件` | 指定用于认证的私钥文件 |
+
+> [!tip] 传输大量小文件时 `scp` 较慢，可改用 `rsync -avz`，支持增量传输和断点续传。
 
 ---
 
@@ -687,10 +721,11 @@ unzip archive.zip             # 解压到当前目录
 unzip archive.zip -d /data    # 解压到指定目录
 ```
 
-> [!summary] 常用选项
-> - `zip -r`：递归压缩目录。
-> - `unzip -l`：只列出压缩包内容，不解压。
-> - `unzip -d 目录`：指定解压目录。
+| 选项 | 说明 |
+| --- | --- |
+| `zip -r` | 递归压缩目录 |
+| `unzip -l` | 只列出压缩包内容，不解压 |
+| `unzip -d 目录` | 指定解压目录 |
 
 > [!tip] 未安装时：Ubuntu 使用 `sudo apt install zip unzip`，CentOS 使用 `yum install zip unzip`。与 Windows 交换文件时优先使用 zip 格式，Windows 可以直接打开。
 
@@ -702,10 +737,11 @@ gzip -d app.log.gz    # 解压（等价于 gunzip）
 zcat app.log.gz       # 不解压，直接查看内容
 ```
 
-> [!summary] 常用选项
-> - `-d`：解压，等价于 `gunzip`。
-> - `-k`：保留原文件。
-> - `-c`：将结果输出到标准输出，保留原文件。
+| 选项 | 说明 |
+| --- | --- |
+| `-d` | 解压，等价于 `gunzip` |
+| `-k` | 保留原文件 |
+| `-c` | 将结果输出到标准输出，保留原文件 |
 
 > [!warning] `gzip` 只能压缩单个文件，且默认会删除原文件。需要打包目录时使用 `tar`。
 
@@ -725,12 +761,15 @@ sudo apt -f install          # 修复依赖关系
 apt search nginx             # 搜索软件包（不需要 sudo）
 ```
 
-> [!summary] 常用子命令
-> - `update`：更新软件源索引（本地保存的可用软件包列表），不升级已安装的软件；升级使用 `upgrade`。
-> - `install`：安装软件包；`-y` 自动确认。
-> - `remove`：卸载软件包，保留配置文件；`purge` 连配置文件一起删除。
-> - `-f install`：修复依赖关系。
-> - `search`：搜索软件包。
+| 子命令 | 说明 |
+| --- | --- |
+| `update` | 更新软件源索引（本地保存的可用软件包列表），不升级已安装的软件 |
+| `upgrade` | 升级已安装的软件包，不删除已有软件包 |
+| `install 包名` | 安装软件包，加 `-y` 自动确认 |
+| `remove 包名` | 卸载软件包，保留配置文件 |
+| `purge 包名` | 卸载软件包并删除配置文件 |
+| `search 关键字` | 搜索软件包 |
+| `-f install` | 修复依赖关系 |
 
 > `apt` 和 `apt-get` 功能基本一样，日常敲 `apt` 就行。`apt` 不该用在脚本里（输出格式不保证稳定），脚本里写 `apt-get`。
 
@@ -745,7 +784,16 @@ yum list installed      # 查看已安装的软件包
 yum clean all           # 清理缓存
 ```
 
-> CentOS 7 用 `yum`，CentOS 8+ 用 `dnf`，写法一样。这些命令要用 root 执行。
+| 子命令 | 说明 |
+| --- | --- |
+| `install 包名` | 安装 |
+| `remove 包名` | 卸载 |
+| `update [包名]` | 升级指定软件包；不带包名则升级全部 |
+| `search 关键字` | 搜索软件包 |
+| `list installed` | 查看已安装的软件包 |
+| `clean all` | 清理缓存 |
+
+> CentOS 7 用 `yum`，CentOS 8+ 用 `dnf`，写法一样。这些命令要用 root 或 sudo 执行。
 
 ### 3. dpkg / rpm —— 安装本地软件包
 
@@ -761,10 +809,12 @@ sudo dpkg -i pkg.deb        # 安装；若提示缺少依赖，接着执行 sudo
 rpm -ivh pkg.rpm            # 更推荐 yum install ./pkg.rpm，可自动处理依赖
 ```
 
-> [!summary] 参数说明
-> - `dpkg -i`：安装本地 `.deb` 包。
-> - `rpm -i`：安装；`-v` 显示过程；`-h` 显示进度条。
-> - `rpm -q 包名`：查询软件包是否已安装；`rpm -e 包名`：卸载。
+| 写法 | 说明 |
+| --- | --- |
+| `dpkg -i 包.deb` | 安装本地 `.deb` 包；缺少依赖时执行 `sudo apt -f install` |
+| `rpm -ivh 包.rpm` | 安装本地 `.rpm` 包：`-i` 安装、`-v` 显示过程、`-h` 显示进度条 |
+| `rpm -q 包名` | 查询软件包是否已安装 |
+| `rpm -e 包名` | 卸载软件包 |
 
 > [!warning] `.deb` 与 `.rpm` 不能混用：`.deb` 无法安装到 CentOS，`.rpm` 也无法安装到 Ubuntu。
 
@@ -773,9 +823,11 @@ rpm -ivh pkg.rpm            # 更推荐 yum install ./pkg.rpm，可自动处理�
 ```bash
 # Ubuntu：先备份，再替换镜像域名
 sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
-sudo sed -i 's@//.*archive.ubuntu.com@//mirrors.aliyun.com@g' /etc/apt/sources.list
+sudo sed -i 's@//.*archive.ubuntu.com@//mirrors.aliyun.com@g; s@//security.ubuntu.com@//mirrors.aliyun.com@g' /etc/apt/sources.list
 sudo apt update
 ```
+
+> [!note] Ubuntu 24.04 及以后默认改用 `/etc/apt/sources.list.d/ubuntu.sources`（deb822 格式），`/etc/apt/sources.list` 可能为空。此时需要修改 `ubuntu.sources` 中的 `URIs:` 字段，而不是上面这个文件。
 
 > [!warning] 更换前必须备份；源版本要与系统版本匹配（例如 CentOS 7 使用 `Centos-7.repo`），版本不匹配会导致大量报错。
 
@@ -834,10 +886,11 @@ kill 1234            # 发送默认信号 15（TERM），请求进程正常退�
 kill -9 1234         # 发送信号 9（KILL），强制终止
 ```
 
-> [!summary] 常用信号
-> - `15`（TERM）：默认信号，请求进程正常退出，进程可以清理资源。
-> - `9`（KILL）：强制终止，进程无法捕获或忽略。
-> - `1`（HUP）：挂起信号，许多服务收到后会重新加载配置。
+| 信号 | 说明 |
+| --- | --- |
+| `15`（TERM） | 默认信号，请求进程正常退出，进程可以清理资源 |
+| `9`（KILL） | 强制终止，进程无法捕获或忽略 |
+| `1`（HUP） | 挂起信号，许多服务收到后会重新加载配置 |
 
 **（2）pkill / killall —— 按名称或关键字终止进程**
 
@@ -876,13 +929,16 @@ systemctl disable nginx     # 取消开机自启
 journalctl -u nginx -f      # 实时查看该服务的日志
 ```
 
-> [!summary] 常用子命令
-> - `start` / `stop` / `restart`：启动 / 停止 / 重启服务。
-> - `reload`：重新加载配置，不中断现有连接（服务支持时）。
-> - `enable` / `disable`：设置 / 取消开机自启。
-> - `status`：查看服务状态和最近日志。
+| 子命令 | 说明 |
+| --- | --- |
+| `start` / `stop` / `restart` | 启动 / 停止 / 重启服务 |
+| `reload` | 重新加载配置，不中断现有连接（服务支持时） |
+| `enable` / `disable` | 设置 / 取消开机自启 |
+| `status` | 查看服务状态和最近的日志 |
 
-> [!tip] `enable` 只设置开机自启，不会立即启动服务；需要同时执行 `systemctl start nigix`。Ubuntu 上这些命令通常需要加 `sudo`；CentOS 6 使用 `service nginx start`。
+> 查看日志使用 `journalctl`：`journalctl -u 服务名 -f` 实时跟踪，`journalctl -u 服务名 -n 100` 查看最近 100 行。
+
+> [!tip] `enable` 只设置开机自启，不会立即启动服务；需要同时执行 `systemctl start nginx`。Ubuntu 上这些命令通常需要加 `sudo`；CentOS 6 使用 `service nginx start`。
 
 ---
 
@@ -899,11 +955,12 @@ du -sh /var/log    # 查看指定目录占用的总空间
 du -sh * | sort -h # 查看当前目录下各项目的大小，并从小到大排序
 ```
 
-> [!summary] 常用选项
-> - `-h`：以 K/M/G 等易读单位显示大小，`df` 和 `du` 都支持。
-> - `-i`：仅 `df` 支持，查看 inode 使用情况。
-> - `-s`：仅 `du` 支持，只输出汇总大小，不展开子目录明细。
-> - `-a`：`du` 的选项，同时显示文件和目录。
+| 选项 | 说明 |
+| --- | --- |
+| `-h` | 以 K/M/G 等易读单位显示大小，`df` 和 `du` 都支持 |
+| `-i` | 仅 `df` 支持，查看 inode 使用情况 |
+| `-s` | 仅 `du` 支持，只输出汇总大小，不展开子目录明细 |
+| `-a` | `du` 的选项，同时显示文件和目录 |
 
 > [!question] inode 是什么？
 > inode（索引节点）是文件系统中用于存储**文件元数据**的数据结构。每个文件或目录都对应一个 inode，其中记录文件类型、权限、属主、大小、时间戳以及数据块的位置，但不包含文件名和文件内容。文件名保存在目录项中，并指向对应的 inode。
@@ -916,12 +973,13 @@ du -sh * | sort -h # 查看当前目录下各项目的大小，并从小到大�
 free -h
 ```
 
-> [!summary] 输出字段
-> - `total`：总内存。
-> - `used`：已使用内存。
-> - `free`：完全空闲的内存。
-> - `buff/cache`：内核缓冲区和缓存，可在需要时回收。
-> - `available`：估计可供新程序使用的内存，重点看这一列。
+| 字段 | 说明 |
+| --- | --- |
+| `total` | 总内存 |
+| `used` | 已使用内存 |
+| `free` | 完全空闲的内存 |
+| `buff/cache` | 内核缓冲区和缓存，可在需要时回收 |
+| `available` | 估计可供新程序使用的内存，重点看这一列 |
 
 ### 3. uptime / uname —— 查看负载与内核信息
 
@@ -931,10 +989,11 @@ uname -a           # 内核版本、主机名、系统架构
 nproc              # 查看 CPU 核心数
 ```
 
-> [!summary] uname 常用选项
-> - `-a`：显示全部信息。
-> - `-r`：只显示内核版本。
-> - `-m`：显示硬件架构，如 `x86_64`。
+| 选项 | 说明 |
+| --- | --- |
+| `-a` | 显示全部信息 |
+| `-r` | 只显示内核版本 |
+| `-m` | 显示硬件架构，如 `x86_64` |
 
 ---
 
@@ -964,7 +1023,7 @@ export PATH=$PATH:/usr/local/jdk/bin   # 注意保留 $PATH，否则原有路径
 unset JAVA_HOME                        # 删除变量
 ```
 
-> [!question] `$变量名`  ？
+> [!question] `$变量名` ？
 > `$变量名` 表示引用变量的值。`PATH=$PATH:/new/dir` 的含义是：在原有 `PATH` 的基础上追加 `/new/dir`。
 
 > [!warning] `PATH=$PATH:新目录` 中的 `$PATH` 不能省略，否则原有路径会全部丢失，当前终端将无法找到大部分命令。重新打开终端可以恢复。
@@ -988,7 +1047,7 @@ source ~/.bashrc      # 使修改立即生效
 
 ## 十三、防火墙
 
-`ufw` 和 `firewalld` 都是 iptables 的友好封装，底层仍然使用 iptables。远程修改防火墙时，**先放行 22 端口再启用防火墙**，否则可能断开 SSH 连接。
+`ufw` 和 `firewalld` 都是对 netfilter 的友好封装，底层规则早期由 iptables 管理，新版本系统可能改用 nftables 后端。远程修改防火墙时，**先放行 22 端口再启用防火墙**，否则可能断开 SSH 连接。
 
 > [!warning] 远程操作防火墙前，务必确认 22 端口已放行。否则一旦启用防火墙，可能立即失去远程连接，只能通过控制台恢复。
 
