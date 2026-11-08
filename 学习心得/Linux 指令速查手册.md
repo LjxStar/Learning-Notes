@@ -863,12 +863,12 @@ systemctl disable nginx     # 取消开机自启
 journalctl -u nginx -f      # 实时查看该服务的日志
 ```
 
-| 子命令 | 说明 |
-| --- | --- |
-| `start` / `stop` / `restart` | 启动 / 停止 / 重启服务 |
-| `reload` | 重新加载配置，不中断现有连接（服务支持时） |
-| `enable` / `disable` | 设置 / 取消开机自启 |
-| `status` | 查看服务状态和最近的日志 |
+| 子命令                          | 说明                    |
+| ---------------------------- | --------------------- |
+| `start` / `stop` / `restart` | 启动 / 停止 / 重启服务        |
+| `reload`                     | 重新加载配置，不中断现有连接（服务支持时） |
+| `enable` / `disable`         | 设置 / 取消开机自启           |
+| `status`                     | 查看服务状态和最近的日志          |
 
 > 查看日志使用 `journalctl`：`journalctl -u 服务名 -f` 实时跟踪，`journalctl -u 服务名 -n 100` 查看最近 100 行。
 
@@ -907,13 +907,13 @@ du -sh * | sort -h # 查看当前目录下各项目的大小，并从小到大�
 free -h
 ```
 
-| 字段 | 说明 |
-| --- | --- |
-| `total` | 总内存 |
-| `used` | 已使用内存 |
-| `free` | 完全空闲的内存 |
-| `buff/cache` | 内核缓冲区和缓存，可在需要时回收 |
-| `available` | 估计可供新程序使用的内存，重点看这一列 |
+| 字段           | 说明                  |
+| ------------ | ------------------- |
+| `total`      | 总内存                 |
+| `used`       | 已使用内存               |
+| `free`       | 完全空闲的内存             |
+| `buff/cache` | 内核缓冲区和缓存，可在需要时回收    |
+| `available`  | 估计可供新程序使用的内存，重点看这一列 |
 
 ### 3. uptime / uname —— 查看负载与内核信息
 
@@ -1062,7 +1062,7 @@ sudo iptables -D INPUT -p tcp --dport 80 -j ACCEPT   # 删除对应规则
 | 搜索文本  | `grep -rn`、`wc -l`、`sed -i 's/a/b/g'`、`awk '{print $1}'`                        |
 | 管道重定向 | 管道符、`>`、`>>`、`2>&1`、`/dev/null`、`tee`                                           |
 | 权限    | `chmod 755`、`chmod +x`、`chown -R`、`chgrp`、`umask`                               |
-| 网络    | `ip a`、`ping -c`、`traceroute`、`mtr -r`、`ss -tunlp`、`curl -I`、`ssh`、`scp`        |
+| 网络    | `ip a`、`ping -c`、`traceroute`、`mtr -r`、`ss -tunlp`、`curl -I`                    |
 | 编辑压缩  | `vim`、`tar -czvf`、`tar -xzvf`、`zip -r`、`unzip`、`gzip -d`                        |
 | 软件包   | `apt update`、`apt install`、`apt purge`、`yum install`、`dnf`、`dpkg -i`、`rpm -ivh` |
 | 进程服务  | `ps -ef`、`top`、`kill -9`、`systemctl`、`journalctl -u`、`nohup &`                  |
