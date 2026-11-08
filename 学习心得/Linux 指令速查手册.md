@@ -765,22 +765,6 @@ rpm -ivh pkg.rpm            # 更推荐 yum install ./pkg.rpm，可自动处理�
 
 > [!warning] `.deb` 与 `.rpm` 不能混用：`.deb` 无法安装到 CentOS，`.rpm` 也无法安装到 Ubuntu。
 
-### 4. 更换软件源 —— 下载缓慢时使用国内镜像
-
-```bash
-# Ubuntu：先备份，再替换镜像域名
-sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
-sudo sed -i 's@//.*archive.ubuntu.com@//mirrors.aliyun.com@g; s@//security.ubuntu.com@//mirrors.aliyun.com@g' /etc/apt/sources.list
-sudo apt update
-```
-
-> [!note] 
-> 在 Ubuntu 24.04 之前，Ubuntu 的软件源配置文件使用传统的 One-Line-Style，路径为 `/etc/apt/sources.list`；
-> 从 Ubuntu 24.04 开始，Ubuntu 的软件源配置文件变更为 DEB822 格式，路径为 `/etc/apt/sources.list.d/ubuntu.sources`。
-
-
-> [!warning] 更换前必须备份；源版本要与系统版本匹配（例如 CentOS 7 使用 `Centos-7.repo`），版本不匹配会导致大量报错。
-
 ---
 
 ## 十、进程与服务
