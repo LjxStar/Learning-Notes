@@ -774,7 +774,10 @@ sudo sed -i 's@//.*archive.ubuntu.com@//mirrors.aliyun.com@g; s@//security.ubunt
 sudo apt update
 ```
 
-> [!note] Ubuntu 24.04 及以后默认改用 `/etc/apt/sources.list.d/ubuntu.sources`（deb822 格式），`/etc/apt/sources.list` 可能为空。此时需要修改 `ubuntu.sources` 中的 `URIs:` 字段，而不是上面这个文件。
+> [!note] 
+> 在 Ubuntu 24.04 之前，Ubuntu 的软件源配置文件使用传统的 One-Line-Style，路径为 `/etc/apt/sources.list`；
+> 从 Ubuntu 24.04 开始，Ubuntu 的软件源配置文件变更为 DEB822 格式，路径为 `/etc/apt/sources.list.d/ubuntu.sources`。
+
 
 > [!warning] 更换前必须备份；源版本要与系统版本匹配（例如 CentOS 7 使用 `Centos-7.repo`），版本不匹配会导致大量报错。
 
