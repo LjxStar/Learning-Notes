@@ -2556,7 +2556,7 @@ public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain
 
 对于 `@WebFilter` 声明的过滤器，其执行顺序由**类名的自然排序（字典序）** 决定。若需精确控制顺序，推荐使用 `FilterRegistrationBean` 进行显式注册。
 
-### 8.3.6 基于 Filter 实现令牌校验
+### 8.3.6 *基于 Filter 实现令牌校验
 
 现在把本章的主线接上：令牌校验就写在 `doFilter()` 的放行之前，校验不通过就**不调用 `chain.doFilter()`**，直接返回 401，请求永远到不了 Controller。
 
@@ -2713,7 +2713,7 @@ public class WebConfig implements WebMvcConfigurer {
 
 ![[Filter与Interceptor的执行顺序.png]]
 
-### 8.4.5 基于 Interceptor 实现令牌校验
+### 8.4.5 *基于 Interceptor 实现令牌校验
 
 拦截器相较 Filter 最大的优势是：**支持排除路径**（`excludePathPatterns`）和**可注入 Spring Bean**（如 `ObjectMapper` 用于序列化统一响应结果）。
 
