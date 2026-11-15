@@ -96,3 +96,107 @@ Spring Security 的原理本质上是**一条过滤器链**，链中包含提供
 
 ### 2.4 准备工作：基础设施代码
 #### 2.4.1 添加依赖
+```xml
+<!--redis依赖 -->  
+<dependency>  
+    <groupId>org.springframework.boot</groupId>  
+    <artifactId>spring-boot-starter-data-redis</artifactId>  
+</dependency>  
+<!-- jjwt  -->  
+<dependency>  
+    <groupId>io.jsonwebtoken</groupId>  
+    <artifactId>jjwt-api</artifactId>  
+    <version>0.13.0</version>  
+</dependency>  
+<dependency>  
+    <groupId>io.jsonwebtoken</groupId>  
+    <artifactId>jjwt-impl</artifactId>  
+    <version>0.13.0</version>  
+    <scope>runtime</scope>  
+</dependency>  
+<dependency>  
+    <groupId>io.jsonwebtoken</groupId>  
+    <artifactId>jjwt-jackson</artifactId>  
+    <version>0.13.0</version>  
+    <scope>runtime</scope>  
+</dependency>
+```
+
+#### 2.4.2 Redis 相关配置
+
+```java
+@Configuration
+public class RedisConfig {
+
+    /**
+     * 全局统一ObjectMapper，和springmvc jackson保持一致
+     */
+    @Bean
+    public ObjectMapper redisObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        // 支持 LocalDateTime / LocalDate / LocalTime
+        mapper.registerModule(new JavaTimeModule());
+        // 禁止日期输出为时间戳
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        // 美化：可选，生产建议关闭
+        // mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        return mapper;
+    }
+
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory,
+                                                       ObjectMapper redisObjectMapper) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(factory);
+
+        StringRedisSerializer stringSer = new StringRedisSerializer();
+        // 带类型信息的Jackson序列化器，可自动反序列化
+        GenericJacksonJsonRedisSerializer jacksonSer = new GenericJacksonJsonRedisSerializer(redisObjectMapper);
+
+        // key 序列化
+        template.setKeySerializer(stringSer);
+        template.setHashKeySerializer(stringSer);
+        // value 序列化
+        template.setValueSerializer(jacksonSer);
+        template.setHashValueSerializer(jacksonSer);
+
+        template.afterPropertiesSet();
+        return template;
+    }
+}
+```
+
+#### 2.4.3 统一响应类
+```java
+@Data
+public class ResponseResult<T> {
+    /**
+     * 状态码
+     */
+    private Integer code;
+    /**
+     * 提示信息
+     */
+    private String msg;
+    /**
+     * 查询到的结果数据
+     */
+    private T data;
+ 
+    public ResponseResult(Integer code, String msg) {
+        this.code = code;
+        this.msg = msg;
+    }
+ 
+    public ResponseResult(Integer code, T data) {
+        this.code = code;
+        this.data = data;
+    }
+ 
+    public ResponseResult(Integer code, String msg, T data) {
+        this.code = code;
+        this.msg = msg;
+        this.data = data;
+    }
+}
+```
