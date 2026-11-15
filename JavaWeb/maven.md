@@ -245,7 +245,7 @@ Maven 管理依赖的思路可以概括为一句话：**用坐标定位依赖，
 
 Maven 拥有**传递依赖**特性：若项目直接依赖 A，A 依赖 B，B 又依赖 C，则 B、C 会自动被引入到当前项目的 classpath，无需手动声明。例如进行 **SpringBoot** 进行开发，我们只需要引入一个 starter 依赖
 
-![[Pasted image 20261115164416.png]]
+![[Maven传递依赖.png]]
 
 其集成了所有 Web 开发常见的依赖，我们只需要引入这一个依赖，其他依赖会自动的通过 Maven 依赖传递传递进来。
 
@@ -358,7 +358,7 @@ IDEA 把 Maven 深度集成进了界面，在里面执行生命周期指令有�
 
 **方式 1**：Maven 工具窗口双击阶段
 
-`View → Tool Windows → Maven` 打开 Maven 工具窗口，展开项目节点，**Lifecycle** 下挂着 `clean`、`validate`、`compile`、`test`、`package`、`verify`、`install`、`deploy` 等阶段，**双击**任意一个即可执行。
+![[Maven可视化项目构建.png]]
 
 **方式 2**：自定义 Maven 运行配置
 
