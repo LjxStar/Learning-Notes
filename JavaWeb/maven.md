@@ -554,7 +554,7 @@ spring-boot-starter-parent     官方父工程：统一版本管理
 
 新建 Maven 模块 `tlias-parent`，把 `<packaging>` 改成 `pom`（默认是 `jar`）；父工程不写代码，`src` 目录可以直接删除，只留一个 `pom.xml`。
 
-![[父工程打包方式.png]]
+![[构建父工程.png]]
 
 ```xml
 <!-- tlias-parent/pom.xml（省略 XML 声明与 project 根标签） -->
