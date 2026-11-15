@@ -244,13 +244,13 @@ Maven 管理依赖的思路可以概括为一句话：**用坐标定位依赖，
 > [!question] `runtime` 与 `provided` 的区别？
 > 两者在「是否参与编译」上正好相反：`runtime` **编译时不可见、运行时才需要**（如 MySQL 驱动）；`provided` **编译时可见、但不进产物**（如 `servlet-api`）。判断口诀：*运行时才用到的写 `runtime`，由容器提供的写 `provided`*。
 
-> [!TIP]
->Maven 拥有**传递依赖**特性：若项目直接依赖 A，A 依赖 B，B 又依赖 C，则 B、C 会自动被引入到当前项目的 classpath，无需手动声明。
->传递依赖简化了开发，但也带来问题：一是引入多余、不需要或是版本老旧的依赖；二是同一个构件通过多条依赖链引入、版本不一致，产生**依赖冲突**。这类冲突大多在编译阶段不会报错，常在运行时才暴露异常，排查难度较高。
+## 2.4 传统依赖
 
-## 2.4 排除依赖 exclusions
+Maven 拥有**传递依赖**特性：若项目直接依赖 A，A 依赖 B，B 又依赖 C，则 B、C 会自动被引入到当前项目的 classpath，无需手动声明。
 
-**排除语法**：在需要排除的 `<dependency>` 内部添加 `<exclusions>`，每个 `<exclusion>` 指定一个 `groupId` 和 `artifactId`：
+> 传递依赖简化了开发，但也带来问题：一是引入多余、不需要或是版本老旧的依赖；二是同一个构件通过多条依赖链引入、版本不一致，产生**依赖冲突**。
+
+可在 `<dependency>` 内配置 `<exclusions>` 排除指定传递依赖，每个 `<exclusion>` 通过 `groupId` 和 `artifactId` 定位要排除的构件：
 
 ```xml
 <dependency>
@@ -258,7 +258,6 @@ Maven 管理依赖的思路可以概括为一句话：**用坐标定位依赖，
     <artifactId>spring-boot-starter-web</artifactId>
     <version>3.2.0</version>
     <exclusions>
-        <!-- 排除掉传递进来的 Tomcat，再自己引入 spring-boot-starter-undertow 替换 -->
         <exclusion>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-tomcat</artifactId>
@@ -266,8 +265,6 @@ Maven 管理依赖的思路可以概括为一句话：**用坐标定位依赖，
     </exclusions>
 </dependency>
 ```
-
-排除之后如果还需要同类功能，记得自己再显式引入替代依赖，例如上面注释里提到的，用 `spring-boot-starter-undertow` 替换 Tomcat。
 
 ## 2.5 统一管理版本
 
