@@ -125,21 +125,26 @@ Spring Security 的原理本质上是**一条过滤器链**，链中包含提供
 #### 2.4.2 Redis 相关配置
 
 ```java
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationFeature;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
+
 @Configuration
 public class RedisConfig {
 
-    /**
-     * 全局统一ObjectMapper，和springmvc jackson保持一致
-     */
     @Bean
     public ObjectMapper redisObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
-        // 支持 LocalDateTime / LocalDate / LocalTime
-        mapper.registerModule(new JavaTimeModule());
+        // Jackson3 内置支持 LocalDateTime，不用手动注册 JavaTimeModule
         // 禁止日期输出为时间戳
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        // 美化：可选，生产建议关闭
-        // mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        // 全局：序列化忽略null字段，和你 ResponseResult 的 @JsonInclude 保持一致
+        mapper.setSerializationInclusion(tools.jackson.databind.JsonInclude.Include.NON_NULL);
         return mapper;
     }
 
@@ -150,13 +155,10 @@ public class RedisConfig {
         template.setConnectionFactory(factory);
 
         StringRedisSerializer stringSer = new StringRedisSerializer();
-        // 带类型信息的Jackson序列化器，可自动反序列化
         GenericJacksonJsonRedisSerializer jacksonSer = new GenericJacksonJsonRedisSerializer(redisObjectMapper);
 
-        // key 序列化
         template.setKeySerializer(stringSer);
         template.setHashKeySerializer(stringSer);
-        // value 序列化
         template.setValueSerializer(jacksonSer);
         template.setHashValueSerializer(jacksonSer);
 
