@@ -596,7 +596,7 @@ spring-boot-starter-parent     官方父工程：统一版本管理
 > - 父子工程对同一依赖声明了不同版本时，**以子工程的版本为准**；
 > - 子模块若直接建在父工程目录下（多数企业项目的做法），`relativePath` 与后面 `<modules>` 的路径都要相应简化为 `tlias-pojo` 这类同级目录。
 
-**（3）共有依赖上提**
+**（3）共有依赖提取**
 
 在父工程追加 `<dependencies>`，子模块删掉重复的声明即可。`spring-boot-starter` 的版本已由 `spring-boot-starter-parent` 统一管理，不必再写：
 
