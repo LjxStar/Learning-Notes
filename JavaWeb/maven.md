@@ -305,9 +305,7 @@ Maven 把项目构建的过程划分为若干个**阶段（phase）**，并预�
 > [!tip] 阶段 ≠ 动作
 > 阶段只是构建流程上的一个节点，真正干活的是**绑定**在该阶段上的插件目标（goal）。例如 `compile` 阶段绑定了 `maven-compiler-plugin` 的 `compile` 目标，`package` 阶段绑定了 `maven-jar-plugin` 的 `jar` 目标。所以阶段不能被跳过，但可以通过改写插件配置来微调它的行为。
 
-## 3.2 项目构建
-
-### 3.2.1 常见构建命令
+## 3.2 常见构建命令
 
 | 指令                                         | 作用                  |
 | ------------------------------------------ | ------------------- |
@@ -320,15 +318,18 @@ Maven 把项目构建的过程划分为若干个**阶段（phase）**，并预�
 | `mvn clean package -DskipTests`            | 打包，编译测试代码但**不执行测试** |
 | `mvn clean package -Dmaven.test.skip=true` | 打包，**不编译也不执行测试**    |
 | `mvn clean install`                        | 清理、打包，安装到本地仓库       |
+| `mvn deploy`                               | 编译、测试、打包、安装、上传到远程私服 |
 
-> [!tip] 用 `package` 还是 `install`？
+> [!question] 用 `package`、`install` 还是 `deploy` ？
 > - 只是想生成一个 jar 包给同事传阅 → 用 `package` 即可
 > - 这个 jar 还要被**其他 Maven 项目**当作依赖引用 → 必须用 `install`，把构件放进本地仓库，下一个项目才能通过坐标找到它
 > - 这个 jar 要上传给整个团队使用 → 用 `deploy` 发布到公司私服
 
 > **`-DskipTests` 与 `-Dmaven.test.skip=true`**：前者只跳过**执行**测试（测试代码照常编译），后者连编译都跳过，跳得更快但也就测不到编译错误了。
 
-### 3.2.2 在终端中执行
+## 3.3 项目构建
+
+**（1）在终端中执行**
 
 在终端里执行 `mvn` 命令，需要注意三件事。
 
@@ -339,41 +340,37 @@ cd D:\project
 mvn clean package
 ```
 
-> [!note] CMD 中切盘符要加 `/d`
-> 在 **CMD** 里 `cd D:\project` 只改变当前目录、不切换盘符，命令其实还停留在原盘符上，于是报找不到文件，正确写法是 `cd /d D:\project`；PowerShell 没有这个问题，直接 `cd D:\project` 即可。
-
 **方式 2**：**也可以完全不切目录，用 `-f` 参数直接指定 `pom.xml` 的路径**，在同时维护多个项目时很方便：
 
 ```bash
 mvn -f D:\develop\project\demo\pom.xml clean package
 ```
 
-**方式 3**：**用 Maven Wrapper 可以免装 Maven**。IDEA 新建 Maven 项目时可以勾选「使用 Maven Wrapper」，会生成 `mvnw.cmd`（Windows）、`mvnw`（macOS / Linux）两个脚本和一个 `.mvn` 目录，它们会自动下载与项目匹配的 Maven 版本；在已有项目中也可以执行 `mvn wrapper:wrapper` 手动生成。在 Windows 上要执行的是带 `.cmd` 后缀的那个：
+**方式 3**：**用 Maven Wrapper 可以免装 Maven**。IDEA 新建 Maven 项目时可以勾选「使用 Maven Wrapper」，会生成 `mvnw.cmd`（Windows）、`mvnw`（macOS / Linux）两个脚本和一个 `.mvn` 目录，它们会自动下载与项目匹配的 Maven 版本；
 
 ```bash
 mvnw.cmd clean package
 ```
 
-### 3.2.3 在IDEA中执行
+**（2）IDEA 中执行**
 
 IDEA 把 Maven 深度集成进了界面，在里面执行生命周期指令有两种主要方式。
 
 **方式 1**：Maven 工具窗口双击阶段
 
-`View → Tool Windows → Maven` 打开 Maven 工具窗口，展开项目节点，**Lifecycle** 下挂着 `clean`、`validate`、`compile`、`test`、`package`、`verify`、`install`、`deploy` 等阶段，**双击**任意一个即可执行。构建日志输出在窗口下方，`BUILD SUCCESS` 表示成功，其中的 `ERROR` 是可点击链接，能直接跳到出错的代码行。
-
-上手最快，但有两个短板：一次只能跑一个阶段；**不会自动先执行 `clean`**——若 `target` 里残留了已删除的 class，打出来的 jar 仍会带着它们，往往到运行时才报错。
+`View → Tool Windows → Maven` 打开 Maven 工具窗口，展开项目节点，**Lifecycle** 下挂着 `clean`、`validate`、`compile`、`test`、`package`、`verify`、`install`、`deploy` 等阶段，**双击**任意一个即可执行。
 
 **方式 2**：自定义 Maven 运行配置
 
-把整条指令当成一条命令执行，可以写多个阶段、还能带参数，日常开发主要用这个。
+把整条指令当成一条命令执行，可以写多个阶段、还能带参数。
 
 1. 在顶部运行配置下拉框中选择 **Edit Configurations...**，点 `+` 新建配置，选择 **Maven** 类型；
 2. `Working directory` 填项目根目录，即 `pom.xml` 所在位置，直接填 `$MODULE_WORKING_DIR$` 即可；
-3. `Command line` 填要执行的阶段与参数——**注意不要写 `mvn` 前缀**，多个用空格隔开，如 `clean package`、`clean install -DskipTests`、`clean package -P prod`；
+3. `Command line` 填要执行的阶段与参数——**注意不要写 `mvn` 前缀**，多个用空格隔开，如 `clean package`、`clean install -DskipTests`；
 4. 保存后即可在右上角一键运行，日志输出在底部的 **Run** 面板。
 
 
+# 其他
 
 ## 2.5 统一管理版本
 
@@ -409,8 +406,6 @@ IDEA 把 Maven 深度集成进了界面，在里面执行生命周期指令有�
 
 属性适合管理零散、少量的版本号；如果依赖很多、又有父子工程，更常用的是下面这种做法。
 
-
-# 其他
 ### 2.5.2 用 dependencyManagement 统一版本
 
 属性解决的是「版本号写几遍」的问题，「最终用哪个版本」则由 `<dependencyManagement>` 决定。实际开发中，版本冲突多数由 Spring Boot 这类框架的**依赖管理**机制解决：父工程的 `<dependencyManagement>` 把常用库的版本统一钉死，子模块声明依赖时不再写 `<version>`。
