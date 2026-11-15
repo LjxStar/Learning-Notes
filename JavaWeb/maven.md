@@ -622,7 +622,9 @@ spring-boot-starter-parent     官方父工程：统一版本管理
 
 ![[jwt版本散落各模块.png]]
 
-**版本锁定**：父工程用 `<dependencyManagement>` 声明版本，子模块引入时省略 `<version>`。
+**（1）版本锁定**
+
+父工程用 `<dependencyManagement>` 声明版本，子模块引入时省略 `<version>`。
 
 ```xml
 <!-- 父工程：只声明版本，不引入依赖 -->
@@ -648,7 +650,9 @@ spring-boot-starter-parent     官方父工程：统一版本管理
 > - 子模块要用仍需自己声明，只是不必写版本，升级时只改父工程一处；
 > - Spring Boot 项目里大量依赖不写版本也能用，正是因为 `spring-boot-starter-parent` 已在 `<dependencyManagement>` 中把版本管好了。
 
-**属性配置**：版本号即使都收进父工程，仍散落在多个 `<version>` 里。用自定义属性把它们提到 `<properties>` 一处：
+**（2）属性配置**
+
+版本号即使都收进父工程，仍散落在多个 `<version>` 里。用自定义属性把它们提到 `<properties>` 一处：
 
 ```xml
 <properties>
@@ -664,7 +668,7 @@ spring-boot-starter-parent     官方父工程：统一版本管理
 
 `<properties>` 本质上是一个键值对集合，专门存放会被反复引用的常量，引用时写 `${属性名}` 即可。
 
-### 4.2.6 父工程最终形态
+**（3）父工程最终形态**
 
 把继承、共有依赖、版本管理与属性合到一起，`tlias-parent/pom.xml` 的最终形态如下（省略 XML 声明与 `project` 根标签）：
 
