@@ -128,11 +128,11 @@ Maven 遵循「约定优于配置」的设计：目录名和文件位置都有�
 其中 `src` 目录是写代码的地方，而 `target` 目录纯粹是产物，可以随时删除，每次构建都会重新生成。
 
 > [!TIPS]
-> 当项目较大、需要按业务拆分时，还可以采用**多模块**结构：最外层是一个 `packaging` 为 `pom` 的父工程（`pom.xml` 中用 `<modules>` 列出子模块），父工程目录下再并列放若干个独立的 `src` 和 `pom.xml`，各模块既能单独构建，也能由父工程统一管理版本号和插件配置。
+> 当项目较大、需要按业务拆分时，还可以采用**多模块**结构：最外层是一个 `packaging` 为 `pom` 的父工程，`pom.xml` 中用 `<modules>` 列出子模块，父工程目录下再并列放若干个独立的 `src` 和 `pom.xml`，各模块既能单独构建，也能由父工程统一管理版本号和插件配置。
 
-## 1.4 pom 文件详解与常见标签
+## 1.4 POM 详解与常见标签
 
-POM 是 Project Object Model（项目对象模型）的缩写，`pom.xml` 就是这个模型的配置文件，它描述了项目「叫什么、是什么版本、需要什么、用什么方式打包」。这个文件默认位于项目根目录，位置固定不可更改。
+POM 是 Project Object Model（项目对象模型）的缩写，`pom.xml` 就是这个模型的配置文件。这个文件默认位于项目根目录，位置固定不可更改。
 
 一个最小可用的 `pom.xml` 如下：
 
@@ -143,13 +143,15 @@ POM 是 Project Object Model（项目对象模型）的缩写，`pom.xml` 就是
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- 项目坐标：三者共同确定一个项目的唯一标识 -->
+    <!-- 项目坐标，一个项目的唯一标识 -->
     <groupId>com.example</groupId>
     <artifactId>demo</artifactId>
     <version>1.0-SNAPSHOT</version>
+    
+    <!-- 打包方式 -->
     <packaging>jar</packaging>
 
-    <!-- 项目描述信息，仅供人阅读，不影响构建 -->
+    <!-- 项目描述信息 -->
     <name>demo</name>
     <description>我的第一个 Maven 项目</description>
 
