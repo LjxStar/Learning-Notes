@@ -100,7 +100,7 @@ Maven 官方提供的 [中央仓库](https://repo.maven.apache.org/maven2/) 服�
 | 全局 `settings.xml` | `D:\apache-maven-3.9.9\conf\settings.xml` | 对这台电脑上所有的用户与项目都生效 |
 | 用户 `settings.xml` | `C:\Users\username>\.m2\settings.xml`     | 只对当前用户的所有项目生效     |
 
-本篇示例统一写在全局的 `conf\settings.xml` 中；若这台电脑有多个用户，把只属于自己的配置改写到用户级 `settings.xml` 里更稳妥，不会影响别人。
+本篇示例统一写在全局的 `conf\settings.xml` 中；若这台电脑有多个用户，Maven 优先加载全局 `settings.xml`，随后加载用户 `settings.xml`；二者存在相同配置项时，用户配置覆盖全局配置。
 
 ## 1.3 标准目录结构
 
