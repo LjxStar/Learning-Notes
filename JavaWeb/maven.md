@@ -134,8 +134,6 @@ Maven 遵循「约定优于配置」的设计：目录名和文件位置都有�
 
 POM 是 Project Object Model（项目对象模型）的缩写，`pom.xml` 就是这个模型的配置文件。这个文件默认位于项目根目录，位置固定不可更改。
 
-一个最小可用的 `pom.xml` 如下：
-
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
