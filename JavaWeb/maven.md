@@ -90,7 +90,6 @@ Maven 官方提供的 [中央仓库](https://repo.maven.apache.org/maven2/) 服�
 配置完成后保存，效果如下图所示：
 
 ![[Maven配置镜像.png]]
-=
 
 ### 1.2.4 全局配置与用户配置
 
