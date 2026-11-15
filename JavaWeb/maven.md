@@ -113,13 +113,16 @@ Maven 遵循「约定优于配置」的设计：目录名和文件位置都有�
 │   ├── main
 │   │   ├── java                主程序代码
 │   │   └── resources           主程序资源文件（yml 配置、mapper 映射文件等）
+│   │
 │   └── test
 │       ├── java                测试代码
 │       └── resources           测试用资源文件
+│
+├── .mvn                        项目级Maven配置（可选）
 └── target                      构建产物目录，由 Maven 自动生成
     ├── classes                 编译后的主程序 class 文件
     ├── test-classes            编译后的测试 class 文件
-    └── artifactId-版本号.jar     package 阶段生成的 jar 包
+    └── artifactId-版本号.jar    package 阶段生成的 jar 包
 ```
 
 其中 `src` 目录是写代码的地方，而 `target` 目录纯粹是产物，可以随时删除，每次构建都会重新生成。
