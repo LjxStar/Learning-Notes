@@ -714,25 +714,23 @@ tlias-parent/
 
 继承解决了「共有依赖写多遍」的问题，但还有另一类依赖：只有部分模块需要，版本却必须保持一致。可使用 `<dependencyManagement>` 与 `<properties>` 来解决这些问题。
 
-**（1）问题：非共有依赖的版本散落**
+#### （1）非共有依赖的版本散落
 
 并非所有依赖都是各模块共有的。假设项目里还有 `tlias-web-system`、`tlias-web-report` 等模块，它们和 `tlias-web-management` 都用到 jjwt，而 `tlias-pojo`、`tlias-utils` 并不需要。这类依赖不该放进父工程的 `<dependencies>`（否则所有子模块都会被强制引入），只能谁用谁声明。
 
 ![三个子模块各自写 jwt 0.9.1](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig17.webp?lastModify=1794737492)
 
-> 同一依赖版本在多个模块中重复书写。
+同时，如果把依赖版本从 0.9.1 升到 0.9.2，必须逐个模块翻 `pom.xml` 改 `<version>`，模块一多极易漏改，同一依赖就会在项目里留下多个版本。
 
-问题出在升级上：把 0.9.1 升到 0.9.2，必须逐个模块翻 `pom.xml` 改 `<version>`，模块一多极易漏改，同一依赖就会在项目里留下多个版本。
+#### （2）版本锁定
 
-**（2）`<dependencyManagement>` 的基本用法**
-
-父工程统一声明版本，**不引入依赖**：
+此时可以在父模块通过 `dependencyManagement` 来管理版本：
 
 ```xml
-<!-- 父工程：只声明版本，不真正引入依赖 -->
+<!--统一管理依赖版本-->
 <dependencyManagement>
     <dependencies>
-        <!-- JWT 令牌 -->
+        <!--JWT令牌-->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
@@ -742,11 +740,11 @@ tlias-parent/
 </dependencyManagement>
 ```
 
-子模块仍要引入依赖，但**无需再写 `<version>`**：
+需要引入该依赖的子模块：
 
 ```xml
 <dependencies>
-    <!-- JWT 令牌 -->
+    <!--JWT令牌-->
     <dependency>
         <groupId>io.jsonwebtoken</groupId>
         <artifactId>jjwt</artifactId>
@@ -759,74 +757,7 @@ tlias-parent/
 > - 子模块要用仍需自行引入，只是不用指定版本；升级时只改父工程一处；
 > - Spring Boot 项目里大量依赖不写版本也能用，正是因为 `spring-boot-starter-parent` 已经用 `<dependencyManagement>` 把版本管好了。
 
-**（3）案例：把 `tlias-utils` 的版本交给父工程**
-
-父工程追加：
-
-```xml
-<dependencyManagement>
-    <dependencies>
-        <!-- JWT 依赖 -->
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt</artifactId>
-            <version>0.9.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.aliyun.oss</groupId>
-            <artifactId>aliyun-sdk-oss</artifactId>
-            <version>3.17.4</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>2.3.1</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.activation</groupId>
-            <artifactId>activation</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-        <!-- 版本不高于 2.3.3 -->
-        <dependency>
-            <groupId>org.glassfish.jaxb</groupId>
-            <artifactId>jaxb-runtime</artifactId>
-            <version>2.3.3</version>
-        </dependency>
-    </dependencies>
-</dependencyManagement>
-```
-
-`tlias-utils/pom.xml` 去掉全部 `<version>`：
-
-```xml
-<dependencies>
-    <!-- JWT 依赖 -->
-    <dependency>
-        <groupId>io.jsonwebtoken</groupId>
-        <artifactId>jjwt</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>com.aliyun.oss</groupId>
-        <artifactId>aliyun-sdk-oss</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>javax.xml.bind</groupId>
-        <artifactId>jaxb-api</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>javax.activation</groupId>
-        <artifactId>activation</artifactId>
-    </dependency>
-    <!-- 版本不高于 2.3.3 -->
-    <dependency>
-        <groupId>org.glassfish.jaxb</groupId>
-        <artifactId>jaxb-runtime</artifactId>
-    </dependency>
-</dependencies>
-```
-
-**（4）属性配置：版本号再收敛一层**
+#### （3）属性配置
 
 版本号即使都写进了父工程，仍散落在多个 `<version>` 标签中。用自定义属性 + 属性引用，可以把它们集中到 `<properties>` 一处：
 
@@ -846,13 +777,10 @@ tlias-parent/
 
 ![属性配置：自定义 property 并在版本处引用](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig18.webp?lastModify=1794737492)
 
-> 图 18 · 版本号统一定义在 `<properties>`，通过 `${xxx.version}` 引用。
+`<properties>` 本质上是一个键值对集合，用来存放会被反复引用的常量，引用时写 `${属性名}` 即可。
 
-`<properties>` 本质上是一个键值对集合，用来存放会被反复引用的常量，引用时写 `${属性名}` 即可。Maven 还内置了一批属性可以直接使用，例如 `${project.version}` 取当前项目版本、`${project.basedir}` 取项目根目录、`${project.build.directory}` 取构建输出目录（默认 `target`）。
 
-属性适合管理零散、少量的版本号；依赖一多、又有父子工程时，更常见的做法是把两者配合起来 —— 版本定义在 `<properties>`，引用写在 `<dependencyManagement>`，也就是下面的最终形态。
-
-**（5）父工程最终形态**
+#### （4）父工程最终形态
 
 `tlias-parent/pom.xml` 最终包含继承、共有依赖与版本管理，日后升级版本只需改 `<properties>` 一处：
 
@@ -937,28 +865,17 @@ tlias-parent/
 </project>
 ```
 
-**（6）高频面试题：`<dependencyManagement>` 与 `<dependencies>` 的区别**
-
-| 对比项 | `<dependencies>` | `<dependencyManagement>` |
-| --- | --- | --- |
-| 是否引入依赖 | 是，直接引入 | 否，只声明版本 |
-| 子模块是否自动继承 | 是，无需再声明 | 否，需自行引入依赖 |
-| 子模块是否要写版本 | 不需要（已继承） | 不需要（由父工程锁定） |
-| 典型用途 | 所有模块都需要的公共依赖 | 只有部分模块用到、但版本必须统一的依赖 |
-
 ## 4.3 聚合
 
-### 4.3.1 场景：手工按依赖顺序构建的痛点
+### 4.3.1 为什么要用聚合？
 
 分模块之后，模块之间的关系变得错综复杂：`tlias-web-management` 的父工程是 `tlias-parent`，同时依赖 `tlias-pojo`、`tlias-utils`。
 
 ![模块间的依赖关系](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig19.webp?lastModify=1794737492)
 
-> 图 19 · 父工程与三个子模块的关系；业务模块还依赖两个公共模块。
-
 打包 `tlias-web-management` 时，Maven 会到本地仓库查找它的父工程和两个依赖模块，而本地仓库里此时还没有它们。于是必须先对 `tlias-parent`、`tlias-pojo`、`tlias-utils` 分别执行 `install` 装进本地仓库，再对业务模块执行 `package`。模块一多、依赖一复杂，这种按依赖顺序逐个构建的方式就难以维护。
 
-**聚合**正是为此而生：通过聚合实现项目的一键构建（清理、编译、测试、打包、安装等）。
+通过**聚合**实现项目的一键构建（清理、编译、测试、打包、安装等）。
 
 ### 4.3.2 概念
 
@@ -967,8 +884,6 @@ tlias-parent/
 - **作用**：快速构建项目，无须再按依赖关系手动逐个构建，直接在聚合工程上执行即可。
 
 ![聚合：一个空工程统一驱动多个模块](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig20.webp?lastModify=1794737492)
-
-> 图 20 · 聚合工程作为构建入口，统一驱动所有子模块。
 
 ### 4.3.3 实现
 
@@ -983,18 +898,9 @@ tlias-parent/
 </modules>
 ```
 
-若采用 4.2.4 节「形态 B」（子模块放在父工程目录下），路径相应写成 `<module>tlias-pojo</module>` 等。
-
 之后编译、打包、安装都不必逐模块操作：在 `tlias-parent` 上执行一次 `package`，被聚合的所有模块都会跟着执行 `package`。
 
 ![聚合工程执行 package 一键打包全部模块](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig21.webp?lastModify=1794737492)
 
-> 图 21 · 在聚合工程执行 package，全部模块同步构建。
 
 `clean`、`compile`、`test`、`package`、`install` 同理，均由聚合工程统一驱动，不必再关心模块之间的依赖顺序。
-
-> [!note] 本章小结
-> - **分模块设计**决定工程长什么样：按功能或按层拆成职责单一的模块；
-> - **继承**解决配置重复：共有依赖上提到父工程，子模块自动继承；
-> - **依赖管理**解决版本散落：`<dependencyManagement>` 锁定版本，`<properties>` 集中定义；
-> - **聚合**解决构建繁琐：在父工程上用 `<modules>` 一键驱动全部模块。
