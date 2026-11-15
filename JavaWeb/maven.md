@@ -422,7 +422,7 @@ IDEA 把 Maven 深度集成进了界面，在里面执行生命周期指令有�
 - `tlias-pojo`：`pojo` 包下的实体类；
 - `tlias-utils`：`utils` 包下的工具类；
 - `tlias-web-management`：保留业务代码，按坐标依赖前两个模块。
-
+![[Pasted image 20261115190756.png]]
 ![[Maven-分模块后依赖.webp]]
 
 **（1）新建 `tlias-pojo` 模块**
@@ -528,7 +528,7 @@ IDEA 把 Maven 深度集成进了界面，在里面执行生命周期指令有�
 
 - **概念**：继承描述两个工程之间的关系，与 Java 继承类似，子模块可以直接继承父工程的配置，最常见的是依赖；
 - **作用**：简化依赖配置，统一管理版本；
-
+![[Pasted image 20261115190817.png]]
 ![[Maven-继承提取共有依赖.webp]]
 
 ### 4.2.2 单继承与继承链
@@ -546,7 +546,7 @@ spring-boot-starter-parent     官方父工程：统一版本管理
   ├── tlias-utils
   └── tlias-web-management
 ```
-
+![[Pasted image 20261115190915.png]]
 ![[Maven-多重继承链.webp]]
 
 ### 4.2.3 三步落地
@@ -554,7 +554,7 @@ spring-boot-starter-parent     官方父工程：统一版本管理
 **（1）创建父工程，打包方式设为 `pom`**
 
 新建 Maven 模块 `tlias-parent`，把 `<packaging>` 改成 `pom`（默认是 `jar`）；父工程不写代码，`src` 目录可以直接删除，只留一个 `pom.xml`。
-
+![[Pasted image 20261115190924.png]]
 ![[Maven-父工程打包方式pom.webp]]
 
 ```xml
@@ -614,13 +614,13 @@ spring-boot-starter-parent     官方父工程：统一版本管理
     </dependency>
 </dependencies>
 ```
-
+![[Pasted image 20261115190939.png]]
 ![[Maven-子模块继承lombok.webp]]
 
 ### 4.2.4 依赖管理
 
 继承解决了「共有依赖写多遍」，但还有另一类依赖：只有部分模块需要，版本却必须统一。比如项目里还有 `tlias-web-system`、`tlias-web-report`，它们与 `tlias-web-management` 都用 jjwt，而 `tlias-pojo`、`tlias-utils` 用不到。这类依赖放进父工程 `<dependencies>` 会强制所有子模块引入，只能谁用谁声明，于是版本号散落在各个模块——升级时极易漏改，同一依赖便留下多个版本。
-
+![[Pasted image 20261115191002.png]]
 ![[Maven-jwt版本散落各模块.webp]]
 
 **版本锁定**：父工程用 `<dependencyManagement>` 声明版本，子模块引入时省略 `<version>`。
@@ -730,7 +730,7 @@ spring-boot-starter-parent     官方父工程：统一版本管理
 ### 4.3.1 为什么要聚合
 
 分模块之后，模块之间的关系变得错综复杂：`tlias-web-management` 的父工程是 `tlias-parent`，同时又依赖 `tlias-pojo`、`tlias-utils`。
-
+![[Pasted image 20261115191037.png]]
 ![[Maven-模块间依赖关系.webp]]
 
 打包业务模块时，Maven 要到本地仓库查找它的父工程和两个依赖模块，而仓库里此时还没有它们。于是只能先按依赖顺序对 `tlias-parent`、`tlias-pojo`、`tlias-utils` 逐个 `install`，再对业务模块执行 `package`。模块一多、依赖一复杂，这种手工排序就难以为继——聚合就是为了实现项目的一键构建。
@@ -754,5 +754,5 @@ spring-boot-starter-parent     官方父工程：统一版本管理
 ```
 
 此后在 `tlias-parent` 上执行一次 `package`，被聚合的所有模块都会按依赖顺序跟着执行 `package`；`clean`、`compile`、`test`、`install` 同理，不必再关心模块之间的先后顺序。
-
+![[Pasted image 20261115191057.png]]
 ![[Maven-聚合一键打包.webp]]
