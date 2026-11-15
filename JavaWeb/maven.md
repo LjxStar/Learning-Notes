@@ -201,7 +201,7 @@ Maven 管理依赖的思路可以概括为一句话：**用坐标定位依赖，
 > [!question] 坐标去哪里查？
 >  可以通过 [MvnRepository](https://mvnrepository.com/) 检索中央仓库中的构件，输入 `spring-webmvc` 就能看到所有版本，选一个即可。也可以在 idea 内搜索添加依赖  [idea maven查找并添加依赖-CSDN博客](https://blog.csdn.net/m0_56919521/article/details/117070302)
 
-## 2.2 引入依赖 dependencies
+## 2.2 引入依赖
 
 在 `<dependencies>` 中写一个 `<dependency>` 标签即可，最少只需要三个标签：
 
@@ -211,15 +211,14 @@ Maven 管理依赖的思路可以概括为一句话：**用坐标定位依赖，
         <groupId>org.springframework</groupId>
         <artifactId>spring-webmvc</artifactId>
         <version>6.1.4</version>
+		<scope>compile</scope>
     </dependency>
 </dependencies>
 ```
 
 写完后 IDEA 会触发一次依赖下载，把对应的 jar 缓存到本地仓库。
 
-## 2.3 依赖范围 scope
-
-`<scope>` 决定依赖在编译期、测试期、运行期分别是否可见，也决定它会不会被打进最终产物：
+其中 `<scope>` 决定依赖在编译期、测试期、运行期分别是否可见，也决定它会不会被打进最终产物：
 
 | `scope`    | 主程序编译 | 测试编译 | 运行时 | 打包进产物 | 典型场景                                     |
 | ---------- | ----- | ---- | --- | ----- | ---------------------------------------- |
@@ -229,7 +228,7 @@ Maven 管理依赖的思路可以概括为一句话：**用坐标定位依赖，
 | `test`     | ❌     | ✅    | ❌   | ❌     | 只在测试中使用，不进产物。如 `junit-jupiter`、`mockito` |
 | `import`   | —     | —    | —   | —     | 仅在 `<dependencyManagement>` 中使用，导入一份版本清单 |
 
-其中，`provided` **编译、测试阶段有效；打包时不会打入 jar/war，运行时容器提供，不会出现在最终包内**，**不会跟着包一起部署**。例如传统 Web 工程里的写法：
+`provided` **编译、测试阶段有效；打包时不会打入 jar/war，运行时容器提供，不会出现在最终包内**，**不会跟着包一起部署**。例如传统 Web 工程里的写法：
 
 ```xml
 <dependency>
@@ -244,7 +243,7 @@ Maven 管理依赖的思路可以概括为一句话：**用坐标定位依赖，
 > [!question] `runtime` 与 `provided` 的区别？
 > 两者在「是否参与编译」上正好相反：`runtime` **编译时不可见、运行时才需要**（如 MySQL 驱动）；`provided` **编译时可见、但不进产物**（如 `servlet-api`）。判断口诀：*运行时才用到的写 `runtime`，由容器提供的写 `provided`*。
 
-## 2.4 传统依赖
+## 2.3 传统依赖
 
 Maven 拥有**传递依赖**特性：若项目直接依赖 A，A 依赖 B，B 又依赖 C，则 B、C 会自动被引入到当前项目的 classpath，无需手动声明。例如进行 **SpringBoot** 进行开发，我们只需要引入一个 starter 依赖
 
@@ -252,7 +251,9 @@ Maven 拥有**传递依赖**特性：若项目直接依赖 A，A 依赖 B，B �
 
 其集成了所有 Web 开发常见的依赖，我们只需要引入这一个依赖，其他依赖会自动的通过 Maven 依赖传递传递进来。
 
-> 传递依赖简化了开发，但也带来问题：一是引入多余、不需要或是版本老旧的依赖；二是同一个构件通过多条依赖链引入、版本不一致，产生**依赖冲突**。
+## 2.4 依赖冲突
+
+传递依赖简化了开发，但也带来问题：一是引入多余、不需要或是版本老旧的依赖；二是同一个构件通过多条依赖链引入、版本不一致，产生**依赖冲突**。
 
 可在 `<dependency>` 内配置 `<exclusions>` 排除指定传递依赖，每个 `<exclusion>` 通过 `groupId` 和 `artifactId` 定位要排除的构件：
 
@@ -270,71 +271,7 @@ Maven 拥有**传递依赖**特性：若项目直接依赖 A，A 依赖 B，B �
 </dependency>
 ```
 
-## 2.5 统一管理版本
 
-依赖一多，同一个库的版本号就会在多处重复，升级时容易漏改；父子工程之间也常常出现版本不一致。Maven 提供了两种集中管理版本的手段：用 `<properties>` 把版本号抽成常量，或交给 `<dependencyManagement>` 统一声明。
-
-### 2.5.1 用属性统一版本号
-
-`<properties>` 本质上就是一个键值对集合，用来存放会被反复引用的常量。把依赖版本抽进去之后，升级时只需要改这一处：
-
-```xml
-<properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.release>17</maven.compiler.release>
-    <spring.version>6.1.4</spring.version>
-    <jackson.version>2.16.1</jackson.version>
-</properties>
-
-<dependencies>
-    <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-webmvc</artifactId>
-        <version>${spring.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
-        <version>${jackson.version}</version>
-    </dependency>
-</dependencies>
-```
-
-引用时写 `${属性名}` 即可。Maven 还内置了一批属性可以直接使用，例如 `${project.version}` 取当前项目版本、`${project.basedir}` 取项目根目录、`${project.build.directory}` 取构建输出目录（默认是 `target`）。
-
-属性适合管理零散、少量的版本号；如果依赖很多、又有父子工程，更常用的是下面这种做法。
-
-### 2.5.2 用 dependencyManagement 统一版本
-
-属性解决的是「版本号写几遍」的问题，「最终用哪个版本」则由 `<dependencyManagement>` 决定。实际开发中，版本冲突多数由 Spring Boot 这类框架的**依赖管理**机制解决：父工程的 `<dependencyManagement>` 把常用库的版本统一钉死，子模块声明依赖时不再写 `<version>`。
-
-```xml
-<!-- 父工程：只声明版本，不真正引入依赖 -->
-<dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.16.1</version>
-        </dependency>
-    </dependencies>
-</dependencyManagement>
-
-<!-- 子模块：省略 version，版本由父工程决定 -->
-<dependencies>
-    <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
-    </dependency>
-</dependencies>
-```
-
-要覆盖某个版本，只需在子模块自己的 `<dependencyManagement>` 中重写该依赖的版本号，而不是在 `<dependencies>` 里重复声明。
-
-> [!note] dependencyManagement 只管版本，不引入依赖
-> 它里面的条目**不会把任何依赖加进项目**。想用某个库，仍然必须在 `<dependencies>` 中声明（此时可省略 `<version>`），这是初学者最容易搞混的一点。
-
-Spring Boot 的 `spring-boot-dependencies` 这种「版本清单」，则是通过 `<scope>import</scope>` 导入到 `<dependencyManagement>` 中的，这正是依赖范围表格里 `import` 的用途。
 
 # 三、生命周期与项目构建
 
@@ -445,3 +382,73 @@ IDEA 把 Maven 深度集成进了界面，在里面执行生命周期指令有�
 2. `Working directory` 填项目根目录，即 `pom.xml` 所在位置，直接填 `$MODULE_WORKING_DIR$` 即可；
 3. `Command line` 填要执行的阶段与参数——**注意不要写 `mvn` 前缀**，多个用空格隔开，如 `clean package`、`clean install -DskipTests`、`clean package -P prod`；
 4. 保存后即可在右上角一键运行，日志输出在底部的 **Run** 面板。
+
+
+
+## 2.5 统一管理版本
+
+依赖一多，同一个库的版本号就会在多处重复，升级时容易漏改；父子工程之间也常常出现版本不一致。Maven 提供了两种集中管理版本的手段：用 `<properties>` 把版本号抽成常量，或交给 `<dependencyManagement>` 统一声明。
+
+### 2.5.1 用属性统一版本号
+
+`<properties>` 本质上就是一个键值对集合，用来存放会被反复引用的常量。把依赖版本抽进去之后，升级时只需要改这一处：
+
+```xml
+<properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>17</maven.compiler.release>
+    <spring.version>6.1.4</spring.version>
+    <jackson.version>2.16.1</jackson.version>
+</properties>
+
+<dependencies>
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-webmvc</artifactId>
+        <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson.version}</version>
+    </dependency>
+</dependencies>
+```
+
+引用时写 `${属性名}` 即可。Maven 还内置了一批属性可以直接使用，例如 `${project.version}` 取当前项目版本、`${project.basedir}` 取项目根目录、`${project.build.directory}` 取构建输出目录（默认是 `target`）。
+
+属性适合管理零散、少量的版本号；如果依赖很多、又有父子工程，更常用的是下面这种做法。
+
+
+# 其他
+### 2.5.2 用 dependencyManagement 统一版本
+
+属性解决的是「版本号写几遍」的问题，「最终用哪个版本」则由 `<dependencyManagement>` 决定。实际开发中，版本冲突多数由 Spring Boot 这类框架的**依赖管理**机制解决：父工程的 `<dependencyManagement>` 把常用库的版本统一钉死，子模块声明依赖时不再写 `<version>`。
+
+```xml
+<!-- 父工程：只声明版本，不真正引入依赖 -->
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.16.1</version>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+
+<!-- 子模块：省略 version，版本由父工程决定 -->
+<dependencies>
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+    </dependency>
+</dependencies>
+```
+
+要覆盖某个版本，只需在子模块自己的 `<dependencyManagement>` 中重写该依赖的版本号，而不是在 `<dependencies>` 里重复声明。
+
+> [!note] dependencyManagement 只管版本，不引入依赖
+> 它里面的条目**不会把任何依赖加进项目**。想用某个库，仍然必须在 `<dependencies>` 中声明（此时可省略 `<version>`），这是初学者最容易搞混的一点。
+
+Spring Boot 的 `spring-boot-dependencies` 这种「版本清单」，则是通过 `<scope>import</scope>` 导入到 `<dependencyManagement>` 中的，这正是依赖范围表格里 `import` 的用途。
