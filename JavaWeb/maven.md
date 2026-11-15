@@ -203,7 +203,7 @@ Maven 管理依赖的思路可以概括为一句话：**用坐标定位依赖，
 
 ## 2.2 引入依赖
 
-在 `<dependencies>` 中写一个 `<dependency>` 标签即可，最少只需要三个标签：
+在 `<dependencies>` 中写一个 `<dependency>` 标签即可，基本格式如下：
 
 ```xml
 <dependencies>
@@ -215,8 +215,6 @@ Maven 管理依赖的思路可以概括为一句话：**用坐标定位依赖，
     </dependency>
 </dependencies>
 ```
-
-写完后 IDEA 会触发一次依赖下载，把对应的 jar 缓存到本地仓库。
 
 其中 `<scope>` 决定依赖在编译期、测试期、运行期分别是否可见，也决定它会不会被打进最终产物：
 
@@ -271,8 +269,6 @@ Maven 拥有**传递依赖**特性：若项目直接依赖 A，A 依赖 B，B �
 </dependency>
 ```
 
-
-
 # 三、生命周期与项目构建
 
 ## 3.1 生命周期
@@ -287,7 +283,7 @@ Maven 把项目构建的过程划分为若干个**阶段（phase）**，并预�
    - `pre-site` → `site` → `post-site` → `site-deploy`
 
 > [!note] 上面的阶段是常用的简化版
-> `default` 生命周期实际包含几十个阶段（如 `process-resources`、`test-compile`、`prepare-package`、`integration-test` 等），它们被夹在相邻的两个常用阶段之间，平时不需要记住；Maven 会自动把它们依次执行。
+> `default` 生命周期实际包含几十个阶段（如 `process-resources`、`test-compile`、`prepare-package`、`integration-test` 等）。
 
 日常只会用到 clean 和 default 两套，各个阶段的含义如下：
 
@@ -302,11 +298,7 @@ Maven 把项目构建的过程划分为若干个**阶段（phase）**，并预�
 | `install`  | 将构件安装到本地仓库，这样其他项目才能通过坐标引用到它                                    |
 | `deploy`   | 把构件发布到远程仓库（私服或中央仓库），需要在 `pom.xml` 中配置 `distributionManagement` |
 
-**最需要记住的一条规则**：执行某个阶段时，Maven 会自动按顺序把它之前的所有阶段一并执行，而且这个顺序是固定的，不能调整。例如：
-
-- `mvn compile` 实际等于 `validate` + `compile`
-- `mvn package` 实际等于 `validate` + `compile` + `test` + `package`
-- `mvn install` 实际等于 `mvn package` + `install`
+**最需要记住的一条规则**：执行某个阶段时，Maven 会自动按顺序把它之前的所有阶段一并执行，而且这个顺序是固定的，不能调整。
 
 也正因为 `package` 之前会先跑 `test`，所以每次打包都会自动执行一遍测试；如果觉得每次都跑测试太慢，就要用参数跳过去。
 
