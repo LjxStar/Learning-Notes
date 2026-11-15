@@ -108,12 +108,11 @@ Maven 遵循「约定优于配置」的设计：目录名和文件位置都有�
 
 ```
 项目根目录
-├── pom.xml                     项目对象模型
+├── pom.xml                     项目核心配置文件
 ├── src
 │   ├── main
 │   │   ├── java                主程序代码
-│   │   ├── resources           主程序资源文件（yml 配置、mapper 映射文件等）
-│   │   └── webapp              传统 war 项目的静态资源（html、js、css、图片等）
+│   │   └── resources           主程序资源文件（yml 配置、mapper 映射文件等）
 │   └── test
 │       ├── java                测试代码
 │       └── resources           测试用资源文件
