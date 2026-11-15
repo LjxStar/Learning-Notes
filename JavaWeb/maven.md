@@ -275,15 +275,7 @@ Maven 拥有**传递依赖**特性：若项目直接依赖 A，A 依赖 B，B �
 
 Maven 把项目构建的过程划分为若干个**阶段（phase）**，并预先固定了这些阶段的执行顺序，这个固定的顺序串就叫**生命周期**。生命周期一共三套：
 
-1. **clean 生命周期**：清理构建产物
-   - `pre-clean` → `clean` → `post-clean`
-2. **default 生命周期**（也叫构建生命周期，负责编译打包）
-   - `validate` → `compile` → `test` → `package` → `verify` → `install` → `deploy`
-3. **site 生命周期**：生成项目站点文档，日常开发用得很少
-   - `pre-site` → `site` → `post-site` → `site-deploy`
-
-> [!note] 上面的阶段是常用的简化版
-> `default` 生命周期实际包含几十个阶段（如 `process-resources`、`test-compile`、`prepare-package`、`integration-test` 等）。
+![[Pasted image 20261115173337.png]]
 
 日常只会用到 clean 和 default 两套，各个阶段的含义如下：
 
@@ -433,3 +425,14 @@ IDEA 把 Maven 深度集成进了界面，在里面执行生命周期指令有�
 > 它里面的条目**不会把任何依赖加进项目**。想用某个库，仍然必须在 `<dependencies>` 中声明（此时可省略 `<version>`），这是初学者最容易搞混的一点。
 
 Spring Boot 的 `spring-boot-dependencies` 这种「版本清单」，则是通过 `<scope>import</scope>` 导入到 `<dependencyManagement>` 中的，这正是依赖范围表格里 `import` 的用途。
+
+---
+1. **clean 生命周期**：清理构建产物
+   - `pre-clean` → `clean` → `post-clean`
+2. **default 生命周期**（也叫构建生命周期，负责编译打包）
+   - `validate` → `compile` → `test` → `package` → `verify` → `install` → `deploy`
+3. **site 生命周期**：生成项目站点文档，日常开发用得很少
+   - `pre-site` → `site` → `post-site` → `site-deploy`
+
+> [!note] 上面的阶段是常用的简化版
+> `default` 生命周期实际包含几十个阶段（如 `process-resources`、`test-compile`、`prepare-package`、`integration-test` 等）。
