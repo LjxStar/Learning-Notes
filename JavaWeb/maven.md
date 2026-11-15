@@ -140,15 +140,18 @@ POM 是 Project Object Model（项目对象模型）的缩写，`pom.xml` 就是
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <!-- 固定4.0.0，POM模型版本，几乎不会变 -->
     <modelVersion>4.0.0</modelVersion>
 
     <!-- 项目坐标，一个项目的唯一标识 -->
-    <groupId>com.example</groupId>
-    <artifactId>demo</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <groupId>com.example</groupId>  <!-- 组织/公司，反向域名 -->
+    <artifactId>demo</artifactId>  <!-- 项目/模块名，组内唯一 -->
+    <version>1.0-SNAPSHOT</version>  <!-- SNAPSHOT：快照版；RELEASE：正式版 -->
     
     <!-- 打包方式 -->
+    <!-- jar：普通jar包；war：web工程；pom：父工程/聚合工程 -->
     <packaging>jar</packaging>
 
     <!-- 项目描述信息 -->
@@ -168,37 +171,12 @@ POM 是 Project Object Model（项目对象模型）的缩写，`pom.xml` 就是
     </dependencies>
 
     <!-- 打包与插件相关配置 -->
+    <!-- 构建配置，包括插件、最终产物名称、目录定制等 -->
     <build>
         <!-- 略 -->
     </build>
 </project>
 ```
-
-各标签的含义如下：
-
-| 标签                         | 作用                                              |
-| -------------------------- | ----------------------------------------------- |
-| `<modelVersion>`           | POM 的模型版本，Maven 3 中固定为 `4.0.0`，照抄即可无需修改         |
-| `<groupId>`                | 项目组 id，通常写成公司或组织域名反写，如 `com.example`            |
-| `<artifactId>`             | 模块 id，在同一个 `groupId` 下不能重复                      |
-| `<version>`                | 项目版本号；`1.0-SNAPSHOT` 表示仍在开发中的快照版本，正式发布时改为 `1.0` |
-| `<packaging>`              | 打包类型，决定构建产物的形式，不写默认是 `jar`                      |
-| `<name>` / `<description>` | 项目名称与描述，只给人看，删掉也不影响构建                           |
-| `<properties>`             | 属性定义区，相当于常量，通过 `${属性名}` 引用；最常用于统一管理版本号和字符编码     |
-| `<dependencies>`           | 声明本项目需要引入的依赖                                    |
-| `<dependencyManagement>`   | 统一管理依赖的版本（以及排除哪些传递依赖），自身不会把任何依赖引入项目中            |
-| `<build>`                  | 构建配置，包括插件、最终产物名称、目录定制等                          |
-| `<repositories>`           | 声明额外的远程仓库，依赖不在中央仓库或镜像中时才需要配置                    |
-| `<parent>`                 | 声明父工程，子工程用它继承父工程中的依赖、插件与属性                      |
-| `<modules>`                | 列出父工程包含的子模块目录，多模块项目才需要                          |
-
-`<packaging>` 常见的取值有：
-
-- `jar`：普通 Java 项目，也是默认值，产出 `.jar` 文件
-- `war`：Web 项目，产出 `.war` 文件，交给 Tomcat 等容器运行
-- `pom`：不产出实际构件，专门用于**父工程**（`packaging` 为 `pom` 且含 `<modules>`）或**依赖包聚合**，常用于管理多模块项目和统一版本号
-
-`pom.xml` 里最常写的内容就是依赖。下一章来看如何用 Maven 坐标声明依赖，以及依赖范围、传递依赖与版本统一该怎么处理。
 
 # 二、Maven 坐标与依赖管理
 
