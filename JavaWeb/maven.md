@@ -182,7 +182,7 @@ Maven 管理依赖的思路可以概括为一句话：**用坐标定位依赖，
 
 ## 2.1 Maven 坐标
 
-任何一个构件（jar 包）在仓库中都有唯一的「身份证」，称为 **Maven 坐标**，格式是 `groupId:artifactId:version`，用冒号连接。例如 Spring 的 `spring-webmvc`：
+任何一个构件（jar、war、pom）在仓库中都有唯一的「身份证」，由三个核心部分组成：**groupId、artifactId、version**，称为 **Maven 坐标** (GAV)。例如 Spring 的 `spring-webmvc`：
 
 ```
 org.springframework:spring-webmvc:6.1.4
@@ -194,7 +194,8 @@ org.springframework:spring-webmvc:6.1.4
 - `artifactId`：构件名，一个构件一个名字，在同一 `groupId` 内唯一
 - `version`：构件版本，升级依赖改的就是这里
 
-**坐标去哪里查？** 可以通过 [MvnRepository](https://mvnrepository.com/) 检索中央仓库中的构件，输入 `spring-webmvc` 就能看到所有版本，选一个即可。IDEA 中还有更快的办法：在 `pom.xml` 里敲 `groupId:`，IDEA 会自动拉取候选列表，用方向键选中就能补全，写 `version` 时同理。
+> [!question] 坐标去哪里查？
+>  可以通过 [MvnRepository](https://mvnrepository.com/) 检索中央仓库中的构件，输入 `spring-webmvc` 就能看到所有版本，选一个即可。IDEA 中还有更快的办法：在 `pom.xml` 里敲 `groupId:`，IDEA 会自动拉取候选列表，用方向键选中就能补全，写 `version` 时同理。
 
 ## 2.2 引入依赖 dependencies
 
