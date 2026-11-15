@@ -155,7 +155,7 @@ POM 是 Project Object Model（项目对象模型）的缩写，`pom.xml` 就是
     <name>demo</name>
     <description>我的第一个 Maven 项目</description>
 
-    <!-- 属性：用 ${} 引用，避免版本号重复书写 -->
+    <!-- 定义常量，后面用 `${key}` 引用，统一管理 -->
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>17</maven.compiler.release>
