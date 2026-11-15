@@ -269,6 +269,36 @@ Maven 拥有**传递依赖**特性：若项目直接依赖 A，A 依赖 B，B �
 </dependency>
 ```
 
+## 2.5 依赖管理
+
+在多模块项目中，可以在父 POM 中使用 `<dependencyManagement>` 统一管理依赖版本：
+
+```xml
+<!-- 父工程：只声明版本，不真正引入依赖 -->
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.16.1</version>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+
+<!-- 子模块：省略 version，版本由父工程决定 -->
+<dependencies>
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+    </dependency>
+</dependencies>
+```
+
+子模块引用时只需声明 groupId 和 artifactId，无需指定版本。
+
+> [!note] dependencyManagement 只管版本，不引入依赖
+> 它里面的条目**不会把任何依赖加进项目**。想用某个库，仍然必须在 `<dependencies>` 中声明，此时可省略 `<version>`。
+
 # 三、生命周期与项目构建
 
 ## 3.1 生命周期
@@ -353,18 +383,15 @@ IDEA 把 Maven 深度集成进了界面，在里面执行生命周期指令有�
 1. 在顶部运行配置下拉框中选择编辑配置，点 `+` 新建配置，选择 **Maven** 类型；
 2. 工作目录填项目根目录，即 `pom.xml` 所在位置；
 3. 运行处填要执行的阶段与参数——**注意不要写 `mvn` 前缀**，多个用空格隔开。
- 
+4. 保存后即可在右上角一键运行，日志输出在底部的 **Run** 面板。
+
 ![[Maven自定义运行配置.png]]
 
-4. 保存后即可在右上角一键运行，日志输出在底部的 **Run** 面板。
+----
 
 # 其他
 
-## 2.5 统一管理版本
-
-依赖一多，同一个库的版本号就会在多处重复，升级时容易漏改；父子工程之间也常常出现版本不一致。Maven 提供了两种集中管理版本的手段：用 `<properties>` 把版本号抽成常量，或交给 `<dependencyManagement>` 统一声明。
-
-### 2.5.1 用属性统一版本号
+## 用属性统一版本号
 
 `<properties>` 本质上就是一个键值对集合，用来存放会被反复引用的常量。把依赖版本抽进去之后，升级时只需要改这一处：
 
@@ -394,45 +421,5 @@ IDEA 把 Maven 深度集成进了界面，在里面执行生命周期指令有�
 
 属性适合管理零散、少量的版本号；如果依赖很多、又有父子工程，更常用的是下面这种做法。
 
-### 2.5.2 用 dependencyManagement 统一版本
-
-属性解决的是「版本号写几遍」的问题，「最终用哪个版本」则由 `<dependencyManagement>` 决定。实际开发中，版本冲突多数由 Spring Boot 这类框架的**依赖管理**机制解决：父工程的 `<dependencyManagement>` 把常用库的版本统一钉死，子模块声明依赖时不再写 `<version>`。
-
-```xml
-<!-- 父工程：只声明版本，不真正引入依赖 -->
-<dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.16.1</version>
-        </dependency>
-    </dependencies>
-</dependencyManagement>
-
-<!-- 子模块：省略 version，版本由父工程决定 -->
-<dependencies>
-    <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
-    </dependency>
-</dependencies>
-```
-
-要覆盖某个版本，只需在子模块自己的 `<dependencyManagement>` 中重写该依赖的版本号，而不是在 `<dependencies>` 里重复声明。
-
-> [!note] dependencyManagement 只管版本，不引入依赖
-> 它里面的条目**不会把任何依赖加进项目**。想用某个库，仍然必须在 `<dependencies>` 中声明（此时可省略 `<version>`），这是初学者最容易搞混的一点。
-
-Spring Boot 的 `spring-boot-dependencies` 这种「版本清单」，则是通过 `<scope>import</scope>` 导入到 `<dependencyManagement>` 中的，这正是依赖范围表格里 `import` 的用途。
 
 ---
-1. **clean 生命周期**：清理构建产物
-   - `pre-clean` → `clean` → `post-clean`
-2. **default 生命周期**（也叫构建生命周期，负责编译打包）
-   - `validate` → `compile` → `test` → `package` → `verify` → `install` → `deploy`
-3. **site 生命周期**：生成项目站点文档，日常开发用得很少
-   - `pre-site` → `site` → `post-site` → `site-deploy`
-
-> [!note] 上面的阶段是常用的简化版
-> `default` 生命周期实际包含几十个阶段（如 `process-resources`、`test-compile`、`prepare-package`、`integration-test` 等）。
