@@ -333,23 +333,17 @@ Maven 把项目构建的过程划分为若干个**阶段（phase）**，并预�
 
 在终端里执行 `mvn` 命令，需要注意三件事。
 
-**方式 1**：**必须先进入含 `pom.xml` 的项目根目录**，否则 Maven 会报找不到 `pom.xml`。
+**方式 1**：必须**先进入含 `pom.xml` 的项目根目录**，否则 Maven 会报找不到 `pom.xml`。
 
 ```bash
 cd D:\project
 mvn clean package
 ```
 
-**方式 2**：**也可以完全不切目录，用 `-f` 参数直接指定 `pom.xml` 的路径**，在同时维护多个项目时很方便：
+**方式 2**：也可以完全不切目录，**用 `-f` 参数直接指定 `pom.xml` 的路径**，在同时维护多个项目时很方便：
 
 ```bash
 mvn -f D:\develop\project\demo\pom.xml clean package
-```
-
-**方式 3**：**用 Maven Wrapper 可以免装 Maven**。IDEA 新建 Maven 项目时可以勾选「使用 Maven Wrapper」，会生成 `mvnw.cmd`（Windows）、`mvnw`（macOS / Linux）两个脚本和一个 `.mvn` 目录，它们会自动下载与项目匹配的 Maven 版本；
-
-```bash
-mvnw.cmd clean package
 ```
 
 **（2）IDEA 中执行**
