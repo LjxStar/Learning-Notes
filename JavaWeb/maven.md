@@ -98,11 +98,9 @@ Maven 官方提供的 [中央仓库](https://repo.maven.apache.org/maven2/) 服�
 | 配置文件              | 位置                                        | 作用范围              |
 | ----------------- | ----------------------------------------- | ----------------- |
 | 全局 `settings.xml` | `D:\apache-maven-3.9.9\conf\settings.xml` | 对这台电脑上所有的用户与项目都生效 |
-| 用户 `settings.xml` | `%USERPROFILE%\.m2\settings.xml`          | 只对当前用户的所有项目生效     |
+| 用户 `settings.xml` | `C:\Users\username>\.m2\settings.xml`     | 只对当前用户的所有项目生效     |
 
 本篇示例统一写在全局的 `conf\settings.xml` 中；若这台电脑有多个用户，把只属于自己的配置改写到用户级 `settings.xml` 里更稳妥，不会影响别人。
-
-装好并配置完成之后，就可以开始建项目了。Maven 对项目里该有哪些目录、文件放在哪里都有固定约定，先来看标准目录结构；目录中那个 `pom.xml` 再在下一节详细展开。
 
 ## 1.3 标准目录结构
 
