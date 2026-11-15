@@ -359,7 +359,7 @@ IDEA 把 Maven 深度集成进了界面，在里面执行生命周期指令有�
 把整条指令当成一条命令执行，可以写多个阶段、还能带参数。
 
 1. 在顶部运行配置下拉框中选择 **Edit Configurations...**，点 `+` 新建配置，选择 **Maven** 类型；
-2. `Working directory` 填项目根目录，即 `pom.xml` 所在位置，直接填 `$MODULE_WORKING_DIR$` 即可；
+2. `Working directory` 填项目根目录，即 `pom.xml` 所在位置；
 3. `Command line` 填要执行的阶段与参数——**注意不要写 `mvn` 前缀**，多个用空格隔开，如 `clean package`、`clean install -DskipTests`；
 4. 保存后即可在右上角一键运行，日志输出在底部的 **Run** 面板。
 
