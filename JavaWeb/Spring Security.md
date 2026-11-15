@@ -39,3 +39,60 @@ public class Hello {
 「自动生成临时密码」
 > **小结**：一行依赖就带来了整套过滤器链，所有请求默认被拦截。后续所有改造，本质上都是「替换链条中的某些环节」：把默认登录页换成自定义登录接口、把默认用户源换成数据库、把 Session 换成 JWT + Redis、把默认错误响应换成统一 JSON。
 
+## 2. 认证
+
+### 2.1 登录校验流程
+
+![登录校验流程](file:///D:/workbuddy_repo/spaces/2026_11_12_21-54-24/imgs/2909814-20220815171052398-884692008.png?lastModify=1794747288)
+「登录校验流程」
+### 2.2 原理初探
+
+要实现自己的登录流程，必须先弄清入门案例中 Spring Security 的执行流程。
+
+#### 2.2.1 过滤器链
+
+Spring Security 的原理本质上是**一条过滤器链**，链中包含提供各种功能的过滤器。下图是入门案例中的核心过滤器：
+
+![Spring Security 过滤器链](file:///D:/workbuddy_repo/spaces/2026_11_12_21-54-24/imgs/2909814-20220815171119043-1855237395.png?lastModify=1794747288)
+「过滤器链」
+图中只展示了核心过滤器，其它非核心过滤器未在图中展示。三个最关键的过滤器：
+
+|过滤器|职责|
+|---|---|
+| `UsernamePasswordAuthenticationFilter` |处理在登录页面填写用户名密码后的登录请求；入门案例的认证工作主要由它负责|
+| `ExceptionTranslationFilter` |处理过滤器链中抛出的任何 `AccessDeniedException` 和 `AuthenticationException` |
+| `FilterSecurityInterceptor` |负责权限校验的过滤器|
+
+可以通过 Debug 查看当前系统中 Spring Security 过滤器链包含哪些过滤器及其顺序：
+
+![Debug 查看过滤器链](file:///D:/workbuddy_repo/spaces/2026_11_12_21-54-24/imgs/2909814-20220815171219110-2115496418.png?lastModify=1794747288)
+「debug 下的过滤器链」
+#### 2.2.2 认证流程详解
+
+![认证流程详解 1](file:///D:/workbuddy_repo/spaces/2026_11_12_21-54-24/imgs/2909814-20220815171228152-1813787594.png?lastModify=1794747288)
+「认证流程」
+#### 2.2.3 关键接口速查
+
+| 接口                      | 作用                                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------------------- |
+| `Authentication`        | 其实现类表示当前访问系统的用户，封装了用户相关信息                                                                         |
+| `AuthenticationManager` | 定义了认证 `Authentication` 的方法                                                                        |
+| `UserDetailsService`    | 加载用户特定数据的核心接口，定义了根据用户名查询用户信息的方法                                                                   |
+| `UserDetails`           | 提供核心用户信息。`UserDetailsService` 根据用户名查到的用户信息要封装成 `UserDetails` 对象返回，之后这些信息会被封装进 `Authentication` 对象 |
+
+> **一条主线**：`UsernamePasswordAuthenticationFilter` → `AuthenticationManager`（默认实现 `ProviderManager`）→ `UserDetailsService` → `UserDetails` → 回到 `Authentication` → 存入 `SecurityContextHolder`。
+
+### 2.3 自定义认证方案：思路分析
+
+**登录**
+1. 自定义登录接口：调用 `ProviderManager` 的方法进行认证；如果认证通过则生成 JWT，并把用户信息存入 Redis。
+2. 自定义 `UserDetailsService`：在这个实现类中去查询数据库。
+
+**校验**
+1. 定义 JWT 认证过滤器：获取 token；
+2. 解析 token 得到其中的 `userid`；
+3. 从 Redis 中获取用户信息；
+4. 存入 `SecurityContextHolder`。
+
+### 2.4 准备工作：基础设施代码
+#### 2.4.1 添加依赖
