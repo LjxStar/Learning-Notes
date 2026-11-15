@@ -387,11 +387,600 @@ IDEA 把 Maven 深度集成进了界面，在里面执行生命周期指令有�
 
 ![[Maven自定义运行配置.png]]
 
-# 四、多模块项目
+# 四、分模块项目
 
-Maven 多模块项目是指一个父项目包含**多个子模块**的项目结构。这种结构允许我们将一个大型项目拆分成多个逻辑上独立但又相互关联的模块，每个模块可以单独构建，也可以作为整体一起构建。
+## 4.1 分模块设计
+### 4.1.1 单模块工程的瓶颈
+
+项目不分模块，意味着所有业务代码都写在同一个 Java 工程里。随着业务扩张，工程里会堆进商品、搜索、购物车、订单、用户中心等功能，几十甚至上百人同时维护一个工程，会带来两个问题：
+
+1. **项目管理和维护困难**：所有团队共用一个代码库，职责边界模糊；
+    
+2. **通用组件难以复用**：自己封装的实体类、工具类、通用组件被夹在业务代码里，其他项目组想用，只能整体依赖这个工程。
+    
+
+![所有业务代码挤在一个 Java 项目中](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig01.webp?lastModify=1794737492)
 
 
+### 4.1.2 分模块设计
+**分模块设计**是指在项目设计阶段，就把一个大工程按功能或结构拆成若干个各自独立的模块。需要复用某个模块的能力时，直接引入它的依赖坐标即可；团队也可以按模块分工，几个人负责订单模块，另几个人负责购物车模块。
+
+![按功能拆分为多个独立模块](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig02.webp?lastModify=1794737492)
+
+> **结论**：分模块设计将项目按功能或结构拆成若干子模块，方便管理维护与扩展，也方便模块间相互调用、资源共享。
+
+### 4.1.3 三种拆分策略
+
+1. **按功能模块拆分**：公共组件、商品模块、搜索模块、购物车模块、订单模块等；
+    
+2. **按层拆分**：公共组件、实体类、控制层、业务层、数据访问层；
+    
+3. **按功能模块 + 层拆分**：两者结合，大型企业项目常见。
+    
+
+![三种拆分策略示意](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig03.webp?lastModify=1794737492)
+
+> 图 3 · 按功能、按层、功能 + 层三种拆分思路。
+
+> **原则**：先设计模块，再编码；不要把工程开发完毕后再反向拆分。本文案例是为演示而反向拆分的，真实项目应当一开始就规划好模块结构。
+
+## 4 .2 实践案例
+
+案例工程除了部门管理、员工管理、登录认证等业务功能，还有 `pojo` 包下的实体类（`PageBean`、`Result`）和 `utils` 包下的工具类（`Jwts`、阿里云 OSS 工具类等）。其他项目组想复用这些公共组件时，有两条路：
+
+|方案|做法|问题|
+|---|---|---|
+|方案一|直接依赖 `tlias-web-management` |① 只想共享 pojo / utils，却会把全部业务类都加载进来，**影响性能**；② 业务代码对外公开，**不安全**|
+|方案二|分模块设计（采用）|把公共设施抽成独立模块，按需引入坐标|
+
+方案二的模块划分：
+
+- `tlias-pojo`：抽取 pojo 包下的实体类；
+    
+- `tlias-utils`：抽取 utils 包下的工具类；
+    
+- `tlias-web-management`：保留业务代码，通过依赖坐标引入前两个模块。
+    
+
+![tlias-web-management 依赖 pojo 与 utils 模块](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig04.webp?lastModify=1794737492)
+
+> 图 4 · 拆分后的依赖关系：业务模块依赖两个公共模块。
+
+
+
+
+
+在 IDEA 中新建普通 Maven 模块，命名 `tlias-pojo`，保持包名与原工程一致（`com.itheima.pojo`），再把原工程 pojo 包下的实体类复制过来。
+
+![新建 tlias-pojo 模块](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig05.webp?lastModify=1794737492)
+
+> 图 5 · 新建 Maven 模块，Build system 选 Maven，设置 GroupId / ArtifactId。
+
+![创建 com.itheima.pojo 包](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig06.webp?lastModify=1794737492)
+
+> 图 6 · 在模块中建包，包名与原工程保持一致。
+
+![复制实体类到 tlias-pojo](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig07.webp?lastModify=1794737492)
+
+> 图 7 · 将原工程的实体类移动到新模块。
+
+`src/main/java` 下的实体类用到了 `@DateTimeFormat` 等 Spring 注解，因此除了 Lombok，还需引入 Spring Boot 基础起步依赖。
+
+** `tlias-pojo/pom.xml` **
+
+<dependencies>  
+    <dependency>  
+        <groupId>org.projectlombok</groupId>  
+        <artifactId>lombok</artifactId>  
+        <version>1.18.34</version>  
+    </dependency>  
+    <dependency>  
+        <groupId>org.springframework.boot</groupId>  
+        <artifactId>spring-boot-starter</artifactId>  
+        <version>3.2.8</version>  
+    </dependency>  
+</dependencies>
+
+随后删除原工程的 pojo 包，并在 `tlias-web-management/pom.xml` 中引入：
+
+<dependency>  
+    <groupId>com.itheima</groupId>  
+    <artifactId>tlias-pojo</artifactId>  
+    <version>1.0-SNAPSHOT</version>  
+</dependency>
+
+
+
+同样建包 `com.itheima.utils`，把原工程 utils 包下的工具类复制过来。
+
+![新建 tlias-utils 模块](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig08.webp?lastModify=1794737492)
+
+> 图 8 · 新建第二个公共模块。
+
+![创建 com.itheima.utils 包](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig09.webp?lastModify=1794737492)
+
+> 图 9 · 工具类模块保持原包名。
+
+![复制工具类到 tlias-utils](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig10.webp?lastModify=1794737492)
+
+> 图 10 · 将 JWT、OSS 等工具类移动到新模块。
+
+** `tlias-utils/pom.xml`（拆分初版，暂未做版本管理）**
+
+<dependencies>  
+    <!-- JWT 依赖 -->  
+    <dependency>  
+        <groupId>io.jsonwebtoken</groupId>  
+        <artifactId>jjwt</artifactId>  
+        <version>0.9.1</version>  
+    </dependency>  
+    <dependency>  
+        <groupId>com.aliyun.oss</groupId>  
+        <artifactId>aliyun-sdk-oss</artifactId>  
+        <version>3.17.4</version>  
+    </dependency>  
+    <dependency>  
+        <groupId>javax.xml.bind</groupId>  
+        <artifactId>jaxb-api</artifactId>  
+        <version>2.3.1</version>  
+    </dependency>  
+    <dependency>  
+        <groupId>javax.activation</groupId>  
+        <artifactId>activation</artifactId>  
+        <version>1.1.1</version>  
+    </dependency>  
+    <!-- jaxb-runtime 版本不高于 2.3.3 -->  
+    <dependency>  
+        <groupId>org.glassfish.jaxb</groupId>  
+        <artifactId>jaxb-runtime</artifactId>  
+        <version>2.3.3</version>  
+    </dependency>  
+    <dependency>  
+        <groupId>org.springframework.boot</groupId>  
+        <artifactId>spring-boot-starter</artifactId>  
+        <version>3.2.8</version>  
+    </dependency>  
+    <dependency>  
+        <groupId>org.projectlombok</groupId>  
+        <artifactId>lombok</artifactId>  
+        <version>1.18.34</version>  
+    </dependency>  
+</dependencies>
+
+删除原工程的 utils 包，并在业务模块中引入：
+
+<dependency>  
+    <groupId>com.itheima</groupId>  
+    <artifactId>tlias-utils</artifactId>  
+    <version>1.0-SNAPSHOT</version>  
+</dependency>
+
+**拆分结果**：`tlias-pojo`、`tlias-utils`、`tlias-web-management` 三个模块，公共设施可被任意其他项目按坐标复用。但此时三个模块各写了一遍 `lombok`，依赖配置开始重复 —— 这正是继承要解决的问题。
+
+
+## 二、继承：让配置只写一次
+
+![三个模块各自配置一遍 lombok](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig11.webp?lastModify=1794737492)
+
+> 图 11 · 拆分后的新问题：同一依赖在三个模块里各声明一次。
+
+### 2.1 概念与作用
+
+- **概念**：继承描述两个工程之间的关系，与 Java 继承类似，子模块可以继承父工程的配置信息，最常见的是依赖关系的继承；
+    
+- **作用**：简化依赖配置、统一管理依赖；
+    
+- **做法**：新建父工程 `tlias-parent`，把各模块共有的依赖提到父工程，三个子模块继承它即可，无需各自声明。
+    
+
+![把共有依赖提取到父工程](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig12.webp?lastModify=1794737492)
+
+> 图 12 · 把重复依赖上提到父工程，子模块自动继承。
+
+子模块侧的核心配置：
+
+<parent>  
+    <groupId>...</groupId>  
+    <artifactId>...</artifactId>  
+    <version>...</version>  
+    <relativePath>....</relativePath>  
+</parent>
+
+### 2.2 关键矛盾：Spring Boot 的单继承限制
+
+`tlias-web-management` 是 Spring Boot 项目，本应继承 `spring-boot-starter-parent`；但 **Maven 不支持多继承**，一个项目只能有一个父工程，继承了官方父工程就无法继承自定义的 `tlias-parent`。
+
+解法是利用 **多重继承链**：与 Java 一样，Maven 允许 A 继承 B、B 继承 C。让三个子模块都继承 `tlias-parent`，再由 `tlias-parent` 继承 `spring-boot-starter-parent`。
+
+![多重继承链：子模块 → tlias-parent → spring-boot-starter-parent](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig13.webp?lastModify=1794737492)
+
+> 图 13 · 用多重继承链同时获得自定义配置与 Spring Boot 官方依赖管理。
+
+spring-boot-starter-parent          （官方父工程：统一版本管理）  
+        ↑ 继承  
+   tlias-parent                     （自定义父工程：共有依赖 + 版本锁定 + 聚合）  
+        ↑ 继承  
+   ├── tlias-pojo  
+   ├── tlias-utils  
+   └── tlias-web-management
+
+### 2.3 三步落地
+
+#### 第 1 步：创建父工程，打包方式设为 `pom`
+
+新建 Maven 模块 `tlias-parent`，设置 `<packaging>pom</packaging>`（默认是 `jar`）；父工程不写代码，`src` 目录可直接删除。
+
+![创建 tlias-parent 并设置 packaging 为 pom](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig14.webp?lastModify=1794737492)
+
+> 图 14 · 新建父工程模块。
+
+![父工程删除 src 目录](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig15.webp?lastModify=1794737492)
+
+> 图 15 · 父工程只保留一个 pom.xml。
+
+** `tlias-parent/pom.xml`（骨架）**
+
+<?xml version="1.0" encoding="UTF-8"?>  
+<project xmlns="http://maven.apache.org/POM/4.0.0"  
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">  
+    <modelVersion>4.0.0</modelVersion>  
+​  
+    <parent>  
+        <groupId>org.springframework.boot</groupId>  
+        <artifactId>spring-boot-starter-parent</artifactId>  
+        <version>3.2.8</version>  
+        <relativePath/> <!-- 从仓库查找父工程，不走本地相对路径 -->  
+    </parent>  
+​  
+    <groupId>com.itheima</groupId>  
+    <artifactId>tlias-parent</artifactId>  
+    <version>1.0-SNAPSHOT</version>  
+    <packaging>pom</packaging>  
+​  
+    <properties>  
+        <maven.compiler.source>17</maven.compiler.source>  
+        <maven.compiler.target>17</maven.compiler.target>  
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>  
+    </properties>  
+</project>
+
+> **三种打包方式**：`jar` 普通模块（Spring Boot 项目基本都是 jar，内嵌 Tomcat 运行）；`war` 普通 Web 程序（需部署到外部 Tomcat）；`pom` 父工程或聚合工程，不写代码，仅做依赖管理。
+
+#### 第 2 步：子模块声明 `<parent>`
+
+三个子模块的 `pom.xml` 均按如下方式配置（以 `tlias-utils` 为例）：
+
+<parent>  
+    <groupId>com.itheima</groupId>  
+    <artifactId>tlias-parent</artifactId>  
+    <version>1.0-SNAPSHOT</version>  
+    <relativePath>../tlias-parent/pom.xml</relativePath>  
+</parent>  
+​  
+<artifactId>tlias-utils</artifactId>  
+<version>1.0-SNAPSHOT</version>
+
+> **注意**
+> 
+> - 声明继承后，子模块坐标中的 `groupId` 可省略，会自动继承父工程；
+>     
+> - `relativePath` 指定父工程 pom 的相对位置（`../` 表示上一级目录），不写则从本地仓库 / 远程仓库查找；
+>     
+> - 父子工程声明同一依赖的不同版本时，**以子工程的版本为准**。
+>     
+
+#### 第 3 步：共有依赖上提到父工程
+
+在父工程 pom 中追加 `<dependencies>`，子模块会自动继承，子模块里重复的声明即可删除。
+
+<dependencies>  
+    <dependency>  
+        <groupId>org.springframework.boot</groupId>  
+        <artifactId>spring-boot-starter</artifactId>  
+        <version>3.2.8</version>  
+    </dependency>  
+    <dependency>  
+        <groupId>org.projectlombok</groupId>  
+        <artifactId>lombok</artifactId>  
+        <version>1.18.34</version>  
+    </dependency>  
+</dependencies>
+
+![子工程继承父工程中的 lombok 依赖](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig16.webp?lastModify=1794737492)
+
+> 图 16 · 子模块删除重复声明后，仍能正常解析到父工程继承下来的 Lombok。
+
+### 2.4 工程结构的两种形态
+
+形态 A（演示用：基于已有工程反向拆分，模块与父工程平级）  
+project/  
+├── tlias-parent/  
+├── tlias-pojo/  
+├── tlias-utils/  
+└── tlias-web-management/  
+​  
+形态 B（企业实际：先建父工程，子模块置于其下，层级更清晰）  
+tlias-parent/  
+├── pom.xml  
+├── tlias-pojo/  
+├── tlias-utils/  
+└── tlias-web-management/
+
+两种结构都能正常工作，`relativePath` 与 `<modules>` 中的相对路径按实际层级调整即可；差别只在可读性。
+
+---
+
+## 三、版本锁定：让版本只改一处
+
+### 3.1 场景：非共有依赖的版本散落问题
+
+并非所有依赖都是各模块共有的。假设项目里还有 `tlias-web-system`、`tlias-web-report` 等模块，它们和 `tlias-web-management` 都用到 jjwt，而 `tlias-pojo`、`tlias-utils` 并不需要 —— 这类依赖不该放进父工程的 `<dependencies>`（否则所有子模块都会被强制引入），只能谁用谁声明。
+
+![三个子模块各自写 jwt 0.9.1](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig17.webp?lastModify=1794737492)
+
+> 图 17 · 同一依赖版本在多个模块中重复书写。
+
+问题出在升级时：把 0.9.1 升到 0.9.2，必须逐个模块翻 `pom.xml` 改 `<version>`，模块一多极易漏改，导致版本不一致。解法就是 **Maven 的版本锁定**。
+
+### 3.2 `<dependencyManagement>` 的基本用法
+
+父工程统一声明版本，**不引入依赖**：
+
+<!-- 统一管理依赖版本 -->  
+<dependencyManagement>  
+    <dependencies>  
+        <!-- JWT 令牌 -->  
+        <dependency>  
+            <groupId>io.jsonwebtoken</groupId>  
+            <artifactId>jjwt</artifactId>  
+            <version>0.9.1</version>  
+        </dependency>  
+    </dependencies>  
+</dependencyManagement>
+
+子模块仍需引入依赖，但**无需写 `<version>` **：
+
+<dependencies>  
+    <!-- JWT 令牌 -->  
+    <dependency>  
+        <groupId>io.jsonwebtoken</groupId>  
+        <artifactId>jjwt</artifactId>  
+    </dependency>  
+</dependencies>
+
+> **注意**
+> 
+> - `<dependencyManagement>` 只统一管理版本，并不会把依赖真正引入，这与 `<dependencies>` 不同；
+>     
+> - 子模块要用仍需自行引入，只是不用指定版本；变更版本只需改父工程一处；
+>     
+> - Spring Boot 项目中大量依赖不写版本也能用，正是因为 `spring-boot-starter-parent` 已经用 `<dependencyManagement>` 统一管好了版本。
+>     
+
+### 3.3 案例：把 tlias-utils 的版本交给父工程
+
+**父工程追加**：
+
+<dependencyManagement>  
+    <dependencies>  
+        <!-- JWT 依赖 -->  
+        <dependency>  
+            <groupId>io.jsonwebtoken</groupId>  
+            <artifactId>jjwt</artifactId>  
+            <version>0.9.1</version>  
+        </dependency>  
+        <dependency>  
+            <groupId>com.aliyun.oss</groupId>  
+            <artifactId>aliyun-sdk-oss</artifactId>  
+            <version>3.17.4</version>  
+        </dependency>  
+        <dependency>  
+            <groupId>javax.xml.bind</groupId>  
+            <artifactId>jaxb-api</artifactId>  
+            <version>2.3.1</version>  
+        </dependency>  
+        <dependency>  
+            <groupId>javax.activation</groupId>  
+            <artifactId>activation</artifactId>  
+            <version>1.1.1</version>  
+        </dependency>  
+        <!-- 版本不高于 2.3.3 -->  
+        <dependency>  
+            <groupId>org.glassfish.jaxb</groupId>  
+            <artifactId>jaxb-runtime</artifactId>  
+            <version>2.3.3</version>  
+        </dependency>  
+    </dependencies>  
+</dependencyManagement>
+
+** `tlias-utils/pom.xml` 去掉全部 `<version>` **：
+
+<dependencies>  
+    <!-- JWT 依赖 -->  
+    <dependency>  
+        <groupId>io.jsonwebtoken</groupId>  
+        <artifactId>jjwt</artifactId>  
+    </dependency>  
+    <dependency>  
+        <groupId>com.aliyun.oss</groupId>  
+        <artifactId>aliyun-sdk-oss</artifactId>  
+    </dependency>  
+    <dependency>  
+        <groupId>javax.xml.bind</groupId>  
+        <artifactId>jaxb-api</artifactId>  
+    </dependency>  
+    <dependency>  
+        <groupId>javax.activation</groupId>  
+        <artifactId>activation</artifactId>  
+    </dependency>  
+    <!-- 版本不高于 2.3.3 -->  
+    <dependency>  
+        <groupId>org.glassfish.jaxb</groupId>  
+        <artifactId>jaxb-runtime</artifactId>  
+    </dependency>  
+</dependencies>
+
+### 3.4 属性配置：版本号集中管理
+
+版本号即使都在父工程里，也散落在多个 `<version>` 标签中。用自定义属性 + 属性引用，可以集中到 `<properties>` 一处：
+
+<!-- 1) 自定义属性 -->  
+<properties>  
+    <lombok.version>1.18.34</lombok.version>  
+</properties>  
+​  
+<!-- 2) 引用属性 -->  
+<dependency>  
+    <groupId>org.projectlombok</groupId>  
+    <artifactId>lombok</artifactId>  
+    <version>${lombok.version}</version>  
+</dependency>
+
+![属性配置：自定义 property 并在版本处引用](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig18.webp?lastModify=1794737492)
+
+> 图 18 · 版本号统一定义在 `<properties>`，通过 `${xxx.version}` 引用。
+
+** `tlias-parent/pom.xml` 最终形态**（含继承、共有依赖、版本锁定、属性集中管理；后续升级版本只改 `<properties>`）：
+
+<?xml version="1.0" encoding="UTF-8"?>  
+<project xmlns="http://maven.apache.org/POM/4.0.0"  
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">  
+    <modelVersion>4.0.0</modelVersion>  
+​  
+    <parent>  
+        <groupId>org.springframework.boot</groupId>  
+        <artifactId>spring-boot-starter-parent</artifactId>  
+        <version>3.2.8</version>  
+        <relativePath/>  
+    </parent>  
+​  
+    <groupId>com.itheima</groupId>  
+    <artifactId>tlias-parent</artifactId>  
+    <version>1.0-SNAPSHOT</version>  
+    <packaging>pom</packaging>  
+​  
+    <properties>  
+        <maven.compiler.source>17</maven.compiler.source>  
+        <maven.compiler.target>17</maven.compiler.target>  
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>  
+​  
+        <spring-boot.version>3.2.8</spring-boot.version>  
+        <lombok.version>1.18.34</lombok.version>  
+        <jwt.version>0.9.1</jwt.version>  
+        <aliyun.oss.version>3.17.4</aliyun.oss.version>  
+        <jaxb.version>2.3.1</jaxb.version>  
+        <javax.activation.version>1.1.1</javax.activation.version>  
+        <jaxb.runtime.version>2.3.3</jaxb.runtime.version>  
+    </properties>  
+​  
+    <!-- 共有依赖：子模块自动继承 -->  
+    <dependencies>  
+        <dependency>  
+            <groupId>org.springframework.boot</groupId>  
+            <artifactId>spring-boot-starter</artifactId>  
+            <version>${spring-boot.version}</version>  
+        </dependency>  
+        <dependency>  
+            <groupId>org.projectlombok</groupId>  
+            <artifactId>lombok</artifactId>  
+            <version>${lombok.version}</version>  
+        </dependency>  
+    </dependencies>  
+​  
+    <!-- 版本锁定：只管版本，不引入依赖 -->  
+    <dependencyManagement>  
+        <dependencies>  
+            <dependency>  
+                <groupId>io.jsonwebtoken</groupId>  
+                <artifactId>jjwt</artifactId>  
+                <version>${jwt.version}</version>  
+            </dependency>  
+            <dependency>  
+                <groupId>com.aliyun.oss</groupId>  
+                <artifactId>aliyun-sdk-oss</artifactId>  
+                <version>${aliyun.oss.version}</version>  
+            </dependency>  
+            <dependency>  
+                <groupId>javax.xml.bind</groupId>  
+                <artifactId>jaxb-api</artifactId>  
+                <version>${jaxb.version}</version>  
+            </dependency>  
+            <dependency>  
+                <groupId>javax.activation</groupId>  
+                <artifactId>activation</artifactId>  
+                <version>${javax.activation.version}</version>  
+            </dependency>  
+            <dependency>  
+                <groupId>org.glassfish.jaxb</groupId>  
+                <artifactId>jaxb-runtime</artifactId>  
+                <version>${jaxb.runtime.version}</version>  
+            </dependency>  
+        </dependencies>  
+    </dependencyManagement>  
+</project>
+
+### 3.5 高频面试题
+
+** `<dependencyManagement>` 与 `<dependencies>` 的区别？**
+
+|| `<dependencies>` | `<dependencyManagement>` |
+|---|---|---|
+|是否引入依赖|是，直接引入|否，只声明版本|
+|子模块是否自动继承|是，无需再声明|否，需自行引入依赖|
+|子模块是否要写版本|不需要（已继承）|不需要（由父工程锁定）|
+|典型用途|所有模块都需要的公共依赖|只有部分模块用到、但版本必须统一的依赖|
+
+---
+
+## 四、聚合：一次构建全部模块
+
+### 4.1 场景：手工按依赖顺序构建的痛点
+
+分模块之后模块关系错综复杂：`tlias-web-management` 的父工程是 `tlias-parent`，同时依赖 `tlias-pojo`、`tlias-utils`。
+
+![模块间的依赖关系](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig19.webp?lastModify=1794737492)
+
+> 图 19 · 父工程与三个子模块的关系；业务模块还依赖两个公共模块。
+
+打包 `tlias-web-management` 时，Maven 会到本地仓库查找父工程和两个依赖模块，而本地仓库里此时还没有它们。于是必须先对 `tlias-parent`、`tlias-pojo`、`tlias-utils` 分别执行 `install` 装进本地仓库，再对业务模块执行 `package`。模块一多、依赖一复杂，这种按依赖顺序逐个构建的方式就难以维护。
+
+**聚合**正是为此而生：通过聚合实现项目的一键构建（清理、编译、测试、打包、安装等）。
+
+### 4.2 概念
+
+- **聚合**：将多个模块组织成一个整体，同时进行项目构建；
+    
+- **聚合工程**：一个不含业务功能的「空」工程，有且仅有一个 pom 文件。通常**继承关系中的父工程与聚合关系中的聚合工程是同一个**，此处即 `tlias-parent`；
+    
+- **作用**：快速构建项目，无须按依赖关系手动逐个构建，直接在聚合工程上执行即可。
+    
+
+![聚合：一个空工程统一驱动多个模块](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig20.webp?lastModify=1794737492)
+
+> 图 20 · 聚合工程作为构建入口，统一驱动所有子模块。
+
+### 4.3 实现
+
+在聚合工程中通过 `<modules>` 列出要聚合的子模块（路径相对父工程 pom）：
+
+<!-- 聚合其他模块 -->  
+<modules>  
+    <module>../tlias-pojo</module>  
+    <module>../tlias-utils</module>  
+    <module>../tlias-web-management</module>  
+</modules>
+
+若采用 2.4 节「形态 B」（子模块放在父工程目录下），路径相应写成 `<module>tlias-pojo</module>` 等。
+
+之后编译、打包、安装都不必逐模块操作：在 `tlias-parent` 上执行一次 `package`，被聚合的所有模块都会执行 `package`。
+
+![聚合工程执行 package 一键打包全部模块](file:///D:/workbuddy_repo/spaces/2026_11_14_00-52-47/images/maven-fig21.webp?lastModify=1794737492)
+
+> 图 21 · 在聚合工程执行 package，全部模块同步构建。
+
+一键 clean、compile、test、package、install 同理，均由聚合工程统一驱动。
 ----
 
 
