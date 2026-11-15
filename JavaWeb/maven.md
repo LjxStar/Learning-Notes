@@ -324,11 +324,9 @@ Maven 把项目构建的过程划分为若干个**阶段（phase）**，并预�
 > [!tip] 用 `package` 还是 `install`？
 > - 只是想生成一个 jar 包给同事传阅 → 用 `package` 即可
 > - 这个 jar 还要被**其他 Maven 项目**当作依赖引用 → 必须用 `install`，把构件放进本地仓库，下一个项目才能通过坐标找到它
-> - 这个 jar 要上传给整个团队使用 → 用 `deploy` 发布到公司私服（需先在 `pom.xml` 的 `<distributionManagement>` 中配置私服地址和账号）
+> - 这个 jar 要上传给整个团队使用 → 用 `deploy` 发布到公司私服
 
-> [!note] 两个容易混淆的用法
-> - **`-DskipTests` 与 `-Dmaven.test.skip=true`**：前者只跳过**执行**测试（测试代码照常编译），后者连编译都跳过，跳得更快但也就测不到编译错误了。
-> - **`-P`（profile）**：用于激活 `pom.xml` 中 `<profiles>` 里定义的环境配置，例如 `mvn clean package -P prod` 会使用 id 为 `prod` 的那套配置（不同的仓库地址、激活的依赖等）。
+> **`-DskipTests` 与 `-Dmaven.test.skip=true`**：前者只跳过**执行**测试（测试代码照常编译），后者连编译都跳过，跳得更快但也就测不到编译错误了。
 
 ### 3.2.2 在终端中执行
 
