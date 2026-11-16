@@ -528,4 +528,13 @@ public class LoginUser implements UserDetails {
 
 一般使用 Spring Security 提供的 `BCryptPasswordEncoder`：只需把 `BCryptPasswordEncoder` 对象注入 Spring 容器，Spring Security 就会使用它进行密码校验。
 
-定义一个 Spring Security 配置类，该配置类需要继承 `WebSecurityConfigurerAdapter`：
+定义一个 Spring Security 配置类：
+
+```java
+@Configuration  
+public class SecurityConfig {  
+    @Bean    public PasswordEncoder passwordEncoder() {  
+        return new BCryptPasswordEncoder();  
+    }  
+}
+```
