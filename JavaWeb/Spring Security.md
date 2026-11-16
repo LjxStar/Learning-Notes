@@ -447,15 +447,12 @@ public interface UserMapper extends BaseMapper<User> {
 
 **准备工作 ⑤：修改 User 实体类**
 
-在类名上加 `@TableName(value = "sys_user")`，在 `id` 字段上加 `@TableId`：
+在类名上加 `@TableName(value = "sys_user")`，在 `id` 字段上加 `@TableId(type = IdType.AUTO)`：
 
 **准备工作 ⑥：配置 Mapper 扫描**
 
-@SpringBootApplication  
-@MapperScan("com.sangeng.mapper")  
-public class SimpleSecurityApplication {  
-    public static void main(String[] args) {  
-        ConfigurableApplicationContext run = SpringApplication.run(SimpleSecurityApplication.class);  
-        System.out.println(run);  
-    }  
-}
+在启动类配置主键扫描
+```java
+@MapperScan("com.quickstart.mapper")  
+```
+
