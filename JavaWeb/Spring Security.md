@@ -441,7 +441,8 @@ spring:
 **准备工作 ④：定义 Mapper 接口**
 
 ```java
-
+public interface UserMapper extends BaseMapper<User> {  
+}
 ```
 
 **准备工作 ⑤：修改 User 实体类**
