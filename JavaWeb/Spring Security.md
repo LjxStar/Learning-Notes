@@ -420,7 +420,7 @@ CREATE TABLE `sys_user` (
 ```
 
 **准备工作 ③：配置数据库信息**
-```yaml
+```yml
 spring:
 	datasource:  
 	  url: jdbc:mysql://localhost:3306/book_mgt?useSSL=false&serverTimezone=Asia/Shanghai  
@@ -432,13 +432,13 @@ spring:
 
 **准备工作 ④：定义 Mapper 接口**
 
-public interface UserMapper extends BaseMapper<User> {  
-}
+```java
+
+```
 
 **准备工作 ⑤：修改 User 实体类**
 
 在类名上加 `@TableName(value = "sys_user")`，在 `id` 字段上加 `@TableId`：
-
 类名上加@TableName(value = "sys_user") ,id 字段上加 @TableId
 
 **准备工作 ⑥：配置 Mapper 扫描**
