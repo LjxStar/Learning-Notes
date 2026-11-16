@@ -124,77 +124,83 @@ Spring Security 的原理本质上是**一条过滤器链**，链中包含提供
 ```
 
 #### 2.4.2 Redis 相关配置
-
+使用 jackson 作为 Redis 的 value 序列化器：
 ```java
-@Configuration
-public class RedisConfig {
+// 统一的 ObjectMapper    
+private ObjectMapper buildObjectMapper() {  
+    ObjectMapper mapper = new ObjectMapper();  
+    // 支持 LocalDateTime / LocalDate        
+    mapper.registerModule(new JavaTimeModule());  
+    // 日期存 ISO 字符串，而非时间戳  
+    mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);  
+    return mapper;  
+}  
 
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(factory);
-
-        // 1. 构建并配置 ObjectMapper
-        ObjectMapper om = new ObjectMapper();
-        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        // 启用默认类型信息，反序列化时才能还原为原始类，而非 LinkedHashMap
-        om.activateDefaultTyping(
-                LaissezFaireSubTypeValidator.instance,
-                ObjectMapper.DefaultTyping.NON_FINAL
-        );
-        // 关键：注册 JavaTimeModule 以支持 LocalDateTime 等类型
-        om.registerModule(new JavaTimeModule());
-        // 可选：将日期输出为 ISO 字符串而非时间戳数组，更易读
-        om.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
-        // 2. 使用 Jackson2JsonRedisSerializer，并注入已配置的 ObjectMapper
-        Jackson2JsonRedisSerializer<Object> jsonSerializer =
-                new Jackson2JsonRedisSerializer<>(Object.class);
-        jsonSerializer.setObjectMapper(om);
-
-        // 3. 统一设置 Key / Value / Hash 的序列化器
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(jsonSerializer);
-        template.setHashKeySerializer(new StringRedisSerializer());
-        template.setHashValueSerializer(jsonSerializer);
-
-        template.afterPropertiesSet();
-        return template;
+// JSON 序列化器  
+@Bean  
+public GenericJackson2JsonRedisSerializer jsonRedisSerializer() {  
+    return new GenericJackson2JsonRedisSerializer(buildObjectMapper());  
+}  
+```
+把自定义的 `RedisTemplate` 注入容器：
+```java
+@Configuration  
+public class RedisConfig {    
+    @Bean  
+    public RedisTemplate<String, Object> redisTemplate(  
+            RedisConnectionFactory factory,  
+            RedisSerializer<Object> jsonSerializer) {  
+  
+        RedisTemplate<String, Object> template = new RedisTemplate<>();  
+        template.setConnectionFactory(factory);  
+  
+        StringRedisSerializer stringSerializer = new StringRedisSerializer();  
+        template.setKeySerializer(stringSerializer);      // 普通 key
+        template.setHashKeySerializer(stringSerializer);  // hash field  
+        template.setValueSerializer(jsonSerializer);      // 普通 value        
+        template.setHashValueSerializer(jsonSerializer);  // hash value
+        template.setDefaultSerializer(jsonSerializer);    // 默认兜底  
+  
+        template.afterPropertiesSet();                    // 使配置立即生效  
+        return template;  
     }
 }
 ```
 
 #### 2.4.3 统一响应类
 ```java
-@Data
-public class ResponseResult<T> {
-    /**
-     * 状态码
-     */
-    private Integer code;
-    /**
-     * 提示信息
-     */
-    private String msg;
-    /**
-     * 查询到的结果数据
-     */
-    private T data;
- 
-    public ResponseResult(Integer code, String msg) {
-        this.code = code;
-        this.msg = msg;
-    }
- 
-    public ResponseResult(Integer code, T data) {
-        this.code = code;
-        this.data = data;
-    }
- 
-    public ResponseResult(Integer code, String msg, T data) {
-        this.code = code;
-        this.msg = msg;
-        this.data = data;
-    }
+@JsonInclude(JsonInclude.Include.NON_NULL)  
+@Data  
+public class ResponseResult<T> {  
+    /**  
+     * 状态码  
+     */  
+    private Integer code;  
+    /**  
+     * 提示信息  
+     */  
+    private String msg;  
+    /**  
+     * 返回的数据  
+     */  
+    private T data;  
+   
+    public ResponseResult(Integer code, String msg) {  
+        this.code = code;  
+        this.msg = msg;  
+    }  
+	 public ResponseResult(Integer code, T data) {  
+        this.code = code;  
+        this.data = data;  
+    }  
+	 public ResponseResult(Integer code, String msg, T data) {  
+        this.code = code;  
+        this.msg = msg;  
+        this.data = data;  
+    }  
 }
 ```
+
+#### 2.4.4 工具类：`JwtUtil`
+
+负责生成与解析 JWT
