@@ -521,8 +521,9 @@ public class LoginUser implements UserDetails {
 }
 ```
 
-**注意**：如果要测试，需要往用户表中写入用户数据；如果希望密码以明文存储，需要在密码前加 `{noop}`，例如： ![noop 明文密码示例](file:///D:/workbuddy_repo/spaces/2026_11_12_21-54-24/imgs/2909814-20220815171404188-1873254506.png?lastModify=1794819709) 
-这样登录时就可以用 `sg` 作为用户名、`1234` 作为密码来登录。
+**注意**：如果要测试，需要往用户表中写入用户数据；如果希望密码以明文存储，需要在密码前加 `{noop}`，例如： 
+![[Pasted image 20261116173136.png]]
+这样登录时就可以用 `admin` 作为用户名、`1234` 作为密码来登录。
 
 实际项目中不会把密码明文存储在数据库中。默认使用的 `PasswordEncoder` 要求数据库中的密码格式为 `{id}password`，它会根据 `id` 判断密码的加密方式；但我们一般不采用这种方式，所以需要替换 `PasswordEncoder`。
 
@@ -537,4 +538,14 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();  
     }  
 }
+```
+
+#### 2.5.3 登录接口
+
+接下来需要自定义登录接口，并让 Spring Security 对该接口放行，使用户访问时无需登录。
+
+在接口中通过 `AuthenticationManager` 的 `authenticate` 方法进行用户认证，因此需要在 `SecurityConfig` 中把 `AuthenticationManager` 注入容器。认证成功后生成一个 JWT 放入响应返回；为了让用户下次请求时能通过 JWT 识别出具体是哪个用户，还需要把用户信息存入 Redis。
+
+```
+
 ```
