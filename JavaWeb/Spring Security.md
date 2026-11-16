@@ -523,3 +523,9 @@ public class LoginUser implements UserDetails {
 
 **注意**：如果要测试，需要往用户表中写入用户数据；如果希望密码以明文存储，需要在密码前加 `{noop}`，例如： ![noop 明文密码示例](file:///D:/workbuddy_repo/spaces/2026_11_12_21-54-24/imgs/2909814-20220815171404188-1873254506.png?lastModify=1794819709) 
 这样登录时就可以用 `sg` 作为用户名、`1234` 作为密码来登录。
+
+实际项目中不会把密码明文存储在数据库中。默认使用的 `PasswordEncoder` 要求数据库中的密码格式为 `{id}password`，它会根据 `id` 判断密码的加密方式；但我们一般不采用这种方式，所以需要替换 `PasswordEncoder`。
+
+一般使用 Spring Security 提供的 `BCryptPasswordEncoder`：只需把 `BCryptPasswordEncoder` 对象注入 Spring 容器，Spring Security 就会使用它进行密码校验。
+
+定义一个 Spring Security 配置类，该配置类需要继承 `WebSecurityConfigurerAdapter`：
