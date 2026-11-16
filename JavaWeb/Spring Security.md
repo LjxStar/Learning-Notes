@@ -423,7 +423,7 @@ CREATE TABLE `sys_user` (
 ```yml
 spring:
 	datasource:  
-	  url: jdbc:mysql://localhost:3306/book_mgt?useSSL=false&serverTimezone=Asia/Shanghai  
+	  url: jdbc:mysql://localhost:3306/security?useSSL=false&serverTimezone=Asia/Shanghai  
 	  username: root  
 	  password: 131452  
 	  driver-class-name: com.mysql.cj.jdbc.Driver
