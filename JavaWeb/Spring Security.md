@@ -17,16 +17,17 @@
 
 **① 设置父工程并添加依赖**
 
-![[Pasted image 20261115204649.png]]
+![[Pasted image 20261116100808.png]]
 「新建 SpringBoot 项目所需依赖」
 **② 创建 Controller**
 
 ```java
 @RestController  
 public class Hello {  
+  
     @RequestMapping("/hello")  
-    public String sayHello() {  
-        return "Hello, World!";  
+    public String sayHello(@RequestParam(value = "name", defaultValue = "Tom") String name) {  
+        return "Hello, " + name + "!";  
     }  
 }
 ```
