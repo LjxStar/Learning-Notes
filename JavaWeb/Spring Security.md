@@ -318,3 +318,30 @@ public class JwtUtil {
     }  
 }
 ```
+
+#### 2.4.5 工具类：`WebUtils`
+
+把字符串（这里是 JSON）直接渲染到客户端，供自定义异常处理器复用：
+```java
+@Slf4j  
+public class WebUtils {  
+  
+    /**  
+     * 直接将字符串渲染输出到客户端  
+     * @param response 响应对象  
+     * @param content 输出内容（一般是json字符串）  
+     * @return null  
+     */    public static String renderString(HttpServletResponse response, String content) {  
+        try {  
+            response.setStatus(200);  
+            response.setContentType("application/json");  
+            response.setCharacterEncoding("UTF-8");  
+            response.getWriter().print(content);  
+            response.getWriter().flush();  
+        } catch (IOException e) {  
+            log.error(e.getMessage(), e);  
+        }  
+        return null;  
+    }  
+}
+```
