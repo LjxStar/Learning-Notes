@@ -125,42 +125,37 @@ Spring Security 的原理本质上是**一条过滤器链**，链中包含提供
 #### 2.4.2 Redis 相关配置
 
 ```java
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.SerializationFeature;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
-
 @Configuration
 public class RedisConfig {
 
     @Bean
-    public ObjectMapper redisObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        // Jackson3 内置支持 LocalDateTime，不用手动注册 JavaTimeModule
-        // 禁止日期输出为时间戳
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        // 全局：序列化忽略null字段，和你 ResponseResult 的 @JsonInclude 保持一致
-        mapper.setSerializationInclusion(tools.jackson.databind.JsonInclude.Include.NON_NULL);
-        return mapper;
-    }
-
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory,
-                                                       ObjectMapper redisObjectMapper) {
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(factory);
 
-        StringRedisSerializer stringSer = new StringRedisSerializer();
-        GenericJacksonJsonRedisSerializer jacksonSer = new GenericJacksonJsonRedisSerializer(redisObjectMapper);
+        // 1. 构建并配置 ObjectMapper
+        ObjectMapper om = new ObjectMapper();
+        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        // 启用默认类型信息，反序列化时才能还原为原始类，而非 LinkedHashMap
+        om.activateDefaultTyping(
+                LaissezFaireSubTypeValidator.instance,
+                ObjectMapper.DefaultTyping.NON_FINAL
+        );
+        // 关键：注册 JavaTimeModule 以支持 LocalDateTime 等类型
+        om.registerModule(new JavaTimeModule());
+        // 可选：将日期输出为 ISO 字符串而非时间戳数组，更易读
+        om.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        template.setKeySerializer(stringSer);
-        template.setHashKeySerializer(stringSer);
-        template.setValueSerializer(jacksonSer);
-        template.setHashValueSerializer(jacksonSer);
+        // 2. 使用 Jackson2JsonRedisSerializer，并注入已配置的 ObjectMapper
+        Jackson2JsonRedisSerializer<Object> jsonSerializer =
+                new Jackson2JsonRedisSerializer<>(Object.class);
+        jsonSerializer.setObjectMapper(om);
+
+        // 3. 统一设置 Key / Value / Hash 的序列化器
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(jsonSerializer);
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(jsonSerializer);
 
         template.afterPropertiesSet();
         return template;
