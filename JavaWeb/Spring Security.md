@@ -456,3 +456,6 @@ public interface UserMapper extends BaseMapper<User> {
 @MapperScan("com.quickstart.mapper")  
 ```
 
+**核心代码 ①：实现 `UserDetailsService`** 
+
+创建一个类实现 `UserDetailsService` 接口并重写其中的方法，根据用户名从数据库中查询用户信息：
