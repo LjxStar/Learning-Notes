@@ -459,3 +459,67 @@ public interface UserMapper extends BaseMapper<User> {
 **核心代码 ①：实现 `UserDetailsService`** 
 
 创建一个类实现 `UserDetailsService` 接口并重写其中的方法，根据用户名从数据库中查询用户信息：
+```java
+@Service  
+public class UserDetailServiceImpl implements UserDetailsService {  
+    @Autowired    private UserMapper userMapper;  
+  
+    @Override  
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {  
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getUserName, username));  
+        if (user == null) {  
+            throw new UsernameNotFoundException("用户不存在");  
+        }  
+        //TODO 根据用户查询权限信息 添加到LoginUser中  
+        return new LoginUser(user);  
+    }  
+}
+```
+
+**核心代码 ②：定义 `LoginUser` 实现 `UserDetails`** 
+
+因为 `UserDetailsService` 方法的返回值是 `UserDetails` 类型，所以需要定义一个类实现该接口，把用户信息封装在其中：
+
+```java
+@AllArgsConstructor  
+public class LoginUser implements UserDetails {  
+    private User user;  
+    @Override  
+    public Collection<? extends GrantedAuthority> getAuthorities() {  
+        return null;  
+    }  
+  
+    @Override  
+    public String getPassword() {  
+        return user.getPassword();  
+    }  
+  
+    @Override  
+    public String getUsername() {  
+        return user.getUserName();  
+    }  
+  
+    @Override  
+    public boolean isAccountNonExpired() {  
+        return true;  
+    }  
+  
+    @Override  
+    public boolean isAccountNonLocked() {  
+        return true;  
+    }  
+  
+    @Override  
+    public boolean isCredentialsNonExpired() {  
+        return true;  
+    }  
+  
+    @Override  
+    public boolean isEnabled() {  
+        return true;  
+    }  
+}
+```
+
+**注意**：如果要测试，需要往用户表中写入用户数据；如果希望密码以明文存储，需要在密码前加 `{noop}`，例如： ![noop 明文密码示例](file:///D:/workbuddy_repo/spaces/2026_11_12_21-54-24/imgs/2909814-20220815171404188-1873254506.png?lastModify=1794819709) 
+这样登录时就可以用 `sg` 作为用户名、`1234` 作为密码来登录。
