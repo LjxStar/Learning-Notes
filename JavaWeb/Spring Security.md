@@ -546,6 +546,88 @@ public class SecurityConfig {
 
 在接口中通过 `AuthenticationManager` 的 `authenticate` 方法进行用户认证，因此需要在 `SecurityConfig` 中把 `AuthenticationManager` 注入容器。认证成功后生成一个 JWT 放入响应返回；为了让用户下次请求时能通过 JWT 识别出具体是哪个用户，还需要把用户信息存入 Redis。
 
+**controller**
+
+```java
+@RestController  
+public class LoginController {  
+    @Autowired    private LoginService loginService;  
+  
+    @PostMapping("/login")  
+    public ResponseResult<Map<String, String>> login(String username, String password) {  
+        Map<String, String> result = loginService.login(username, password);  
+        return new ResponseResult<>(200, "登录成功！", result);  
+    }  
+}
 ```
 
+**service**
+
+```java
+@Service  
+public class LoginServiceImpl implements LoginService {  
+    private final static String loginPrefix = "login:";  
+    private final static String tokenKey = "token";  
+    private final static Long defaultExpire = 86400L; // 86400 seconds = 1 day  
+  
+    @Autowired  
+    private AuthenticationManager authenticationManager;  
+    @Autowired  
+    private JwtUtil jwtUtil;  
+    @Autowired  
+    private RedisTemplate<String, LoginUser> redisTemplate;  
+  
+    @Override  
+    public Map<String, String> login(String username, String password) {  
+        // 创建一个Authentication对象  
+        Authentication authentication = new UsernamePasswordAuthenticationToken(username, password);  
+        // 进行身份验证  
+        Authentication result = authenticationManager.authenticate(authentication);  
+  
+        // 生成JWT令牌  
+        LoginUser loginUser = (LoginUser) result.getPrincipal();  
+        Long userId = loginUser.getUser().getId();  
+        String token = jwtUtil.generateToken(userId.toString());  
+  
+        // 将登录用户信息存储在Redis中  
+        redisTemplate.opsForValue().set(loginPrefix + token, loginUser, defaultExpire, TimeUnit.SECONDS);  
+  
+        // 返回  
+        Map<String, String> map = new HashMap<>();  
+        map.put(tokenKey, token);  
+        return map;  
+    }  
+}
 ```
+
+**SecurityConfig（放行登录接口 + 无状态会话 + 暴露 AuthenticationManager）**
+
+```java
+@Configuration  
+public class SecurityConfig {  
+    @Bean    
+    public PasswordEncoder passwordEncoder() {  
+        return new BCryptPasswordEncoder();  
+    }  
+  
+    @Bean  
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {  
+        return config.getAuthenticationManager();  
+    }  
+  
+    @Bean  
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {  
+        http
+	        	.csrf(csrf -> csrf.disable())  
+	            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  
+	             .authorizeRequests(authorizeRequests -> authorizeRequests  
+		             .requestMatchers("/login").permitAll()  
+		             .anyRequest().authenticated());  
+        return http.build();  
+    }  
+}
+```
+
+#### 2.5.4 JWT 认证过滤器
+
+自定义一个过滤器：获取请求头中的 token → 解析取出 `userid` → 用 `userid` 去 Redis 中获取对应的 `LoginUser` 对象 → 封装 `Authentication` 对象存入 `SecurityContextHolder`。
