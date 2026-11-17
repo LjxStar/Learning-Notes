@@ -566,8 +566,6 @@ public class LoginController {
 ```java
 @Service  
 public class LoginServiceImpl implements LoginService {  
-    private final static String loginPrefix = "login:";  
-    private final static String tokenKey = "token";  
     private final static Long defaultExpire = 86400L; // 86400 seconds = 1 day  
   
     @Autowired  
@@ -590,11 +588,11 @@ public class LoginServiceImpl implements LoginService {
         String token = jwtUtil.generateToken(userId.toString());  
   
         // 将登录用户信息存储在Redis中  
-        redisTemplate.opsForValue().set(loginPrefix + token, loginUser, defaultExpire, TimeUnit.SECONDS);  
+        redisTemplate.opsForValue().set("login:" + token, loginUser, defaultExpire, TimeUnit.SECONDS);  
   
         // 返回  
         Map<String, String> map = new HashMap<>();  
-        map.put(tokenKey, token);  
+        map.put("token", token);  
         return map;  
     }  
 }
