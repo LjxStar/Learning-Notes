@@ -566,7 +566,8 @@ public class LoginController {
 ```java
 @Service  
 public class LoginServiceImpl implements LoginService {  
-    private final static Long defaultExpire = 86400L; // 86400 seconds = 1 day  
+	// 86400000 milliseconds = 1 day  
+    private final static Long defaultExpire = 86400000L; 
   
     @Autowired  
     private AuthenticationManager authenticationManager;  
@@ -588,7 +589,7 @@ public class LoginServiceImpl implements LoginService {
         String token = jwtUtil.generateToken(userId.toString());  
   
         // 将登录用户信息存储在Redis中  
-        redisTemplate.opsForValue().set("login:" + token, loginUser, defaultExpire, TimeUnit.SECONDS);  
+        redisTemplate.opsForValue().set("login:" + token, loginUser, defaultExpire, TimeUnit.MILLISECONDS);  
   
         // 返回  
         Map<String, String> map = new HashMap<>();  
