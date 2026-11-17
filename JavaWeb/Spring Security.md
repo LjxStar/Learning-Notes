@@ -615,12 +615,12 @@ public class SecurityConfig {
   
     @Bean  
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {  
-        http
-	        	.csrf(csrf -> csrf.disable())  
-	            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  
-	             .authorizeRequests(authorizeRequests -> authorizeRequests  
-		             .requestMatchers("/login").permitAll()  
-		             .anyRequest().authenticated());  
+		http  
+		        .csrf(AbstractHttpConfigurer::disable)  
+		        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  
+		        .authorizeHttpRequests(authorize -> authorize  
+		                .requestMatchers("/login").permitAll()  
+		                .anyRequest().authenticated());
         return http.build();  
     }  
 }
