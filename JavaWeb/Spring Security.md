@@ -835,3 +835,6 @@ public class LoginUser implements UserDetails {
     }  
 }
 ```
+其中 `@JSONField(serialize = false)` 用于避免把 `GrantedAuthority` 集合序列化进 Redis；`getAuthorities()` 采用懒加载方式把字符串权限转换为 `SimpleGrantedAuthority`。
+
+`LoginUser` 修改完后，就可以在 `UserDetailsServiceImpl` 中把权限信息封装进 `LoginUser`。先写死权限测试，后面再从数据库查询：
