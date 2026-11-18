@@ -32,6 +32,7 @@ Crtil + Shift + N 查找文件
 - **Alt + ← / →**：后退 / 前进
 - **Ctrl + Q**：快速文档
 - **sout / psvm / fori / iter**：常用 Live Template 模板（自动生成打印语句、主函数、循环等）
+- .if .else .while
 
 - **F 8**：单步跳过
 - **F 7**：单步进入
