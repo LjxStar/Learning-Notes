@@ -784,3 +784,4 @@ public class HelloController {
 前面编写 `UserDetailsServiceImpl` 时提到：查询出用户后还要获取对应的权限信息，封装到 `UserDetails` 中返回。这里先把权限信息写死，用于测试。
 
 修改之前定义的 `UserDetails` 实现类 `LoginUser`，使其能封装权限信息：
+
