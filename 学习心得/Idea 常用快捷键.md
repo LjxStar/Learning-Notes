@@ -39,7 +39,7 @@
 | `Ctrl + Shift + U` | 切换选中内容的大小写                                             |
 | `Ctrl + Q`         | 查看快速文档（Quick Documentation）                            |
 | `Ctrl + P`         | 查看方法参数提示（Parameter Info）                               |
-| `Ctrl + Alt + O`   |                                                        |
+| `Ctrl + Alt + O`   | 优化导入的类和包                                               |
 
 ## 搜索与导航
 
