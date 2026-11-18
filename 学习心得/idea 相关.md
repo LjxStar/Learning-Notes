@@ -18,10 +18,13 @@
 - `Shift + Enter`：光标下方新建一行
 - `Ctrl + Enter`：拆分当前行
 - `Ctrl + Alt + Enter`：光标上方新建一行
+- `Ctrl+Shift+Enter`：补全语句，自动加分号、大括号，光标跳到下一行
 - `Ctrl + Shift + ↑ / ↓`：整块移动当前行 / 选中代码上下移动
 - `Ctrl + [`：跳到当前代码块起始位置
 - `Ctrl + ]`：跳到当前代码块结束位置
-
+- `Ctrl+Shift+U`：选中内容切换大小写
+Ctrl+Z 是撤销
+`Ctrl+Shift+Z`：重做
 ## 搜索与跳转
 
 - `Ctrl + N`：查找类
