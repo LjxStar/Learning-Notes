@@ -787,13 +787,17 @@ public class HelloController {
 
 ```java
 @Getter  
-@AllArgsConstructor  
 public class LoginUser implements UserDetails {  
-    private User user;  
-    private List<String> permissions; // 权限集合  
+    private final User user;  
+    private final List<String> permissions; // 权限集合  
+  
+    public LoginUser(List<String> permissions, User user) {  
+        this.permissions = permissions;  
+        this.user = user;  
+    }  
   
     // 存储 SpringSecurity 所需要的权限集合  
-    private List<GrantedAuthority> authorities;  
+    private transient List<GrantedAuthority> authorities;  
   
     @Override  
     public Collection<? extends GrantedAuthority> getAuthorities() {  
