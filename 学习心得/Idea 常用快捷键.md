@@ -1,32 +1,15 @@
 # IntelliJ IDEA 常用快捷键
 
-## 速查表（高频）
-
-| 快捷键 | 功能 | 分类 |
-| --- | --- | --- |
-| `Double Shift` | 随处搜索（类、文件、符号、配置等） | 搜索导航 |
-| `Alt + Enter` | 显示意图操作与快速修复（导入、修错、生成代码等） | 生成修复 |
-| `Ctrl + D` | 复制当前行；有选区时复制选中内容 | 编辑 |
-| `Ctrl + Y` | 删除当前行 | 编辑 |
-| `Ctrl + Z` / `Ctrl + Shift + Z` | 撤销 / 重做 | 编辑 |
-| `Ctrl + /` | 切换行注释（`//`） | 注释 |
-| `Shift + Enter` | 在当前行下方插入新行，并将光标移至新行 | 编辑 |
-| `Ctrl + Alt + Enter` | 在当前行上方插入新行，并将光标移至新行 | 编辑 |
-| `Ctrl + Shift + Enter` | 补全当前语句并换行到合适位置 | 编辑 |
-| `Ctrl + B` | 跳转到声明或用法 | 导航 |
-| `Shift + F6` | 重命名符号（变量、方法、类等） | 重构 |
-| `Ctrl + F` / `Ctrl + R` | 当前文件查找 / 替换 | 搜索 |
-
 ## 高频编辑
 
 ### 行操作与撤销
 
-| 快捷键 | 功能 |
-| --- | --- |
-| `Ctrl + D` | 复制当前行；若有选区则复制选中内容 |
-| `Ctrl + Y` | 删除当前行 |
-| `Ctrl + Z` | 撤销上一步操作 |
-| `Ctrl + Shift + Z` | 重做已撤销的操作 |
+| 快捷键                | 功能                |
+| ------------------ | ----------------- |
+| `Ctrl + D`         | 复制当前行；若有选区则复制选中内容 |
+| `Ctrl + Y`         | 删除当前行             |
+| `Ctrl + Z`         | 撤销上一步操作           |
+| `Ctrl + Shift + Z` | 重做已撤销的操作          |
 
 ### 插入与换行
 
@@ -53,41 +36,47 @@
 | --- | --- |
 | `Ctrl + Alt + T` | 使用代码块包围选中代码（如 `if`、`for`、`try-catch`、`synchronized` 等） |
 | `Ctrl + Shift + U` | 切换选中内容的大小写 |
+| `Ctrl + Q` | 查看快速文档（Quick Documentation） |
+| `Ctrl + P` | 查看方法参数提示（Parameter Info） |
+| `Ctrl + Shift + I` | 查看快速定义（Quick Definition），在弹窗中预览声明/实现内容 |
+| `Ctrl + F1` | 查看光标处错误或警告的简要说明 |
+| `Alt + Q` | 查看上下文信息（Context Info），显示当前所在方法或类的签名 |
+| `Shift + F1` | 在浏览器中打开外部文档（External Documentation） |
 
 ## 搜索与导航
 
-| 快捷键 | 功能 |
-| --- | --- |
-| `Double Shift` | 随处搜索（Search Everywhere：类、文件、符号、配置等） |
-| `Ctrl + N` | 查找类（Class） |
-| `Ctrl + Shift + N` | 查找文件（File） |
-| `Ctrl + F` | 在当前文件中查找 |
-| `Ctrl + R` | 在当前文件中替换 |
-| `Ctrl + E` | 打开最近访问文件列表（Recent Files） |
-| `Ctrl + G` | 跳转到指定行号 |
-| `Ctrl + B` | 跳转到声明或用法（Go to Declaration） |
-| `Ctrl + Alt + B` | 跳转到实现类或实现方法（Go to Implementation） |
-| `Ctrl + U` | 跳转到父类或父方法（Go to Super） |
-| `Alt + ← / →` | 后退 / 前进到上一次光标位置 |
-| `Alt + ↑ / ↓` | 在方法之间快速跳转 |
+| 快捷键                | 功能                                  |
+| ------------------ | ----------------------------------- |
+| `Double Shift`     | 随处搜索（Search Everywhere：类、文件、符号、配置等） |
+| `Ctrl + N`         | 查找类（Class）                          |
+| `Ctrl + Shift + N` | 查找文件（File）                          |
+| `Ctrl + F`         | 在当前文件中查找                            |
+| `Ctrl + R`         | 在当前文件中替换                            |
+| `Ctrl + E`         | 打开最近访问文件列表（Recent Files）            |
+| `Ctrl + G`         | 跳转到指定行号                             |
+| `Ctrl + B`         | 跳转到声明或用法（Go to Declaration）         |
+| `Ctrl + Alt + B`   | 跳转到实现类或实现方法（Go to Implementation）   |
+| `Ctrl + U`         | 跳转到父类或父方法（Go to Super）              |
+| `Alt + ← / →`      | 后退 / 前进到上一次光标位置                     |
+| `Alt + ↑ / ↓`      | 在方法之间快速跳转                           |
 
 ## 代码生成与重构
 
-| 快捷键 | 功能 |
-| --- | --- |
-| `Alt + Enter` | 显示意图操作与快速修复（如导入类、修正错误、生成代码等） |
+| 快捷键            | 功能                                                       |
+| -------------- | -------------------------------------------------------- |
+| `Alt + Enter`  | 显示意图操作与快速修复（如导入类、修正错误、生成代码等）                             |
 | `Alt + Insert` | 生成代码（构造器、Getter/Setter、`toString`、`equals`、`hashCode` 等） |
-| `Ctrl + O` | 重写父类或接口方法（Override Methods） |
-| `Shift + F6` | 重命名符号（变量、方法、类、文件等，安全重构） |
+| `Ctrl + O`     | 重写父类或接口方法（Override Methods）                              |
+| `Shift + F6`   | 重命名符号（变量、方法、类、文件等，安全重构）                                  |
 
 ## 注释与代码折叠
 
-| 快捷键 | 功能 |
-| --- | --- |
-| `Ctrl + /` | 切换行注释（`//`） |
-| `Ctrl + Shift + /` | 切换块注释（`/* ... */`） |
-| `Ctrl + +` / `Ctrl + -` | 展开 / 折叠当前代码块 |
-| `Ctrl + Shift + +` / `Ctrl + Shift + -` | 展开 / 折叠全部代码块 |
+| 快捷键                                     | 功能                 |
+| --------------------------------------- | ------------------ |
+| `Ctrl + /`                              | 切换行注释（`//`）        |
+| `Ctrl + Shift + /`                      | 切换块注释（`/* ... */`） |
+| `Ctrl + +` / `Ctrl + -`                 | 展开 / 折叠当前代码块       |
+| `Ctrl + Shift + +` / `Ctrl + Shift + -` | 展开 / 折叠全部代码块       |
 
 ## Live Template 与后缀补全
 
@@ -179,9 +168,3 @@ while (condition) {
 | `F2` | 跳转到下一处错误或警告 |
 | `Shift + F2` | 跳转到上一处错误或警告 |
 
-## 文档与参数提示
-
-| 快捷键 | 功能 |
-| --- | --- |
-| `Ctrl + Q` | 查看快速文档（Quick Documentation） |
-| `Ctrl + P` | 查看方法参数提示（Parameter Info） |
