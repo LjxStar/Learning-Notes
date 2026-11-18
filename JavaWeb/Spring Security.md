@@ -785,3 +785,53 @@ public class HelloController {
 
 修改之前定义的 `UserDetails` 实现类 `LoginUser`，使其能封装权限信息：
 
+```java
+@Getter  
+@AllArgsConstructor  
+public class LoginUser implements UserDetails {  
+    private User user;  
+    private List<String> permissions; // 权限集合  
+  
+    // 存储 SpringSecurity 所需要的权限集合  
+    private List<GrantedAuthority> authorities;  
+  
+    @Override  
+    public Collection<? extends GrantedAuthority> getAuthorities() {  
+        if (authorities != null) {  
+            return authorities;  
+        }  
+        authorities = permissions.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());  
+        return authorities;  
+    }  
+  
+    @Override  
+    public String getPassword() {  
+        return user.getPassword();  
+    }  
+  
+    @Override  
+    public String getUsername() {  
+        return user.getUserName();  
+    }  
+  
+    @Override  
+    public boolean isAccountNonExpired() {  
+        return true;  
+    }  
+  
+    @Override  
+    public boolean isAccountNonLocked() {  
+        return true;  
+    }  
+  
+    @Override  
+    public boolean isCredentialsNonExpired() {  
+        return true;  
+    }  
+  
+    @Override  
+    public boolean isEnabled() {  
+        return true;  
+    }  
+}
+```
