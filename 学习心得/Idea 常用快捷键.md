@@ -81,7 +81,7 @@
 
 ## Live Template 与后缀补全
 
-### Live Template（输入缩写后按 `Tab`）
+### Live Template
 
 #### `sout`：输出到控制台
 
@@ -122,7 +122,7 @@ for (int i = 0; i < array.length; i++) {
 }
 ```
 
-### 后缀补全（在表达式后输入，如 `expr.var` 再按 `Tab`）
+### 后缀补全
 
 #### `.var`：根据表达式生成变量声明
 
