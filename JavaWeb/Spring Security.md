@@ -723,3 +723,15 @@ public class LoginServiceImpl implements LoginService {
     }  
 }
 ```
+
+### 2.6 认证链路回顾
+
+| 步骤  | 参与方                                    | 关键动作                                                                                     |
+| --- | -------------------------------------- | ---------------------------------------------------------------------------------------- |
+| 1   | `LoginController` / `LoginServiceImpl` | 用用户名密码构造 `UsernamePasswordAuthenticationToken`，调用 `authenticationManager.authenticate()` |
+| 2   | `UserDetailsServiceImpl`               | 按用户名查库，查不到抛异常；查到后封装为 `LoginUser` 返回                                                      |
+| 3   | `LoginServiceImpl`                     | 用 `userId` 生成 JWT，`login:userId` 为 key 把 `LoginUser` 存入 Redis，返回 token                   |
+| 4   | `JwtAuthenticationTokenFilter`         | 每次请求解析 token → Redis 取用户 → 写入 `SecurityContextHolder`                                    |
+| 5   | `LoginServiceImpl.logout()`            | 从上下文取用户 id，删除 Redis 中的登录缓存                                                               |
+
+> **为什么必须 STATELESS**：认证状态不再由 Session 保存，而是由「JWT + Redis + 每次请求重建 SecurityContext」共同维护，所以配置里关闭了 CSRF 并把会话策略设为 `SessionCreationPolicy.STATELESS`。
