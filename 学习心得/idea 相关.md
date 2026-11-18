@@ -31,3 +31,4 @@ Crtil + Shift + N 查找文件
 - **Ctrl + E**：最近打开的文件
 - **Alt + ← / →**：后退 / 前进
 - **Ctrl + Q**：快速文档
+- **sout / psvm / fori / iter**：常用 Live Template 模板（自动生成打印语句、主函数、循环等）
