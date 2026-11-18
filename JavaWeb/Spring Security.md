@@ -685,3 +685,41 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
 #### 2.5.5 登出接口
 
 定义一个退出登录接口：从 `SecurityContextHolder` 中获取认证信息，删除 Redis 中对应的数据即可。
+
+**controller**
+
+```java
+@RestController  
+@RequestMapping("/user")  
+public class LoginController {  
+    @Autowired  
+    private LoginService loginService;  
+  
+    @RequestMapping("/logout")  
+    public ResponseResult<String> logout() {  
+        loginService.logout();  
+        return new ResponseResult<>(200, "登出成功！");  
+    }  
+}
+```
+
+**service**
+
+```java
+@Service  
+public class LoginServiceImpl implements LoginService {  
+    @Autowired  
+    private RedisTemplate<String, Object> redisTemplate;  
+
+    @Override  
+    public void logout() {  
+        // 获取当前登录用户  
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();  
+        LoginUser user = (LoginUser) authentication.getPrincipal();  
+        Long userId = user.getUser().getId();  
+  
+        // 删除Redis中的用户信息  
+        redisTemplate.delete("login:" + userId);  
+    }  
+}
+```
