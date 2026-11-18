@@ -11,7 +11,8 @@
 # 2.常见快捷键
 ① Ctrl + Alt + T 包围方式 例如条件、循环、异常、同步、Runnable
 ② Ctrl + P 查询方法参数
-③ Crtil + D 复制一行
+③ Crtil + D 复制当前行
+ - Crtl + Y 删除当前行
 ** `Ctrl + N` 查找类**
 Crtil + Shift + N 查找文件
  ** `Alt + Enter` ** 快速修复
@@ -19,7 +20,7 @@ Crtil + Shift + N 查找文件
  - **Ctrl + Z / Ctrl + Shift + Z**：撤销 / 重做
  - **Shift + Enter**：在下一行插入新行
  - Ctrl + Alt + Enter 在上一行插入新行
- - Crtl + Y 删除当前行
+
 - Crtl + /
 - Crtl Shift + / 块注释
 - **Ctrl + F / Ctrl + R**：查找 / 替换
@@ -38,3 +39,6 @@ Crtil + Shift + N 查找文件
 - **F 7**：单步进入
 - **Shift + F 8**：跳出
 - **F 9**：继续运行
+
+不常用的
+crtl + w 选中文本，连续按可以扩大选中范围
