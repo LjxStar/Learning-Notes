@@ -12,3 +12,4 @@
 ① Ctrl + Alt + T 包围方式 例如条件、循环、异常、同步、Runnable
 ② Ctrl + P 查询方法参数
 ③ Crtil + D 复制一行
+** `Ctrl + N` 查找类**
