@@ -21,16 +21,17 @@ Crtil + Shift + N 查找文件
  - **Shift + Enter**：在下一行插入新行
  - crtl + enter 
  - Ctrl + Alt + Enter 在上一行插入新行
-
+Ctrl + " `+ / -`" 将当前方法块代码展开 / 折叠
 - Crtl + /
 - Crtl Shift + / 块注释
 - **Ctrl + F / Ctrl + R**：查找 / 替换
-
+- **Ctrl + E**：最近打开的文件
+- 
 - **Ctrl + B**：跳转到声明
 - **Ctrl + Alt + B**：跳转到实现
 - **Ctrl + U**：跳转到父类
 - **Ctrl + G**：跳转到指定行
-- **Ctrl + E**：最近打开的文件
+
 - **Alt + ← / →**：后退 / 前进
 - **Ctrl + Q**：快速文档
 - **sout / psvm / fori / iter**：常用 Live Template 模板（自动生成打印语句、主函数、循环等）
@@ -40,6 +41,5 @@ Crtil + Shift + N 查找文件
 - **F 7**：单步进入
 - **Shift + F 8**：跳出
 - **F 9**：继续运行
-
-不常用的
 crtl + w 选中文本，连续按可以扩大选中范围
+Ctrl + O 快速重写基类或者接口中的方法
