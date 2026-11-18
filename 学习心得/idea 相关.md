@@ -15,9 +15,9 @@
 - `Ctrl + D`：复制当前行
 - `Ctrl + Y`：删除当前行
 - `Ctrl + W`：逐级扩大选中范围，连续按持续扩大
-- `Shift + Enter`：在光标下方新建一行（光标不用在行尾）
-- `Ctrl + Enter`：在光标上方新建一行（拆分当前行）
-- `Ctrl + Alt + Enter`：在光标上方插入新行
+- `Shift + Enter`：光标下方新建一行
+- `Ctrl + Enter`：拆分当前行
+- `Ctrl + Alt + Enter`：光标上方新建一行
 - `Ctrl + Shift + ↑ / ↓`：整块移动当前行 / 选中代码上下移动
 - `Ctrl + [`：跳到当前代码块起始位置
 - `Ctrl + ]`：跳到当前代码块结束位置
