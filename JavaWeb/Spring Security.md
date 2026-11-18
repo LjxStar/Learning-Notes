@@ -791,15 +791,17 @@ public class LoginUser implements UserDetails {
     private final User user;  
     private final List<String> permissions; // 权限集合  
   
-    public LoginUser(List<String> permissions, User user) {  
-        this.permissions = permissions;  
+    public LoginUser(User user, List<String> permissions) {  
         this.user = user;  
+        this.permissions = permissions;  
+  
     }  
   
     // 存储 SpringSecurity 所需要的权限集合  
-    private transient List<GrantedAuthority> authorities;  
+    private List<GrantedAuthority> authorities;  
   
     @Override  
+    @JsonIgnore    
     public Collection<? extends GrantedAuthority> getAuthorities() {  
         if (authorities != null) {  
             return authorities;  
@@ -842,3 +844,212 @@ public class LoginUser implements UserDetails {
 其中 `@JSONField(serialize = false)` 用于避免把 `GrantedAuthority` 集合序列化进 Redis；`getAuthorities()` 采用懒加载方式把字符串权限转换为 `SimpleGrantedAuthority`。
 
 `LoginUser` 修改完后，就可以在 `UserDetailsServiceImpl` 中把权限信息封装进 `LoginUser`。先写死权限测试，后面再从数据库查询：
+
+```java
+@Service  
+public class UserDetailServiceImpl implements UserDetailsService {  
+    @Autowired    private UserMapper userMapper;  
+  
+    @Override  
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {  
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getUserName, username));  
+        if (user == null) {  
+            throw new UsernameNotFoundException("用户不存在");  
+        }  
+        //TODO 根据用户查询权限信息 添加到LoginUser中  
+        List<String> permissions = new ArrayList<>(Arrays.asList("test"));  
+        return new LoginUser(user, permissions);  
+    }  
+}
+```
+
+#### 3.3.3 从数据库查询权限信息
+
+##### 3.3.3.1 RBAC 权限模型
+
+**RBAC**（Role-Based Access Control）即「基于角色的权限控制」，是目前开发者最常使用、也相对易用和通用的权限模型。
+
+![RBAC 权限模型](file:///D:/workbuddy_repo/spaces/2026_11_12_21-54-24/imgs/2909814-20220815171513580-99682924.png?lastModify=1794964911)
+
+##### 3.3.3.2 准备工作：建库建表
+
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `sg_security` /*!40100 DEFAULT CHARACTER SET utf 8 mb 4 */;  
+   
+USE `sg_security`;  
+   
+/*Table structure for table `sys_menu` */  
+   
+DROP TABLE IF EXISTS `sys_menu`;  
+   
+CREATE TABLE `sys_menu` (  
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,  
+  `menu_name` varchar(64) NOT NULL DEFAULT 'NULL' COMMENT '菜单名',  
+  `path` varchar(200) DEFAULT NULL COMMENT '路由地址',  
+  `component` varchar(255) DEFAULT NULL COMMENT '组件路径',  
+  `visible` char(1) DEFAULT '0' COMMENT '菜单状态（0 显示 1 隐藏）',  
+  `status` char(1) DEFAULT '0' COMMENT '菜单状态（0 正常 1 停用）',  
+  `perms` varchar(100) DEFAULT NULL COMMENT '权限标识',  
+  `icon` varchar(100) DEFAULT '#' COMMENT '菜单图标',  
+  `create_by` bigint(20) DEFAULT NULL,  
+  `create_time` datetime DEFAULT NULL,  
+  `update_by` bigint(20) DEFAULT NULL,  
+  `update_time` datetime DEFAULT NULL,  
+  `del_flag` int(11) DEFAULT '0' COMMENT '是否删除（0 未删除 1 已删除）',  
+  `remark` varchar(500) DEFAULT NULL COMMENT '备注',  
+  PRIMARY KEY (`id`)  
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf 8 COMMENT='菜单表';  
+   
+/*Table structure for table `sys_role` */  
+   
+DROP TABLE IF EXISTS `sys_role`;  
+   
+CREATE TABLE `sys_role` (  
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,  
+  `name` varchar(128) DEFAULT NULL,  
+  `role_key` varchar(100) DEFAULT NULL COMMENT '角色权限字符串',  
+  `status` char(1) DEFAULT '0' COMMENT '角色状态（0 正常 1 停用）',  
+  `del_flag` int(1) DEFAULT '0' COMMENT 'del_flag',  
+  `create_by` bigint(200) DEFAULT NULL,  
+  `create_time` datetime DEFAULT NULL,  
+  `update_by` bigint(200) DEFAULT NULL,  
+  `update_time` datetime DEFAULT NULL,  
+  `remark` varchar(500) DEFAULT NULL COMMENT '备注',  
+  PRIMARY KEY (`id`)  
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf 8 COMMENT='角色表';  
+   
+/*Table structure for table `sys_role_menu` */  
+   
+DROP TABLE IF EXISTS `sys_role_menu`;  
+   
+CREATE TABLE `sys_role_menu` (  
+  `role_id` bigint(200) NOT NULL AUTO_INCREMENT COMMENT '角色 ID',  
+  `menu_id` bigint(200) NOT NULL DEFAULT '0' COMMENT '菜单 id',  
+  PRIMARY KEY (`role_id`, `menu_id`)  
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf 8;  
+   
+/*Table structure for table `sys_user` */  
+   
+DROP TABLE IF EXISTS `sys_user`;  
+   
+CREATE TABLE `sys_user` (  
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',  
+  `user_name` varchar(64) NOT NULL DEFAULT 'NULL' COMMENT '用户名',  
+  `nick_name` varchar(64) NOT NULL DEFAULT 'NULL' COMMENT '昵称',  
+  `password` varchar(64) NOT NULL DEFAULT 'NULL' COMMENT '密码',  
+  `status` char(1) DEFAULT '0' COMMENT '账号状态（0 正常 1 停用）',  
+  `email` varchar(64) DEFAULT NULL COMMENT '邮箱',  
+  `phonenumber` varchar(32) DEFAULT NULL COMMENT '手机号',  
+  `sex` char(1) DEFAULT NULL COMMENT '用户性别（0 男，1 女，2 未知）',  
+  `avatar` varchar(128) DEFAULT NULL COMMENT '头像',  
+  `user_type` char(1) NOT NULL DEFAULT '1' COMMENT '用户类型（0 管理员，1 普通用户）',  
+  `create_by` bigint(20) DEFAULT NULL COMMENT '创建人的用户 id',  
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',  
+  `update_by` bigint(20) DEFAULT NULL COMMENT '更新人',  
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',  
+  `del_flag` int(11) DEFAULT '0' COMMENT '删除标志（0 代表未删除，1 代表已删除）',  
+  PRIMARY KEY (`id`)  
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf 8 COMMENT='用户表';  
+   
+/*Table structure for table `sys_user_role` */  
+   
+DROP TABLE IF EXISTS `sys_user_role`;  
+   
+CREATE TABLE `sys_user_role` (  
+  `user_id` bigint(200) NOT NULL AUTO_INCREMENT COMMENT '用户 id',  
+  `role_id` bigint(200) NOT NULL DEFAULT '0' COMMENT '角色 id',  
+  PRIMARY KEY (`user_id`, `role_id`)  
+) ENGINE=InnoDB DEFAULT CHARSET=utf 8;
+
+**按用户 id 查询权限标识的 SQL**（用户 → 用户角色 → 角色 → 角色菜单 → 菜单，只取正常状态、去重）：
+
+SELECT   
+    DISTINCT m. `perms`  
+FROM  
+    sys_user_role ur  
+    LEFT JOIN `sys_role` r ON ur. `role_id` = r. `id`  
+    LEFT JOIN `sys_role_menu` rm ON ur. `role_id` = rm. `role_id`  
+    LEFT JOIN `sys_menu` m ON m. `id` = rm. `menu_id`  
+WHERE  
+    user_id = 2  
+    AND r. `status` = 0  
+    AND m. `status` = 0
+
+**菜单实体类 `Menu` **
+
+package com.sangeng.domain;  
+   
+import com.baomidou.mybatisplus.annotation.TableId;  
+import com.baomidou.mybatisplus.annotation.TableName;  
+import com.fasterxml.jackson.annotation.JsonInclude;  
+import lombok.AllArgsConstructor;  
+import lombok.Data;  
+import lombok.NoArgsConstructor;  
+   
+import java.io.Serializable;  
+import java.util.Date;  
+   
+/**  
+ * 菜单表(Menu)实体类  
+ *  
+ * @author makejava  
+ * @since 2021-11-24 15:30:08  
+ */  
+@TableName(value="sys_menu")  
+@Data  
+@AllArgsConstructor  
+@NoArgsConstructor  
+@JsonInclude(JsonInclude.Include.NON_NULL)  
+public class Menu implements Serializable {  
+    private static final long serialVersionUID = -54979041104113736 L;  
+      
+        @TableId  
+    private Long id;  
+    /**  
+    * 菜单名  
+    */  
+    private String menuName;  
+    /**  
+    * 路由地址  
+    */  
+    private String path;  
+    /**  
+    * 组件路径  
+    */  
+    private String component;  
+    /**  
+    * 菜单状态（0显示 1隐藏）  
+    */  
+    private String visible;  
+    /**  
+    * 菜单状态（0正常 1停用）  
+    */  
+    private String status;  
+    /**  
+    * 权限标识  
+    */  
+    private String perms;  
+    /**  
+    * 菜单图标  
+    */  
+    private String icon;  
+      
+    private Long createBy;  
+      
+    private Date createTime;  
+      
+    private Long updateBy;  
+      
+    private Date updateTime;  
+    /**  
+    * 是否删除（0未删除 1已删除）  
+    */  
+    private Integer delFlag;  
+    /**  
+    * 备注  
+    */  
+    private String remark;  
+}
+
+##### 3.3.3.3 代码实现
+
+只需要根据用户 id 查询到其所对应的权限信息。先定义一个 Mapper，提供根据 `userid` 查询权限信息的方法：
