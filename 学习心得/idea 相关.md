@@ -9,50 +9,70 @@
 - **阿里云脚手架**：其生成的 `pom.xml` 结构不同（通常不继承官方 parent），但**只要它使用的 Spring Boot 版本 ≥ 3.2，其依赖的编译插件配置也会遵循这一默认行为**。如果你选择了较旧的 Spring Boot 2.x 版本，则可能需要手动确保编译参数已开启。
 
 # 2.常见快捷键
-① Ctrl + Alt + T 包围方式 例如条件、循环、异常、同步、Runnable
-② Ctrl + P 查询方法参数
-③ Crtil + D 复制当前行
- - Crtl + Y 删除当前行
-** `Ctrl + N` 查找类**
-Crtil + Shift + N 查找文件
- ** `Alt + Enter` ** 快速修复
- 双击 Shift 全局搜索
- - **Ctrl + Z / Ctrl + Shift + Z**：撤销 / 重做
- - **Shift + Enter**：在下一行插入新行
- - crtl + enter 
- - Ctrl + Alt + Enter 在上一行插入新行
-Ctrl + " `+ / -`" 将当前方法块代码展开 / 折叠
-- Crtl + /
-- Crtl Shift + / 块注释
-- **Ctrl + F / Ctrl + R**：查找 / 替换
-- **Ctrl + E**：最近打开的文件
-- 
-- **Ctrl + B**：跳转到声明
-- **Ctrl + Alt + B**：跳转到实现
-- **Ctrl + U**：跳转到父类
-- **Ctrl + G**：跳转到指定行
+## 代码编辑
 
-- **Alt + ← / →**：后退 / 前进
-- 在方法间快速移动定位（即光标以方法为单位移动） Alt + ⬆️/⬇️
-- **Ctrl + Q**：快速文档
-- **sout / psvm / fori / iter**：常用 Live Template 模板（自动生成打印语句、主函数、循环等）
-- itar
-- main
-- .if .else .while
+- `Ctrl + Alt + T`：用代码块包围选中代码（if、for、try-catch、synchronized、Runnable 等）
+- `Ctrl + D`：复制当前行
+- `Ctrl + Y`：删除当前行
+- `Ctrl + W`：逐级扩大选中范围，连续按持续扩大
+- `Shift + Enter`：在光标下方新建一行（光标不用在行尾）
+- `Ctrl + Enter`：在光标上方新建一行（拆分当前行）
+- `Ctrl + Alt + Enter`：在光标上方插入新行
+- `Ctrl + Shift + ↑ / ↓`：整块移动当前行 / 选中代码上下移动
+- `Ctrl + [`：跳到当前代码块起始位置
+- `Ctrl + ]`：跳到当前代码块结束位置
 
-- **F 8**：单步跳过 下一行
-- **F 7**：单步进入 进入方法
-- **Shift + F 8**：跳出 跳出方法
-- **F 9**：继续运行 跳到下一个断点
-crtl + w 选中文本，连续按可以扩大选中范围
-Ctrl + O 快速重写基类或者接口中的方法
-快速定位到代码块 `开始位置` Ctrl + [
-快速定位到代码块 `结束位置` Ctrl + ]
-快速生成含有任意形参的构造器和私有属性的 `Getter/Setter` 等方法 Alt + Insert
-快速定位高亮错误或警告位置  F 2 或 Shift + F 2
-Shift + F 6 批量修改变量名，先选中变量名，然后点击快捷键
+## 搜索与跳转
 
-|                   |                       |
-| ----------------- | --------------------- |
-| 将光标所在的代码块向上/下整体移动 | Ctrl + Shift + 向上/下箭头 |
-.var
+- `Ctrl + N`：查找类
+- `Ctrl + Shift + N`：查找文件
+- `双击 Shift`：全局搜索（类、文件、配置、符号）
+- `Ctrl + F`：当前文件查找
+- `Ctrl + R`：当前文件替换
+- `Ctrl + B`：跳转到声明
+- `Ctrl + Alt + B`：跳转到实现类 / 实现方法
+- `Ctrl + U`：跳转到父类 / 父方法
+- `Ctrl + G`：跳转到指定行号
+- `Ctrl + E`：打开最近访问文件列表
+- `Alt + ← / →`：光标浏览记录前进、后退
+- `Alt + ↑ / ↓`：在方法之间快速跳转
+
+## 重构、生成、修复
+
+- `Alt + Enter`：快速修复、导入包、补全代码
+- `Alt + Insert`：生成构造器、Getter/Setter、toString、equals、hashCode 等
+- `Shift + F6`：批量重命名（变量、方法、类，安全重构）
+- `Ctrl + O`：重写父类 / 接口方法
+
+## 注释 & 代码折叠
+
+- `Ctrl + /`：单行注释 //
+- `Ctrl + Shift + /`：块注释 /* */
+- `Ctrl + + / -`：展开 / 折叠当前代码块
+- `Ctrl + Shift + + / -`：全部展开 / 全部折叠
+
+## Live Template（代码模板）
+
+- `sout`：`System.out.println()`
+- `psvm`：public static void main(String[] args)
+- `fori`：普通 for 循环
+- `iter`：增强 for 循环 for-each
+- `itar`：数组遍历 for 循环
+- `.var`：根据表达式自动生成变量
+- `main`：main 方法
+- `.if`：生成 if 语句
+- `.else`：生成 else
+- `.while`：生成 while 循环
+
+## Debug 调试
+
+- `F7`：单步进入（进入方法内部）
+- `F8`：单步跳过（执行下一行，不进方法）
+- `Shift + F8`：单步跳出（从当前方法跳出）
+- `F9`：恢复程序运行，直到下一个断点
+- `F2 / Shift + F2`：快速跳到下一处 / 上一处错误警告
+
+## 文档查看
+
+- `Ctrl + Q`：查看快速文档
+- `Ctrl + P`：查看方法参数提示
