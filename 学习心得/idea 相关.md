@@ -12,7 +12,7 @@
 ## 代码编辑
 
 - `Ctrl + Alt + T`：用代码块包围选中代码（if、for、try-catch、synchronized、Runnable 等）
-- `Ctrl + D`：复制当前行
+- `Ctrl + D`：复制当前行 / 复制选中的代码
 - `Ctrl + Y`：删除当前行
 - `Ctrl + W`：逐级扩大选中范围，连续按持续扩大
 - `Shift + Enter`：光标下方新建一行
