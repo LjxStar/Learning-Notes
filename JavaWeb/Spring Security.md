@@ -735,3 +735,23 @@ public class LoginServiceImpl implements LoginService {
 | 5   | `LoginServiceImpl.logout()`            | 从上下文取用户 id，删除 Redis 中的登录缓存                                                               |
 
 > **为什么必须 STATELESS**：认证状态不再由 Session 保存，而是由「JWT + Redis + 每次请求重建 SecurityContext」共同维护，所以配置里关闭了 CSRF 并把会话策略设为 `SessionCreationPolicy.STATELESS`。
+
+## 3. 授权
+
+### 3.1 权限系统的作用
+
+以学校图书馆管理系统为例：普通学生登录后只能看到借书、还书相关功能，不应看到并使用添加书籍信息、删除书籍信息等功能；而图书馆管理员账号登录后才应该能使用这些功能。
+
+总结起来就是：**不同的用户可以使用不同的功能**，这正是权限系统要实现的效果。
+
+不能只依赖前端判断用户权限来决定显示哪些菜单、哪些按钮。因为一旦有人知道了对应功能的接口地址，就可以绕过前端直接发请求执行操作。所以还需要在**后台**进行权限判断：判断当前用户是否有所需权限，必须具有所需权限才能进行相应操作。
+
+### 3.2 授权基本流程
+
+在 Spring Security 中，默认由 `FilterSecurityInterceptor` 进行权限校验。它会从 `SecurityContextHolder` 中获取 `Authentication`，再获取其中的权限信息，判断当前用户是否拥有访问当前资源所需的权限。
+
+因此在项目中只需要做两件事：
+
+1. 把当前登录用户的权限信息也存入 `Authentication`；
+    
+2. 设置我们的资源所需要的权限。
