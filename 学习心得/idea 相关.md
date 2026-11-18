@@ -18,3 +18,4 @@
  - **Ctrl + Z / Ctrl + Shift + Z**：撤销 / 重做
  - **Shift + Enter**：在下一行插入新行
  - Ctrl + Alt + Enter 在上一行插入新行
+ - Crtl + Y 删除当前行
