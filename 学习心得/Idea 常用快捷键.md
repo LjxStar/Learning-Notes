@@ -22,26 +22,22 @@
 
 ### 移动与选择
 
-| 快捷键 | 功能 |
-| --- | --- |
-| `Alt + Shift + ↑ / ↓` | 上移 / 下移当前行（Move Line） |
+| 快捷键                    | 功能                              |
+| ---------------------- | ------------------------------- |
+| `Alt + Shift + ↑ / ↓`  | 上移 / 下移当前行（Move Line）           |
 | `Ctrl + Shift + ↑ / ↓` | 上移 / 下移当前语句或代码块（Move Statement） |
-| `Ctrl + W` | 逐级扩大选区（连续按可持续扩大） |
-| `Ctrl + [` | 跳转到当前代码块起始位置 |
-| `Ctrl + ]` | 跳转到当前代码块结束位置 |
+| `Ctrl + W`             | 逐级扩大选区（连续按可持续扩大）                |
+| `Ctrl + [`             | 跳转到当前代码块起始位置                    |
+| `Ctrl + ]`             | 跳转到当前代码块结束位置                    |
 
 ### 编辑辅助
 
-| 快捷键 | 功能 |
-| --- | --- |
-| `Ctrl + Alt + T` | 使用代码块包围选中代码（如 `if`、`for`、`try-catch`、`synchronized` 等） |
-| `Ctrl + Shift + U` | 切换选中内容的大小写 |
-| `Ctrl + Q` | 查看快速文档（Quick Documentation） |
-| `Ctrl + P` | 查看方法参数提示（Parameter Info） |
-| `Ctrl + Shift + I` | 查看快速定义（Quick Definition），在弹窗中预览声明/实现内容 |
-| `Ctrl + F1` | 查看光标处错误或警告的简要说明 |
-| `Alt + Q` | 查看上下文信息（Context Info），显示当前所在方法或类的签名 |
-| `Shift + F1` | 在浏览器中打开外部文档（External Documentation） |
+| 快捷键                | 功能                                                     |
+| ------------------ | ------------------------------------------------------ |
+| `Ctrl + Alt + T`   | 使用代码块包围选中代码（如 `if`、`for`、`try-catch`、`synchronized` 等） |
+| `Ctrl + Shift + U` | 切换选中内容的大小写                                             |
+| `Ctrl + Q`         | 查看快速文档（Quick Documentation）                            |
+| `Ctrl + P`         | 查看方法参数提示（Parameter Info）                               |
 
 ## 搜索与导航
 
