@@ -172,4 +172,5 @@ while (condition) {
 | `Alt + 左键拖动`           | 框选一竖列                        |
 | `Alt + Shift + Insert` | 切换列选择模式                      |
 |                        | `Alt + ↑ / ↓` 纵向增加光标，批量编辑同一列 |
+| `Alt + Shift + 左键点击`   | 在任意位置添加单个光标                  |
 
