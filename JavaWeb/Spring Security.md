@@ -462,7 +462,8 @@ public interface UserMapper extends BaseMapper<User> {
 ```java
 @Service  
 public class UserDetailServiceImpl implements UserDetailsService {  
-    @Autowired    private UserMapper userMapper;  
+    @Autowired    
+    private UserMapper userMapper;  
   
     @Override  
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {  
@@ -549,7 +550,8 @@ public class SecurityConfig {
 **controller**
 
 ```java
-@RestController  
+@RestController
+@RequestMapping("/user")  
 public class LoginController {  
     @Autowired    private LoginService loginService;  
   
@@ -602,31 +604,84 @@ public class LoginServiceImpl implements LoginService {
 **SecurityConfig（放行登录接口 + 无状态会话 + 暴露 AuthenticationManager）**
 
 ```java
-@Configuration  
-public class SecurityConfig {  
-    @Bean    
-    public PasswordEncoder passwordEncoder() {  
-        return new BCryptPasswordEncoder();  
-    }  
+@Bean  
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {  
+    http            
+    		.csrf(AbstractHttpConfigurer::disable)  
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  
+            .authorizeHttpRequests(authorize -> authorize  
+                    // 放行登录接口  
+                    .requestMatchers("/user/login").permitAll()  
+                    .anyRequest().authenticated());  
   
-    @Bean  
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {  
-        return config.getAuthenticationManager();  
-    }  
-  
-    @Bean  
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {  
-		http  
-		        .csrf(AbstractHttpConfigurer::disable)  
-		        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  
-		        .authorizeHttpRequests(authorize -> authorize  
-		                .requestMatchers("/login").permitAll()  
-		                .anyRequest().authenticated());
-        return http.build();  
-    }  
+    return http.build();  
 }
 ```
 
 #### 2.5.4 JWT 认证过滤器
 
 自定义一个过滤器：获取请求头中的 token → 解析取出 `userid` → 用 `userid` 去 Redis 中获取对应的 `LoginUser` 对象 → 封装 `Authentication` 对象存入 `SecurityContextHolder`。
+
+```java
+@Component  
+public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {  
+    @Autowired    
+    private JwtUtil jwtUtil;  
+    @Autowired  
+    RedisTemplate redisTemplate;  
+  
+    @Override  
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {  
+        String token = request.getHeader("token");  
+        // 如果没有token，则放行到后面的过滤器  
+        if (!StringUtils.hasText(token)) {  
+            filterChain.doFilter(request, response);  
+            return;  
+        }  
+  
+        // 获取用户id  
+        String subject;  
+        try {  
+            subject = jwtUtil.getSubject(token);  
+        } catch (Exception e) {  
+            throw new RuntimeException("token无效");  
+        }  
+  
+        // 从redis中获取用户信息  
+        String key = "login:" + subject;  
+        LoginUser user = (LoginUser) redisTemplate.opsForValue().get(key);  
+        if (user == null) {  
+            throw new RuntimeException("用户未登录");  
+        }  
+  
+        //存入SecurityContextHolder  
+        // TODO 取权限信息封装到Authentication中  
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null, null);  
+        SecurityContextHolder.getContext().setAuthentication(authentication);  
+  
+        // 继续处理请求  
+        filterChain.doFilter(request, response);  
+    }  
+}
+```
+
+把过滤器加入过滤器链（放在 `UsernamePasswordAuthenticationFilter` 之前）：
+```java
+@Bean  
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {  
+    http            .csrf(AbstractHttpConfigurer::disable)  
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  
+            .authorizeHttpRequests(authorize -> authorize  
+                    // 放行登录接口  
+                    .requestMatchers("/user/login").permitAll()  
+                    .anyRequest().authenticated());  
+  
+    // 将 JwtAuthenticationTokenFilter 添加到 UsernamePasswordAuthenticationFilter 之前  
+    http.addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);  
+    return http.build();  
+}
+```
+
+#### 2.5.5 登出接口
+
+定义一个退出登录接口：从 `SecurityContextHolder` 中获取认证信息，删除 Redis 中对应的数据即可。
