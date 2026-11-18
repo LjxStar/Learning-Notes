@@ -19,3 +19,6 @@
  - **Shift + Enter**：在下一行插入新行
  - Ctrl + Alt + Enter 在上一行插入新行
  - Crtl + Y 删除当前行
+- Crtl + /
+- Crtl Shift + / 块注释
+- **Ctrl + F / Ctrl + R**：查找 / 替换
