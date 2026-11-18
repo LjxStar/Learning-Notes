@@ -27,6 +27,7 @@
 | `Alt + Shift + ↑ / ↓`  | 上移 / 下移当前行（Move Line）           |
 | `Ctrl + Shift + ↑ / ↓` | 上移 / 下移当前语句或代码块（Move Statement） |
 | `Ctrl + W`             | 逐级扩大选区（连续按可持续扩大）                |
+| `Ctrl + Shift + W`     | 逐级缩小选区                          |
 | `Ctrl + [`             | 跳转到当前代码块起始位置                    |
 | `Ctrl + ]`             | 跳转到当前代码块结束位置                    |
 
@@ -53,7 +54,7 @@
 | `Ctrl + B`         | 跳转到声明或用法（Go to Declaration）         |
 | `Ctrl + Alt + B`   | 跳转到实现类或实现方法（Go to Implementation）   |
 | `Ctrl + U`         | 跳转到父类或父方法（Go to Super）              |
-| `Alt + ← / →`      | 后退 / 前进到上一次光标位置                     |
+| `Alt + ← / →`      | 快速切换代码视图                            |
 | `Alt + ↑ / ↓`      | 在方法之间快速跳转                           |
 
 ## 代码生成与重构
