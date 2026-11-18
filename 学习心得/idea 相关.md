@@ -13,6 +13,7 @@
 ② Ctrl + P 查询方法参数
 ③ Crtil + D 复制一行
 ** `Ctrl + N` 查找类**
+Crtil + Shift + N 查找文件
  ** `Alt + Enter` ** 快速修复
  双击 Shift 全局搜索
  - **Ctrl + Z / Ctrl + Shift + Z**：撤销 / 重做
@@ -22,3 +23,7 @@
 - Crtl + /
 - Crtl Shift + / 块注释
 - **Ctrl + F / Ctrl + R**：查找 / 替换
+
+- **Ctrl + B**：跳转到声明
+- **Ctrl + Alt + B**：跳转到实现
+- **Ctrl + U**：跳转到父类
