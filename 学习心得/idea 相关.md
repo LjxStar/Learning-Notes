@@ -13,3 +13,8 @@
 ② Ctrl + P 查询方法参数
 ③ Crtil + D 复制一行
 ** `Ctrl + N` 查找类**
+ ** `Alt + Enter` ** 快速修复
+ 双击 Shift 全局搜索
+ - **Ctrl + Z / Ctrl + Shift + Z**：撤销 / 重做
+ - **Shift + Enter**：在下一行插入新行
+ - Ctrl + Alt + Enter 在上一行插入新行
