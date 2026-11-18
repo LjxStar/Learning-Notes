@@ -40,6 +40,7 @@
 | `Ctrl + Q`               | 查看快速文档（Quick Documentation）                            |
 | `Ctrl + P`               | 查看方法参数提示（Parameter Info）                               |
 | `Ctrl + Alt + Shift + T` | 弹出重构菜单                                                 |
+| `Ctrl + Shift + V`       | 剪切板历史                                                  |
 
 ## 搜索与导航
 
