@@ -23,7 +23,7 @@
 
 ```java
 @RestController  
-public class Hello {  
+public class HelloController {  
   
     @RequestMapping("/hello")  
     public String sayHello(@RequestParam(value = "name", defaultValue = "Tom") String name) {  
@@ -753,5 +753,34 @@ public class LoginServiceImpl implements LoginService {
 因此在项目中只需要做两件事：
 
 1. 把当前登录用户的权限信息也存入 `Authentication`；
-    
 2. 设置我们的资源所需要的权限。
+
+### 3.3 授权实现
+
+#### 3.3.1 限制访问资源所需权限
+
+Spring Security 提供了基于注解的权限控制方案，这也是项目中主要采用的方式：用注解指定访问对应资源所需的权限。使用前需要先开启相关配置：
+
+```java
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+```
+
+然后即可使用 `@PreAuthorize` 注解修饰接口方法：
+
+```java
+@RestController  
+public class HelloController {  
+  
+    @RequestMapping("/hello")
+    @PreAuthorize("hasAuthority('test')")
+    public String sayHello(@RequestParam(value = "name", defaultValue = "Tom") String name) {  
+        return "Hello, " + name + "!";  
+    }  
+}
+```
+
+#### 3.3.2 封装权限信息
+
+前面编写 `UserDetailsServiceImpl` 时提到：查询出用户后还要获取对应的权限信息，封装到 `UserDetails` 中返回。这里先把权限信息写死，用于测试。
+
+修改之前定义的 `UserDetails` 实现类 `LoginUser`，使其能封装权限信息：
