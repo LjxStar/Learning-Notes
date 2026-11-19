@@ -1174,8 +1174,26 @@ public CorsConfigurationSource corsConfigurationSource() {
 ```
 **② 开启 Spring Security 的跨域访问**
 
-由于所有资源都受 Spring Security 保护，还需要让 Spring Security 也允许跨域访问。下面是整合了过滤器与异常处理器后的完整 `SecurityFilterChain`
+在 `HttpSecurity` 中明确指定上面的 CorsConfigurationSource，下面是整合了过滤器与异常处理器后的完整过滤器链配置
 
-```
-
+```java
+@Bean  
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {  
+    http            .cors(cors -> cors.configurationSource(corsConfigurationSource()))  
+            .csrf(AbstractHttpConfigurer::disable)  
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  
+            .authorizeHttpRequests(authorize -> authorize  
+                    // 放行登录接口  
+                    .requestMatchers("/user/login").permitAll()  
+                    .anyRequest().authenticated());  
+  
+    // 将 JwtAuthenticationTokenFilter 添加到 UsernamePasswordAuthenticationFilter 之前  
+    http.addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);  
+    // 配置异常处理  
+    http.exceptionHandling(exception -> exception  
+            .authenticationEntryPoint(authenticationEntryPoint)  
+            .accessDeniedHandler(accessDeniedHandler));  
+  
+    return http.build();  
+}
 ```
