@@ -1369,3 +1369,153 @@ public class SecurityConfig {
 ```
 
 > **说明**：6.5～6.7 属于 Spring Security 表单登录体系下的处理器示例；本项目主流程采用自定义登录接口 + JWT，认证结果由 `LoginServiceImpl` 自行返回 JSON，仅作为扩展知识了解。
+
+
+## 附录 A 技术栈与版本清单
+```
+<?xml version="1.0" encoding="UTF-8"?>  
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">  
+    <modelVersion>4.0.0</modelVersion>  
+    <groupId>com</groupId>  
+    <artifactId>quickStart</artifactId>  
+    <version>0.0.1-SNAPSHOT</version>  
+    <name>quickStart</name>  
+    <description>quickStart</description>  
+    <properties>        <java.version>17</java.version>  
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>  
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>  
+        <spring-boot.version>3.2.5</spring-boot.version>  
+    </properties>  
+    <dependencies>        <dependency>  
+            <groupId>org.springframework.boot</groupId>  
+            <artifactId>spring-boot-starter-security</artifactId>  
+        </dependency>  
+        <dependency>            <groupId>org.springframework.boot</groupId>  
+            <artifactId>spring-boot-starter-web</artifactId>  
+        </dependency>  
+  
+        <dependency>            <groupId>com.mysql</groupId>  
+            <artifactId>mysql-connector-j</artifactId>  
+            <scope>runtime</scope>  
+        </dependency>  
+        <dependency>            <groupId>org.projectlombok</groupId>  
+            <artifactId>lombok</artifactId>  
+            <optional>true</optional>  
+        </dependency>  
+        <dependency>            <groupId>org.springframework.boot</groupId>  
+            <artifactId>spring-boot-starter-data-redis</artifactId>  
+        </dependency>  
+        <dependency>            <groupId>org.springframework.boot</groupId>  
+            <artifactId>spring-boot-starter-test</artifactId>  
+            <scope>test</scope>  
+        </dependency>  
+        <dependency>            <groupId>org.springframework.security</groupId>  
+            <artifactId>spring-security-test</artifactId>  
+            <scope>test</scope>  
+        </dependency>  
+  
+        <dependency>            <groupId>com.baomidou</groupId>  
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>  
+            <version>3.5.5</version>  
+        </dependency>  
+        <dependency>            <groupId>com.alibaba</groupId>  
+            <artifactId>druid-spring-boot-3-starter</artifactId>  
+            <version>1.2.24</version>  
+        </dependency>  
+        <!-- JJWT 核心依赖 -->  
+        <dependency>  
+            <groupId>io.jsonwebtoken</groupId>  
+            <artifactId>jjwt-api</artifactId>  
+            <version>0.12.5</version>  
+        </dependency>  
+        <dependency>            <groupId>io.jsonwebtoken</groupId>  
+            <artifactId>jjwt-impl</artifactId>  
+            <version>0.12.5</version>  
+            <scope>runtime</scope>  
+        </dependency>  
+        <dependency>            <groupId>io.jsonwebtoken</groupId>  
+            <artifactId>jjwt-jackson</artifactId>  
+            <version>0.12.5</version>  
+            <scope>runtime</scope>  
+        </dependency>  
+    </dependencies>  
+    <dependencyManagement>        <dependencies>  
+            <dependency>  
+                <groupId>org.springframework.boot</groupId>  
+                <artifactId>spring-boot-dependencies</artifactId>  
+                <version>${spring-boot.version}</version>  
+                <type>pom</type>  
+                <scope>import</scope>  
+            </dependency>  
+        </dependencies>  
+    </dependencyManagement>  
+  
+    <build>        <plugins>  
+            <plugin>  
+                <groupId>org.apache.maven.plugins</groupId>  
+                <artifactId>maven-compiler-plugin</artifactId>  
+                <version>3.8.1</version>  
+                <configuration>                    <source>17</source>  
+                    <target>17</target>  
+                    <encoding>UTF-8</encoding>  
+                </configuration>  
+            </plugin>  
+            <plugin>                <groupId>org.springframework.boot</groupId>  
+                <artifactId>spring-boot-maven-plugin</artifactId>  
+                <version>${spring-boot.version}</version>  
+                <configuration>                    <mainClass>com.quickstart.QuickStartApplication</mainClass>  
+                    <skip>true</skip>  
+                </configuration>  
+                <executions>                    <execution>  
+                        <id>repackage</id>  
+                        <goals>                            <goal>repackage</goal>  
+                        </goals>  
+                    </execution>  
+                </executions>  
+            </plugin>  
+        </plugins>  
+    </build>  
+  
+</project>
+```
+这个是 pom 文件 请基于此技术栈与版本清单
+
+表格 组件 | 版本
+
+
+## 附录 B 核心类 / 接口关系速查
+
+|分类|名称|在笔记中的作用|
+|---|---|---|
+|过滤器|`UsernamePasswordAuthenticationFilter`|表单登录认证入口|
+|过滤器|`ExceptionTranslationFilter`|捕获认证/授权异常并分派|
+|过滤器|`FilterSecurityInterceptor`|权限校验|
+|过滤器|`JwtAuthenticationTokenFilter`|自定义：解析 token、重建 `SecurityContext`|
+|核心接口|`Authentication` / `UsernamePasswordAuthenticationToken`|封装当前访问用户|
+|核心接口|`AuthenticationManager` / `ProviderManager`|执行认证|
+|核心接口|`UserDetailsService` / `UserDetailsServiceImpl`|按用户名查库|
+|核心接口|`UserDetails` / `LoginUser`|封装用户信息与权限集合|
+|核心接口|`PasswordEncoder` / `BCryptPasswordEncoder`|密码加密校验|
+|上下文|`SecurityContextHolder`|存放当前请求的 `Authentication`|
+|异常处理|`AuthenticationEntryPoint` / `AccessDeniedHandler`|401 / 403 统一 JSON|
+|鉴权|`@EnableGlobalMethodSecurity`、`@PreAuthorize`|方法级权限控制|
+|工具|`JwtUtil`、`RedisCache`、`WebUtils`、`FastJsonRedisSerializer`|JWT、缓存、响应渲染、序列化|
+
+这个是旧版本的 里面一些技术栈可能过久 或者有新的替代 请基于上面正文来修改 以便我可以更快的复习
+
+
+## 附录 C `SecurityConfig` 演进对照
+
+原文中 `SecurityConfig` 随课程推进分多次给出，整理如下，便于对照阅读：
+
+|阶段|新增内容|对应小节|
+|---|---|---|
+|①|注入 `BCryptPasswordEncoder`|[2.5.2](#252-%E5%AF%86%E7%A0%81%E5%8A%A0%E5%AF%86%E5%AD%98%E5%82%A8)|
+|②|关闭 CSRF、STATELESS、放行 `/user/login`、暴露 `AuthenticationManager`|[2.5.3](#253-%E7%99%BB%E5%BD%95%E6%8E%A5%E5%8F%A3)|
+|③|`addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)`|[2.5.4](#254-jwt-%E8%AE%A4%E8%AF%81%E8%BF%87%E6%BB%A4%E5%99%A8)|
+|④|配置 `authenticationEntryPoint` / `accessDeniedHandler`|[第 4 章](#4-%E8%87%AA%E5%AE%9A%E4%B9%89%E5%A4%B1%E8%B4%A5%E5%A4%84%E7%90%86)|
+|⑤|`http.cors()` 开启跨域|[第 5 章](#5-%E8%B7%A8%E5%9F%9F)|
+|⑥|`.antMatchers("/testCors").hasAuthority(...)` 基于配置的权限控制示例|[6.3](#63-%E5%9F%BA%E4%BA%8E%E9%85%8D%E7%BD%AE%E7%9A%84%E6%9D%83%E9%99%90%E6%8E%A7%E5%88%B6)|
+
+附录 C 也是一样 为旧版本 可能有错误 该项目我根据自己的理解（可参考正文） 来对其修改 请帮我修改附录
