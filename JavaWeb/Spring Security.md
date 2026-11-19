@@ -1155,4 +1155,27 @@ http.exceptionHandling(exception -> exception
 前后端分离项目中，前端与后端一般不同源，因此必然存在跨域请求问题，需要处理后才能让前端正常跨域访问。
 
 **① 先对 Spring Boot 配置，允许跨域请求**
+```java
+@Configuration  
+public class CorsConfig implements WebMvcConfigurer {  
+    @Override    public void addCorsMappings(CorsRegistry registry) {  
+        registry.addMapping("/**")  
+                // 前端地址，开发环境  
+                .allowedOrigins("*") // 允许所有前端地址，可以改成 http://localhost:5173                // 允许请求方式  
+                .allowedMethods("GET", "POST", "PUT", "DELETE")  
+                // 允许所有请求头  
+                .allowedHeaders("*")  
+                // 允许携带凭证（token/cookie）  
+                .allowCredentials(true)  
+                // 预检缓存 3600秒  
+                .maxAge(3600);  
+    }  
+}
+```
+**② 开启 Spring Security 的跨域访问**
 
+由于所有资源都受 Spring Security 保护，还需要让 Spring Security 也允许跨域访问。下面是整合了过滤器与异常处理器后的完整 `SecurityFilterChain`
+
+```
+
+```
