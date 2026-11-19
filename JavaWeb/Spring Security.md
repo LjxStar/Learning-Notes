@@ -1197,3 +1197,37 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
     return http.build();  
 }
 ```
+
+### 6.1 其它权限校验方法
+
+前面都使用 `@PreAuthorize` 配合 `hasAuthority` 进行校验。Spring Security 还提供了 `hasAnyAuthority`、`hasRole`、`hasAnyRole` 等方法。
+
+这里不急于罗列这些方法，而是先理解 `hasAuthority` 的原理，再学其它方法就更容易，而不是死记硬背区别；同时也可以自定义校验方法，实现自己的校验逻辑。
+
+`hasAuthority` 实际执行到 `SecurityExpressionRoot` 的 `hasAuthority`，通过断点调试即可了解其内部校验原理：它调用 `authentication.getAuthorities()` 获取用户的权限列表，然后判断注解中传入的参数是否存在于权限列表中。
+
+** `hasAnyAuthority` **：可传入多个权限，用户只要有其中任意一个权限即可访问对应资源。
+
+```java
+@PreAuthorize("hasAnyAuthority('admin','test','system:dept:list')")
+public String sayHello(@RequestParam(value = "name", defaultValue = "Tom") String name) {  
+    return "Hello, " + name + "!";  
+}
+```
+** `hasRole` **：要求有对应角色才能访问，但它内部会把传入参数拼接上 ** `ROLE_` ** 前缀后再比较，因此这种情况下用户对应的权限也要带 `ROLE_` 前缀才可以。
+
+```java
+@PreAuthorize("hasRole('system:dept:list')") 对应数据库
+public String sayHello(@RequestParam(value = "name", defaultValue = "Tom") String name) {  
+    return "Hello, " + name + "!";  
+}
+```
+
+** `hasAnyRole` **：有任意角色即可访问，内部同样会给参数拼接 `ROLE_` 前缀再比较，因此用户权限也要带 `ROLE_` 前缀。
+
+```java
+@PreAuthorize("hasRole('system:dept:list')") // 对应数据库
+public String sayHello(@RequestParam(value = "name", defaultValue = "Tom") String name) {  
+    return "Hello, " + name + "!";  
+}
+```
