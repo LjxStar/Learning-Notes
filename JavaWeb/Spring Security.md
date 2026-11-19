@@ -947,7 +947,7 @@ CREATE TABLE `sys_role_menu` (
 DROP TABLE IF EXISTS `sys_user`;
 CREATE TABLE `sys_user` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '用户ID',
-  `user_name` varchar(64) NOT NULL COMMENT '用户名',
+  `username` varchar(64) NOT NULL COMMENT '用户名',
   `nick_name` varchar(64) NOT NULL COMMENT '用户昵称',
   `password` varchar(64) NOT NULL COMMENT '密码（加密存储）',
   `status` char(1) DEFAULT '0' COMMENT '账号状态(0正常 1停用)',
