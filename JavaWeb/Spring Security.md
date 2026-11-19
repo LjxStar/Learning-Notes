@@ -1588,31 +1588,31 @@ public class SecurityConfig {
 
 ## 附录 B 核心类 / 接口关系速查
 
-| 分类   | 名称                                                                          | 在笔记中的作用                           |
-| ---- | --------------------------------------------------------------------------- | --------------------------------- |
-| 过滤器  | `UsernamePasswordAuthenticationFilter`                                      | 表单登录认证入口                          |
-| 过滤器  | `ExceptionTranslationFilter`                                                | 捕获认证/授权异常并分派                      |
-| 过滤器  | `FilterSecurityInterceptor`                                                 | 权限校验                              |
-| 过滤器  | `JwtAuthenticationTokenFilter`                                              | 自定义：解析 token、重建 `SecurityContext` |
-| 核心接口 | `Authentication` / `UsernamePasswordAuthenticationToken`                    | 封装当前访问用户                          |
-| 核心接口 | `AuthenticationManager` / `ProviderManager`                                 | 执行认证                              |
-| 核心接口 | `UserDetailsService` / `UserDetailServiceImpl`                              | 按用户名查库                            |
-| 核心接口 | `UserDetails` / `LoginUser`                                                 | 封装用户信息与权限集合                       |
-| 核心接口 | `PasswordEncoder` / `BCryptPasswordEncoder`                                 | 密码加密校验                            |
-| 上下文  | `SecurityContextHolder`                                                     | 存放当前请求的 `Authentication`          |
-| 异常处理 | `AuthenticationEntryPoint` / `AccessDeniedHandler`                          | 401 / 403 统一 JSON                 |
-| 鉴权   | `@EnableMethodSecurity` / `@PreAuthorize`                                   | 方法级权限控制                           |
-| 工具   | `JwtUtil`、`WebUtils`、`RedisTemplate` / `GenericJackson2JsonRedisSerializer` | JWT、响应渲染、Redis 序列化                |
+| 分类   | 名称                                                                          | 在笔记中的作用                           | 对应小节                  |
+| ---- | --------------------------------------------------------------------------- | --------------------------------- | --------------------- |
+| 过滤器  | `UsernamePasswordAuthenticationFilter`                                      | 表单登录认证入口                          | [[#2.2.1 过滤器链]]       |
+| 过滤器  | `ExceptionTranslationFilter`                                                | 捕获认证/授权异常并分派                      | [[#4. 自定义失败处理]]       |
+| 过滤器  | `FilterSecurityInterceptor`                                                 | 权限校验                              | [[#3.2 授权基本流程]]       |
+| 过滤器  | `JwtAuthenticationTokenFilter`                                              | 自定义：解析 token、重建 `SecurityContext` | [[#2.5.4 JWT 认证过滤器]]  |
+| 核心接口 | `Authentication` / `UsernamePasswordAuthenticationToken`                    | 封装当前访问用户                          | [[#2.2.3 关键接口速查]]     |
+| 核心接口 | `AuthenticationManager` / `ProviderManager`                                 | 执行认证                              | [[#2.2.3 关键接口速查]]     |
+| 核心接口 | `UserDetailsService` / `UserDetailServiceImpl`                              | 按用户名查库                            | [[#2.5.1 数据库校验用户]]    |
+| 核心接口 | `UserDetails` / `LoginUser`                                                 | 封装用户信息与权限集合                       | [[#3.3.2 封装权限信息]]     |
+| 核心接口 | `PasswordEncoder` / `BCryptPasswordEncoder`                                 | 密码加密校验                            | [[#2.5.2 密码加密存储]]     |
+| 上下文  | `SecurityContextHolder`                                                     | 存放当前请求的 `Authentication`          | [[#2.5.4 JWT 认证过滤器]]  |
+| 异常处理 | `AuthenticationEntryPoint` / `AccessDeniedHandler`                          | 401 / 403 统一 JSON                 | [[#4. 自定义失败处理]]       |
+| 鉴权   | `@EnableMethodSecurity` / `@PreAuthorize`                                   | 方法级权限控制                           | [[#3.3.1 限制访问资源所需权限]] |
+| 工具   | `JwtUtil`、`WebUtils`、`RedisTemplate` / `GenericJackson2JsonRedisSerializer` | JWT、响应渲染、Redis 序列化                | [[#2.4 准备工作：基础设施代码]]  |
 
 ## 附录 C `SecurityConfig` 演进对照
 
 原文中 `SecurityConfig` 随课程推进分多次给出，整理如下，便于对照阅读：
 
-| 阶段 | 新增内容                                                                        | 对应小节                          |
-| ---- | --------------------------------------------------------------------------- | ----------------------------- |
-| ①    | 注入 `BCryptPasswordEncoder`                                                 | [[#2.5.2 密码加密存储]]          |
-| ②    | 关闭 CSRF、STATELESS、放行 `/user/login`、暴露 `AuthenticationManager`          | [[#2.5.3 登录接口]]             |
-| ③    | `addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)` | [[#2.5.4 JWT 认证过滤器]] |
-| ④    | 配置 `authenticationEntryPoint` / `accessDeniedHandler`                       | [[#4. 自定义失败处理]]           |
-| ⑤    | `http.cors()` 开启跨域                                                        | [[#5. 跨域]]                  |
-| ⑥    | `.requestMatchers("/hello").hasAuthority(...)` 基于配置的权限控制                  | [[#6.3 基于配置的权限控制]]       |
+| 阶段  | 新增内容                                                                                        | 对应小节                 |
+| --- | ------------------------------------------------------------------------------------------- | -------------------- |
+| ①   | 注入 `BCryptPasswordEncoder`                                                                  | [[#2.5.2 密码加密存储]]    |
+| ②   | 关闭 CSRF、STATELESS、放行 `/user/login`、暴露 `AuthenticationManager`                               | [[#2.5.3 登录接口]]      |
+| ③   | `addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)` | [[#2.5.4 JWT 认证过滤器]] |
+| ④   | 配置 `authenticationEntryPoint` / `accessDeniedHandler`                                       | [[#4. 自定义失败处理]]      |
+| ⑤   | `http.cors()` 开启跨域                                                                          | [[#5. 跨域]]           |
+| ⑥   | `.requestMatchers("/hello").hasAuthority(...)` 基于配置的权限控制                                    | [[#6.3 基于配置的权限控制]]   |
