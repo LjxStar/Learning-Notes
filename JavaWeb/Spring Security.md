@@ -1203,9 +1203,11 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
 前面都使用 `@PreAuthorize` 配合 `hasAuthority` 进行校验。Spring Security 还提供了 `hasAnyAuthority`、`hasRole`、`hasAnyRole` 等方法。
 
 这里不急于罗列这些方法，而是先理解 `hasAuthority` 的原理，再学其它方法就更容易，而不是死记硬背区别；同时也可以自定义校验方法，实现自己的校验逻辑。
-
+![[Pasted image 20261119204909.png]]
+「源码 hasAnyAuthorityName()」
 `hasAuthority` 实际执行到 `SecurityExpressionRoot` 的 `hasAuthority`，通过断点调试即可了解其内部校验原理：它调用 `authentication.getAuthorities()` 获取用户的权限列表，然后判断注解中传入的参数是否存在于权限列表中。
-
+![[Pasted image 20261119204937.png]]
+「源码 getAuthoritySet()」
 ** `hasAnyAuthority` **：可传入多个权限，用户只要有其中任意一个权限即可访问对应资源。
 
 ```java
@@ -1231,3 +1233,28 @@ public String sayHello(@RequestParam(value = "name", defaultValue = "Tom") Strin
     return "Hello, " + name + "!";  
 }
 ```
+
+### 6.2 自定义权限校验方法
+
+也可以定义自己的权限校验方法，并在 `@PreAuthorize` 注解中使用：
+
+@Component("ex")  
+public class ExpressionRoot {  
+   
+    public boolean hasAuthority(String authority){  
+        //获取当前用户的权限  
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();  
+        LoginUser loginUser = (LoginUser) authentication.getPrincipal();  
+        List<String> permissions = loginUser.getPermissions();  
+        //判断用户权限集合中是否存在authority  
+        return permissions.contains(authority);  
+    }  
+}
+
+在 SpEL 表达式中，`@ex` 相当于获取容器中名字为 `ex` 的 bean，然后调用该对象的 `hasAuthority` 方法：
+
+@RequestMapping("/hello")  
+@PreAuthorize("@ex.hasAuthority('system:dept:list')")  
+public String hello(){  
+    return "hello";  
+}
