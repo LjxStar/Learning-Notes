@@ -17,7 +17,7 @@
 
 **① 设置父工程并添加依赖**
 
-![[JavaWeb/img/Spring Security/SpringBoot项目依赖.png]]
+![[JavaWeb/imgs/Spring Security/SpringBoot项目依赖.png]]
 
 **② 创建 Controller**
 
@@ -36,7 +36,7 @@ public class HelloController {
 
 引入 `Spring Security` 依赖后再访问之前的接口，会自动跳转到默认登录页面：默认用户名是 `user`，密码会输出在控制台。**必须登录之后才能访问接口**。
 
-![[JavaWeb/img/Spring Security/自动生成临时密码.png]]
+![[JavaWeb/imgs/Spring Security/自动生成临时密码.png]]
 
 > [!tip] 小结
 > 一行依赖就带来了整套过滤器链，所有请求默认被拦截。后续所有改造，本质上都是「替换链条中的某些环节」：把默认登录页换成自定义登录接口、把默认用户源换成数据库、把 Session 换成 JWT + Redis、把默认错误响应换成统一 JSON。
@@ -45,7 +45,7 @@ public class HelloController {
 
 ### 2.1 登录校验流程
 
-![[JavaWeb/img/Spring Security/登录校验流程.png]]
+![[JavaWeb/imgs/Spring Security/登录校验流程.png]]
 
 ### 2.2 原理初探
 
@@ -55,7 +55,7 @@ public class HelloController {
 
 Spring Security 的原理本质上是**一条过滤器链**，链中包含提供各种功能的过滤器。下图是入门案例中的核心过滤器：
 
-![[JavaWeb/img/Spring Security/SpringSecurity过滤器链.png]]
+![[JavaWeb/imgs/Spring Security/SpringSecurity过滤器链.png]]
 
 图中只展示了核心过滤器，其它非核心过滤器未在图中展示。三个最关键的过滤器：
 
@@ -67,11 +67,11 @@ Spring Security 的原理本质上是**一条过滤器链**，链中包含提供
 
 可以通过 Debug 查看当前系统中 Spring Security 过滤器链包含哪些过滤器及其顺序：
 
-![[JavaWeb/img/Spring Security/Debug查看过滤器链.png]]
+![[JavaWeb/imgs/Spring Security/Debug查看过滤器链.png]]
 
 #### 2.2.2 认证流程详解
 
-![[JavaWeb/img/Spring Security/认证流程详解.png]]
+![[JavaWeb/imgs/Spring Security/认证流程详解.png]]
 
 #### 2.2.3 关键接口速查
 
@@ -555,7 +555,7 @@ public class LoginUser implements UserDetails {
 
 **注意**：如果要测试，需要往用户表中写入用户数据；如果希望密码以明文存储，需要在密码前加 `{noop}`，例如：
 
-![[JavaWeb/img/Spring Security/数据库明文密码noop.png]]
+![[JavaWeb/imgs/Spring Security/数据库明文密码noop.png]]
 
 这样登录时就可以用 `admin` 作为用户名、`1234` 作为密码来登录。
 
@@ -931,7 +931,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
 **RBAC**（Role-Based Access Control）即「基于角色的权限控制」，是目前开发者最常使用、也相对易用和通用的权限模型。
 
-![[JavaWeb/img/Spring Security/RBAC权限模型.png]]
+![[JavaWeb/imgs/Spring Security/RBAC权限模型.png]]
 
 ##### 3.3.3.2 准备工作：建库建表
 
@@ -1268,11 +1268,11 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
 
 这里不急于罗列这些方法，而是先理解 `hasAuthority` 的原理，再学其它方法就更容易，而不是死记硬背区别；同时也可以自定义校验方法，实现自己的校验逻辑。
 
-![[JavaWeb/img/Spring Security/源码-hasAnyAuthorityName.png]]
+![[JavaWeb/imgs/Spring Security/源码-hasAnyAuthorityName.png]]
 
 `hasAuthority` 实际执行到 `SecurityExpressionRoot` 的 `hasAuthority`，通过断点调试即可了解其内部校验原理：它调用 `authentication.getAuthorities()` 获取用户的权限列表，然后判断注解中传入的参数是否存在于权限列表中。
 
-![[JavaWeb/img/Spring Security/源码-getAuthoritySet.png]]
+![[JavaWeb/imgs/Spring Security/源码-getAuthoritySet.png]]
 
 **`hasAnyAuthority`**：可传入多个权限，用户只要有其中任意一个权限即可访问对应资源。
 
