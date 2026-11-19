@@ -1287,8 +1287,60 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
 
 ### 6.4 CSRF
 
-CSRF 指跨站请求伪造（Cross-site request forgery），是常见的 Web 攻击之一。参考：[https://blog.csdn.net/freeking101/article/details/86537087](https://blog.csdn.net/freeking101/article/details/86537087)
+CSRF 指跨站请求伪造（Cross-site request forgery），是常见的 Web 攻击之一。参考：[CSRF攻击与防御](https://blog.csdn.net/freeking101/article/details/86537087)
 
 Spring Security 防止 CSRF 攻击的方式是 `csrf_token`：后端生成一个 `csrf_token`，前端发起请求时需要携带它，后端由过滤器校验，未携带或伪造则不允许访问。
 
 可以发现，CSRF 攻击依靠的是 Cookie 中携带的认证信息。但在前后端分离项目中，认证信息是 token，token 并不存储在 Cookie 中，并且需要前端代码主动把 token 设置到请求头中，因此无需担心 CSRF 攻击（这也是入门配置里 `.csrf().disable()` 的原因）。
+
+### 6.5 认证成功处理器
+
+`UsernamePasswordAuthenticationFilter` 进行登录认证时，如果登录成功会调用 `AuthenticationSuccessHandler` 的方法进行认证成功后的处理，它就是登录成功处理器。也可以自定义成功处理器：
+
+```
+/**
+ * 认证成功处理器
+ */
+@Component
+public class SGSuccessHandler implements AuthenticationSuccessHandler {
+    @Override
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+        System.out.println("认证成功了");
+    }
+}
+```
+
+### 6.6 认证失败处理器
+
+登录认证失败时会调用 `AuthenticationFailureHandler` 的方法进行处理，它就是登录失败处理器。也可以自定义失败处理器：
+
+```java
+/**
+ * 认证失败处理器
+ */
+@Component
+public class SGFailureHandler implements AuthenticationFailureHandler {
+    @Override
+    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
+        System.out.println("认证失败了");
+    }
+}
+```
+### 6.7 登出成功处理器
+
+```java
+/**
+ * 登出成功处理器
+ */
+@Component
+public class SGLogoutSuccessHandler implements LogoutSuccessHandler {
+    @Override
+    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+        System.out.println("注销成功");
+    }
+}
+```
+
+
+zu
+> **说明**：6.5～6.7 属于 Spring Security 表单登录体系下的处理器示例；本项目主流程采用自定义登录接口 + JWT，认证结果由 `LoginServiceImpl` 自行返回 JSON，仅作为扩展知识了解。
