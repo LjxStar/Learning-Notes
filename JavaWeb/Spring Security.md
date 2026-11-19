@@ -986,7 +986,7 @@ FROM
 	LEFT JOIN `sys_role_menu` rm ON ur.`role_id` = rm.`role_id`
 	LEFT JOIN `sys_menu` m ON m.`id` = rm.`menu_id`
 WHERE
-	user_id = 2
+	user_id = 1
 	AND r.`status` = 0
 	AND m.`status` = 0
 ```
@@ -1024,3 +1024,10 @@ public class Menu implements Serializable { // // Serializable：支持序列化
 ##### 3.3.3.3 代码实现
 
 只需要根据用户 id 查询到其所对应的权限信息。先定义一个 Mapper，提供根据 `userid` 查询权限信息的方法：
+```java
+public interface MenuMapper extends BaseMapper<Menu> {
+    List<String> selectPermsByUserId(Long id);
+}
+```
+
+因为是自定义方法，需要创建对应的 Mapper XML 文件并定义 SQL 语句：
