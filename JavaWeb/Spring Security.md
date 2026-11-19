@@ -1271,6 +1271,7 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
             .authorizeHttpRequests(authorize -> authorize  
                     // 放行登录接口  
                     .requestMatchers("/user/login").permitAll()  
+                    .requestMatchers("/hello").hasAuthority("system:dept:list")  
                     .anyRequest().authenticated());  
   
     // 将 JwtAuthenticationTokenFilter 添加到 UsernamePasswordAuthenticationFilter 之前  
@@ -1283,3 +1284,11 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
     return http.build();  
 }
 ```
+
+### 6.4 CSRF
+
+CSRF 指跨站请求伪造（Cross-site request forgery），是常见的 Web 攻击之一。参考：[https://blog.csdn.net/freeking101/article/details/86537087](https://blog.csdn.net/freeking101/article/details/86537087)
+
+Spring Security 防止 CSRF 攻击的方式是 `csrf_token`：后端生成一个 `csrf_token`，前端发起请求时需要携带它，后端由过滤器校验，未携带或伪造则不允许访问。
+
+可以发现，CSRF 攻击依靠的是 Cookie 中携带的认证信息。但在前后端分离项目中，认证信息是 token，token 并不存储在 Cookie 中，并且需要前端代码主动把 token 设置到请求头中，因此无需担心 CSRF 攻击（这也是入门配置里 `.csrf().disable()` 的原因）。
