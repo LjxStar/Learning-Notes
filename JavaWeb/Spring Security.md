@@ -1137,3 +1137,13 @@ private AccessDeniedHandler accessDeniedHandler;
 ```
 
 然后使用 `HttpSecurity` 对象的方法进行配置：
+```java
+http.exceptionHandling(exception -> exception  
+        .authenticationEntryPoint(authenticationEntryPoint)  
+        .accessDeniedHandler(accessDeniedHandler));
+```
+
+| 场景         | 异常                        | 处理器                        | 响应状态码                      |
+| ---------- | ------------------------- | -------------------------- | -------------------------- |
+| 未登录 / 认证失败 | `AuthenticationException` | `AuthenticationEntryPoint` | `401 UNAUTHORIZED`，「认证新登录」 |
+| 已登录但权限不足   | `AccessDeniedException`   | `AccessDeniedHandler`      | `403 FORBIDDEN`，「权限不足」     |
