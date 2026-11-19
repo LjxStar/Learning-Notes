@@ -59,11 +59,11 @@ Spring Security 的原理本质上是**一条过滤器链**，链中包含提供
 
 图中只展示了核心过滤器，其它非核心过滤器未在图中展示。三个最关键的过滤器：
 
-| 过滤器                          | 职责                                                                |
-| ----------------------------- | ----------------------------------------------------------------- |
-| `UsernamePasswordAuthenticationFilter` | 处理在登录页面填写用户名密码后的登录请求；入门案例的认证工作主要由它负责 |
-| `ExceptionTranslationFilter`   | 处理过滤器链中抛出的任何 `AccessDeniedException` 和 `AuthenticationException` |
-| `FilterSecurityInterceptor`    | 负责权限校验的过滤器                                                    |
+| 过滤器                                    | 职责                                                               |
+| -------------------------------------- | ---------------------------------------------------------------- |
+| `UsernamePasswordAuthenticationFilter` | 处理在登录页面填写用户名密码后的登录请求；入门案例的认证工作主要由它负责                             |
+| `ExceptionTranslationFilter`           | 处理过滤器链中抛出的任何 `AccessDeniedException` 和 `AuthenticationException` |
+| `FilterSecurityInterceptor`            | 负责权限校验的过滤器                                                       |
 
 可以通过 Debug 查看当前系统中 Spring Security 过滤器链包含哪些过滤器及其顺序：
 
