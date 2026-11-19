@@ -1031,3 +1031,15 @@ public interface MenuMapper extends BaseMapper<Menu> {
 ```
 
 因为是自定义方法，需要创建对应的 Mapper XML 文件并定义 SQL 语句：
+
+```java
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >  
+<mapper namespace="com.quickstart.mapper.MenuMapper">  
+    <select id="selectPermsById" resultType="java.lang.String">  
+        SELECT  
+            DISTINCT m.`perms`        FROM            sys_user_role ur                LEFT JOIN `sys_role` r ON ur.`role_id` = r.`id`                LEFT JOIN `sys_role_menu` rm ON ur.`role_id` = rm.`role_id`                LEFT JOIN `sys_menu` m ON m.`id` = rm.`menu_id`        WHERE            user_id = #{id}          AND r.`status` = 0          AND m.`status` = 0    </select>  
+</mapper>
+```
+最后在 `UserDetailsServiceImpl` 中调用该 Mapper 方法，把查询到的权限信息封装进 `LoginUser`：
+
