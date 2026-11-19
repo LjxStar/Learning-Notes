@@ -1154,22 +1154,22 @@ http.exceptionHandling(exception -> exception
 
 前后端分离项目中，前端与后端一般不同源，因此必然存在跨域请求问题，需要处理后才能让前端正常跨域访问。
 
-**① 先对 Spring Boot 配置，允许跨域请求**
+**① 先需要配置 CorsConfigurationSource**
 ```java
-@Configuration  
-public class CorsConfig implements WebMvcConfigurer {  
-    @Override    public void addCorsMappings(CorsRegistry registry) {  
-        registry.addMapping("/**")  
-                // 前端地址，开发环境  
-                .allowedOrigins("*") // 允许所有前端地址，可以改成 http://localhost:5173                // 允许请求方式  
-                .allowedMethods("GET", "POST", "PUT", "DELETE")  
-                // 允许所有请求头  
-                .allowedHeaders("*")  
-                // 允许携带凭证（token/cookie）  
-                .allowCredentials(true)  
-                // 预检缓存 3600秒  
-                .maxAge(3600);  
-    }  
+@Bean  
+public CorsConfigurationSource corsConfigurationSource() {  
+    CorsConfiguration configuration = new CorsConfiguration();  
+    // 使用 allowedOriginPatterns 来兼容 allowCredentials(true) 和通配符 "*" 的场景  
+    configuration.setAllowedOriginPatterns(Collections.singletonList("*"));  
+    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "DELETE", "PUT"));  
+    configuration.setAllowedHeaders(Collections.singletonList("*"));  
+    // 注意：如果前端需要携带 Cookie (withCredentials: true)，建议将 "*" 改为具体域名，否则部分浏览器可能拒绝  
+    configuration.setAllowCredentials(true);  
+    configuration.setMaxAge(3600L);  
+  
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();  
+    source.registerCorsConfiguration("/**", configuration);  
+    return source;  
 }
 ```
 **② 开启 Spring Security 的跨域访问**
