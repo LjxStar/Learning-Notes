@@ -1211,7 +1211,7 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
 ** `hasAnyAuthority` **：可传入多个权限，用户只要有其中任意一个权限即可访问对应资源。
 
 ```java
-@PreAuthorize("hasAnyAuthority('admin','test','system:dept:list')")
+@PreAuthorize("hasAnyAuthority('admin','test','system:dept:list')") // 对应数据库写上
 public String sayHello(@RequestParam(value = "name", defaultValue = "Tom") String name) {  
     return "Hello, " + name + "!";  
 }
@@ -1219,7 +1219,7 @@ public String sayHello(@RequestParam(value = "name", defaultValue = "Tom") Strin
 ** `hasRole` **：要求有对应角色才能访问，但它内部会把传入参数拼接上 ** `ROLE_` ** 前缀后再比较，因此这种情况下用户对应的权限也要带 `ROLE_` 前缀才可以。
 
 ```java
-@PreAuthorize("hasRole('system:dept:list')") 对应数据库
+@PreAuthorize("hasRole('system:dept:list')") //对应数据库
 public String sayHello(@RequestParam(value = "name", defaultValue = "Tom") String name) {  
     return "Hello, " + name + "!";  
 }
@@ -1258,3 +1258,28 @@ public class ExpressionRoot {
 public String hello(){  
     return "hello";  
 }
+
+### 6.3 基于配置的权限控制
+
+除了注解，也可以在配置类中用配置的方式对资源进行权限控制：
+```java
+@Bean  
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {  
+    http            .cors(cors -> cors.configurationSource(corsConfigurationSource()))  
+            .csrf(AbstractHttpConfigurer::disable)  
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  
+            .authorizeHttpRequests(authorize -> authorize  
+                    // 放行登录接口  
+                    .requestMatchers("/user/login").permitAll()  
+                    .anyRequest().authenticated());  
+  
+    // 将 JwtAuthenticationTokenFilter 添加到 UsernamePasswordAuthenticationFilter 之前  
+    http.addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);  
+    // 配置异常处理  
+    http.exceptionHandling(exception -> exception  
+            .authenticationEntryPoint(authenticationEntryPoint)  
+            .accessDeniedHandler(accessDeniedHandler));  
+  
+    return http.build();  
+}
+```
