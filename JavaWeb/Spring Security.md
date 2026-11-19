@@ -1084,3 +1084,56 @@ public class UserDetailServiceImpl implements UserDetailsService {
 因此只需自定义 `AuthenticationEntryPoint` 与 `AccessDeniedHandler`，再配置给 Spring Security 即可。
 
 **① 自定义实现类**
+
+```java
+@Component
+public class AuthenticationEntryPointImpl implements AuthenticationEntryPoint {  
+    // 注入Spring容器里的ObjectMapper  
+    private final ObjectMapper objectMapper;  
+  
+    public AuthenticationEntryPointImpl(ObjectMapper objectMapper) {  
+        this.objectMapper = objectMapper;  
+    }  
+  
+    @Override  
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {  
+        ResponseResult<Object> result = new ResponseResult<>(HttpStatus.UNAUTHORIZED.value(), "认证失败");  
+        String json = objectMapper.writeValueAsString(result);  
+        WebUtils.renderString(response, json);  
+    }  
+}
+```
+
+```java
+@Component
+public class AccessDeniedHandlerImpl implements AccessDeniedHandler {  
+    // 注入Spring容器里的ObjectMapper  
+    private final ObjectMapper objectMapper;  
+  
+    public AccessDeniedHandlerImpl(ObjectMapper objectMapper) {  
+        this.objectMapper = objectMapper;  
+    }  
+  
+  
+    @Override  
+    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {  
+        ResponseResult<Object> result = new ResponseResult<>(HttpStatus.FORBIDDEN.value(), "没有权限");  
+        String json = objectMapper.writeValueAsString(result);  
+        WebUtils.renderString(response, json);  
+    }  
+}
+```
+
+**② 配置给 Spring Security**
+
+先注入对应的处理器：
+
+```java
+@Autowired
+private AuthenticationEntryPoint authenticationEntryPoint;
+ 
+@Autowired
+private AccessDeniedHandler accessDeniedHandler;
+```
+
+然后使用 `HttpSecurity` 对象的方法进行配置：
