@@ -17,18 +17,18 @@
 
 **① 设置父工程并添加依赖**
 
-![[Pasted image 20261116100808.png]]
-「新建 SpringBoot 项目所需依赖」
+![[JavaWeb/img/Spring Security/SpringBoot项目依赖.png]]
+
 **② 创建 Controller**
 
 ```java
-@RestController  
-public class HelloController {  
-  
-    @RequestMapping("/hello")  
-    public String sayHello(@RequestParam(value = "name", defaultValue = "Tom") String name) {  
-        return "Hello, " + name + "!";  
-    }  
+@RestController
+public class HelloController {
+
+    @RequestMapping("/hello")
+    public String sayHello(@RequestParam(value = "name", defaultValue = "Tom") String name) {
+        return "Hello, " + name + "!";
+    }
 }
 ```
 
@@ -36,16 +36,17 @@ public class HelloController {
 
 引入 `Spring Security` 依赖后再访问之前的接口，会自动跳转到默认登录页面：默认用户名是 `user`，密码会输出在控制台。**必须登录之后才能访问接口**。
 
-![[Pasted image 20261115205330.png]]
-「自动生成临时密码」
-> **小结**：一行依赖就带来了整套过滤器链，所有请求默认被拦截。后续所有改造，本质上都是「替换链条中的某些环节」：把默认登录页换成自定义登录接口、把默认用户源换成数据库、把 Session 换成 JWT + Redis、把默认错误响应换成统一 JSON。
+![[JavaWeb/img/Spring Security/自动生成临时密码.png]]
+
+> [!tip] 小结
+> 一行依赖就带来了整套过滤器链，所有请求默认被拦截。后续所有改造，本质上都是「替换链条中的某些环节」：把默认登录页换成自定义登录接口、把默认用户源换成数据库、把 Session 换成 JWT + Redis、把默认错误响应换成统一 JSON。
 
 ## 2. 认证
 
 ### 2.1 登录校验流程
 
-![登录校验流程](file:///D:/workbuddy_repo/spaces/2026_11_12_21-54-24/imgs/2909814-20220815171052398-884692008.png?lastModify=1794747288)
-「登录校验流程」
+![[JavaWeb/img/Spring Security/登录校验流程.png]]
+
 ### 2.2 原理初探
 
 要实现自己的登录流程，必须先弄清入门案例中 Spring Security 的执行流程。
@@ -54,24 +55,24 @@ public class HelloController {
 
 Spring Security 的原理本质上是**一条过滤器链**，链中包含提供各种功能的过滤器。下图是入门案例中的核心过滤器：
 
-![Spring Security 过滤器链](file:///D:/workbuddy_repo/spaces/2026_11_12_21-54-24/imgs/2909814-20220815171119043-1855237395.png?lastModify=1794747288)
-「过滤器链」
+![[JavaWeb/img/Spring Security/SpringSecurity过滤器链.png]]
+
 图中只展示了核心过滤器，其它非核心过滤器未在图中展示。三个最关键的过滤器：
 
-|过滤器|职责|
-|---|---|
-| `UsernamePasswordAuthenticationFilter` |处理在登录页面填写用户名密码后的登录请求；入门案例的认证工作主要由它负责|
-| `ExceptionTranslationFilter` |处理过滤器链中抛出的任何 `AccessDeniedException` 和 `AuthenticationException` |
-| `FilterSecurityInterceptor` |负责权限校验的过滤器|
+| 过滤器                          | 职责                                                                |
+| ----------------------------- | ----------------------------------------------------------------- |
+| `UsernamePasswordAuthenticationFilter` | 处理在登录页面填写用户名密码后的登录请求；入门案例的认证工作主要由它负责 |
+| `ExceptionTranslationFilter`   | 处理过滤器链中抛出的任何 `AccessDeniedException` 和 `AuthenticationException` |
+| `FilterSecurityInterceptor`    | 负责权限校验的过滤器                                                    |
 
 可以通过 Debug 查看当前系统中 Spring Security 过滤器链包含哪些过滤器及其顺序：
 
-![Debug 查看过滤器链](file:///D:/workbuddy_repo/spaces/2026_11_12_21-54-24/imgs/2909814-20220815171219110-2115496418.png?lastModify=1794747288)
-「debug 下的过滤器链」
+![[JavaWeb/img/Spring Security/Debug查看过滤器链.png]]
+
 #### 2.2.2 认证流程详解
 
-![认证流程详解 1](file:///D:/workbuddy_repo/spaces/2026_11_12_21-54-24/imgs/2909814-20220815171228152-1813787594.png?lastModify=1794747288)
-「认证流程」
+![[JavaWeb/img/Spring Security/认证流程详解.png]]
+
 #### 2.2.3 关键接口速查
 
 | 接口                      | 作用                                                                                                |
@@ -81,297 +82,313 @@ Spring Security 的原理本质上是**一条过滤器链**，链中包含提供
 | `UserDetailsService`    | 加载用户特定数据的核心接口，定义了根据用户名查询用户信息的方法                                                                   |
 | `UserDetails`           | 提供核心用户信息。`UserDetailsService` 根据用户名查到的用户信息要封装成 `UserDetails` 对象返回，之后这些信息会被封装进 `Authentication` 对象 |
 
-> **一条主线**：`UsernamePasswordAuthenticationFilter` → `AuthenticationManager`（默认实现 `ProviderManager`）→ `UserDetailsService` → `UserDetails` → 回到 `Authentication` → 存入 `SecurityContextHolder`。
+> [!info] 一条主线
+> `UsernamePasswordAuthenticationFilter` → `AuthenticationManager`（默认实现 `ProviderManager`）→ `UserDetailsService` → `UserDetails` → 回到 `Authentication` → 存入 `SecurityContextHolder`。
 
 ### 2.3 自定义认证方案：思路分析
 
 **登录**
+
 1. 自定义登录接口：调用 `ProviderManager` 的方法进行认证；如果认证通过则生成 JWT，并把用户信息存入 Redis。
 2. 自定义 `UserDetailsService`：在这个实现类中去查询数据库。
 
 **校验**
+
 1. 定义 JWT 认证过滤器：获取 token；
 2. 解析 token 得到其中的 `userid`；
 3. 从 Redis 中获取用户信息；
 4. 存入 `SecurityContextHolder`。
 
 ### 2.4 准备工作：基础设施代码
+
 #### 2.4.1 添加依赖
+
 ```xml
-<!--redis依赖 -->  
-<dependency>  
-    <groupId>org.springframework.boot</groupId>  
-    <artifactId>spring-boot-starter-data-redis</artifactId>  
-</dependency>  
-<!-- jjwt  -->  
-<dependency>  
-    <groupId>io.jsonwebtoken</groupId>  
-    <artifactId>jjwt-api</artifactId>  
-    <version>0.13.0</version>  
-</dependency>  
-<dependency>  
-    <groupId>io.jsonwebtoken</groupId>  
-    <artifactId>jjwt-impl</artifactId>  
-    <version>0.13.0</version>  
-    <scope>runtime</scope>  
-</dependency>  
-<dependency>  
-    <groupId>io.jsonwebtoken</groupId>  
-    <artifactId>jjwt-jackson</artifactId>  
-    <version>0.13.0</version>  
-    <scope>runtime</scope>  
+<!-- redis 依赖 -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+<!-- jjwt -->
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-api</artifactId>
+    <version>0.13.0</version>
+</dependency>
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-impl</artifactId>
+    <version>0.13.0</version>
+    <scope>runtime</scope>
+</dependency>
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-jackson</artifactId>
+    <version>0.13.0</version>
+    <scope>runtime</scope>
 </dependency>
 ```
 
 #### 2.4.2 Redis 相关配置
-使用 jackson 作为 Redis 的 value 序列化器：
-```java
-// 统一的 ObjectMapper    
-private ObjectMapper buildObjectMapper() {  
-    ObjectMapper mapper = new ObjectMapper();  
-    // 支持 LocalDateTime / LocalDate        
-    mapper.registerModule(new JavaTimeModule());  
-    // 日期存 ISO 字符串，而非时间戳  
-    mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);  
-    return mapper;  
-}  
 
-// JSON 序列化器  
-@Bean  
-public GenericJackson2JsonRedisSerializer jsonRedisSerializer() {  
-    return new GenericJackson2JsonRedisSerializer(buildObjectMapper());  
-}  
-```
-把自定义的 `RedisTemplate` 注入容器：
+使用 jackson 作为 Redis 的 value 序列化器：
+
 ```java
-@Configuration  
-public class RedisConfig {    
-    @Bean  
-    public RedisTemplate<String, Object> redisTemplate(  
-            RedisConnectionFactory factory,  
-            RedisSerializer<Object> jsonSerializer) {  
-  
-        RedisTemplate<String, Object> template = new RedisTemplate<>();  
-        template.setConnectionFactory(factory);  
-  
-        StringRedisSerializer stringSerializer = new StringRedisSerializer();  
+// 统一的 ObjectMapper
+private ObjectMapper buildObjectMapper() {
+    ObjectMapper mapper = new ObjectMapper();
+    // 支持 LocalDateTime / LocalDate
+    mapper.registerModule(new JavaTimeModule());
+    // 日期存 ISO 字符串，而非时间戳
+    mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    return mapper;
+}
+
+// JSON 序列化器
+@Bean
+public GenericJackson2JsonRedisSerializer jsonRedisSerializer() {
+    return new GenericJackson2JsonRedisSerializer(buildObjectMapper());
+}
+```
+
+把自定义的 `RedisTemplate` 注入容器：
+
+```java
+@Configuration
+public class RedisConfig {
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(
+            RedisConnectionFactory factory,
+            RedisSerializer<Object> jsonSerializer) {
+
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(factory);
+
+        StringRedisSerializer stringSerializer = new StringRedisSerializer();
         template.setKeySerializer(stringSerializer);      // 普通 key
-        template.setHashKeySerializer(stringSerializer);  // hash field  
-        template.setValueSerializer(jsonSerializer);      // 普通 value        
+        template.setHashKeySerializer(stringSerializer);  // hash field
+        template.setValueSerializer(jsonSerializer);      // 普通 value
         template.setHashValueSerializer(jsonSerializer);  // hash value
-        template.setDefaultSerializer(jsonSerializer);    // 默认兜底  
-  
-        template.afterPropertiesSet();                    // 使配置立即生效  
-        return template;  
+        template.setDefaultSerializer(jsonSerializer);    // 默认兜底
+
+        template.afterPropertiesSet();                    // 使配置立即生效
+        return template;
     }
 }
 ```
 
 #### 2.4.3 统一响应类
+
 ```java
-@JsonInclude(JsonInclude.Include.NON_NULL)  
-@Data  
-public class ResponseResult<T> {  
-    /**  
-     * 状态码  
-     */  
-    private Integer code;  
-    /**  
-     * 提示信息  
-     */  
-    private String msg;  
-    /**  
-     * 返回的数据  
-     */  
-    private T data;  
-   
-    public ResponseResult(Integer code, String msg) {  
-        this.code = code;  
-        this.msg = msg;  
-    }  
-	 public ResponseResult(Integer code, T data) {  
-        this.code = code;  
-        this.data = data;  
-    }  
-	 public ResponseResult(Integer code, String msg, T data) {  
-        this.code = code;  
-        this.msg = msg;  
-        this.data = data;  
-    }  
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@Data
+public class ResponseResult<T> {
+    /**
+     * 状态码
+     */
+    private Integer code;
+    /**
+     * 提示信息
+     */
+    private String msg;
+    /**
+     * 返回的数据
+     */
+    private T data;
+
+    public ResponseResult(Integer code, String msg) {
+        this.code = code;
+        this.msg = msg;
+    }
+
+    public ResponseResult(Integer code, T data) {
+        this.code = code;
+        this.data = data;
+    }
+
+    public ResponseResult(Integer code, String msg, T data) {
+        this.code = code;
+        this.msg = msg;
+        this.data = data;
+    }
 }
 ```
 
 #### 2.4.4 工具类：`JwtUtil`
 
 负责生成与解析 JWT
+
 ```java
-@Component  
-public class JwtUtil {  
-  
-    /** 默认密钥：Base64 编码的 32 字节; 生产环境请通过配置覆盖 */  
-    private static final String DEFAULT_SECRET =  
-            "jAzKB7F4+IFZJEEk283FUMbahEKYhG7UJ3uI8HnisK4";  
-    /** 默认有效期：24 小时（毫秒） */  
-    private static final long DEFAULT_EXPIRATION_MS = 86_400_000L;  
-    /** 默认签发者 */  
-    private static final String DEFAULT_ISSUER = "default-issuer";  
-  
-    @Value("${jwt.secret:" + DEFAULT_SECRET + "}")  
-    private String secret;  
-  
-    @Value("${jwt.expiration-ms:" + DEFAULT_EXPIRATION_MS + "}")  
-    private long expirationMs;  
-  
-    @Value("${jwt.issuer:" + DEFAULT_ISSUER + "}")  
-    private String issuer;  
-  
-    private SecretKey secretKey;  
-  
-    @PostConstruct  
-    public void init() {  
-        // Base64 解码并校验密钥强度（32 字节 → HS256）  
-        this.secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));  
-    }  
-  
-    // ────── 生成 Token ──────  
-    /** 仅 subject */  
-    public String generateToken(String subject) {  
-        return generateToken(subject, null);  
-    }  
-  
-    /** 仅自定义 claims */  
-    public String generateToken(Map<String, Object> claims) {  
-        return generateToken(null, claims);  
-    }  
-  
-    /** subject + 自定义 claims */  
-    public String generateToken(String subject, Map<String, Object> claims) {  
-        Date now = new Date();  
-        JwtBuilder builder = Jwts.builder()  
-                .id(UUID.randomUUID().toString())            // jti  
-                .issuer(issuer)                              // iss  
-                .issuedAt(now)                               // iat  
-                .expiration(new Date(now.getTime() + expirationMs)) // exp  
-                .signWith(secretKey);  
-        if (claims != null && !claims.isEmpty()) {  
-            builder.claims(claims);  
-        }  
-        if (subject != null && !subject.isBlank()) {  
-            builder.subject(subject);  
-        }  
-        return builder.compact();  
-    }  
-  
-    // ────── 解析与校验 ──────  
-    /** 解析 token，无效或过期抛 JwtException */  
-    public Claims parseToken(String token) {  
-        return Jwts.parser()  
-                .verifyWith(secretKey)  
-                .build()  
-                .parseSignedClaims(token)  
-                .getPayload();  
-    }  
-  
-    /** 安全解析：无效或过期返回 null，不抛异常 */  
-    public Claims parseTokenQuietly(String token) {  
-        try {  
-            return parseToken(token);  
-        } catch (JwtException | IllegalArgumentException e) {  
-            return null;  
-        }  
-    }  
-  
-    /** 是否有效：签名正确且未过期 */  
-    public boolean isValid(String token) {  
-        return parseTokenQuietly(token) != null;  
-    }  
-  
-    /** 是否已过期 */  
-    public boolean isExpired(String token) {  
-        try {  
-            return parseToken(token).getExpiration().before(new Date());  
-        } catch (JwtException | IllegalArgumentException e) {  
-            return true;  
-        }  
-    }  
-  
-    // ────── 提取字段 ──────  
-    public String getSubject(String token) {  
-        return parseToken(token).getSubject();  
-    }  
-  
-    /** 获取全部 claims */  
-    public Claims getClaims(String token) {  
-        return parseToken(token);  
-    }  
-  
-    public Date getExpiration(String token) {  
-        return parseToken(token).getExpiration();  
-    }  
-  
-    public String getJti(String token) {  
-        return parseToken(token).getId();  
-    }  
-  
-    public String getIssuer(String token) {  
-        return parseToken(token).getIssuer();  
-    }  
+@Component
+public class JwtUtil {
+
+    /** 默认密钥：Base64 编码的 32 字节; 生产环境请通过配置覆盖 */
+    private static final String DEFAULT_SECRET =
+            "jAzKB7F4+IFZJEEk283FUMbahEKYhG7UJ3uI8HnisK4";
+    /** 默认有效期：24 小时（毫秒） */
+    private static final long DEFAULT_EXPIRATION_MS = 86_400_000L;
+    /** 默认签发者 */
+    private static final String DEFAULT_ISSUER = "default-issuer";
+
+    @Value("${jwt.secret:" + DEFAULT_SECRET + "}")
+    private String secret;
+
+    @Value("${jwt.expiration-ms:" + DEFAULT_EXPIRATION_MS + "}")
+    private long expirationMs;
+
+    @Value("${jwt.issuer:" + DEFAULT_ISSUER + "}")
+    private String issuer;
+
+    private SecretKey secretKey;
+
+    @PostConstruct
+    public void init() {
+        // Base64 解码并校验密钥强度（32 字节 → HS256）
+        this.secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
+    }
+
+    // ────── 生成 Token ──────
+    /** 仅 subject */
+    public String generateToken(String subject) {
+        return generateToken(subject, null);
+    }
+
+    /** 仅自定义 claims */
+    public String generateToken(Map<String, Object> claims) {
+        return generateToken(null, claims);
+    }
+
+    /** subject + 自定义 claims */
+    public String generateToken(String subject, Map<String, Object> claims) {
+        Date now = new Date();
+        JwtBuilder builder = Jwts.builder()
+                .id(UUID.randomUUID().toString())            // jti
+                .issuer(issuer)                              // iss
+                .issuedAt(now)                               // iat
+                .expiration(new Date(now.getTime() + expirationMs)) // exp
+                .signWith(secretKey);
+        if (claims != null && !claims.isEmpty()) {
+            builder.claims(claims);
+        }
+        if (subject != null && !subject.isBlank()) {
+            builder.subject(subject);
+        }
+        return builder.compact();
+    }
+
+    // ────── 解析与校验 ──────
+    /** 解析 token，无效或过期抛 JwtException */
+    public Claims parseToken(String token) {
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+    /** 安全解析：无效或过期返回 null，不抛异常 */
+    public Claims parseTokenQuietly(String token) {
+        try {
+            return parseToken(token);
+        } catch (JwtException | IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    /** 是否有效：签名正确且未过期 */
+    public boolean isValid(String token) {
+        return parseTokenQuietly(token) != null;
+    }
+
+    /** 是否已过期 */
+    public boolean isExpired(String token) {
+        try {
+            return parseToken(token).getExpiration().before(new Date());
+        } catch (JwtException | IllegalArgumentException e) {
+            return true;
+        }
+    }
+
+    // ────── 提取字段 ──────
+    public String getSubject(String token) {
+        return parseToken(token).getSubject();
+    }
+
+    /** 获取全部 claims */
+    public Claims getClaims(String token) {
+        return parseToken(token);
+    }
+
+    public Date getExpiration(String token) {
+        return parseToken(token).getExpiration();
+    }
+
+    public String getJti(String token) {
+        return parseToken(token).getId();
+    }
+
+    public String getIssuer(String token) {
+        return parseToken(token).getIssuer();
+    }
 }
 ```
 
 #### 2.4.5 工具类：`WebUtils`
 
 把字符串（这里是 JSON）直接渲染到客户端，供自定义异常处理器复用：
+
 ```java
-@Slf4j  
-public class WebUtils {  
-  
-    /**  
-     * 直接将字符串渲染输出到客户端  
-     * @param response 响应对象  
-     * @param content 输出内容（一般是json字符串）  
-     * @return null  
-     */    public static String renderString(HttpServletResponse response, String content) {  
-        try {  
-            response.setStatus(200);  
-            response.setContentType("application/json");  
-            response.setCharacterEncoding("UTF-8");  
-            response.getWriter().print(content);  
-            response.getWriter().flush();  
-        } catch (IOException e) {  
-            log.error(e.getMessage(), e);  
-        }  
-        return null;  
-    }  
+@Slf4j
+public class WebUtils {
+
+    /**
+     * 直接将字符串渲染输出到客户端
+     * @param response 响应对象
+     * @param content 输出内容（一般是json字符串）
+     * @return null
+     */
+    public static String renderString(HttpServletResponse response, String content) {
+        try {
+            response.setStatus(200);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().print(content);
+            response.getWriter().flush();
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+        return null;
+    }
 }
 ```
 
 #### 2.4.6 用户实体类 `User`
+
 ```java
-/**  
- * 用户表(User)实体类  
- */  
-@Data  
-@AllArgsConstructor  
-@NoArgsConstructor  
+/**
+ * 用户表(User)实体类
+ */
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class User implements Serializable {
 
-    private Long id;            // 主键ID  
-    private String userName;    // 用户名  
-    private String nickName;    // 昵称  
-    private String password;    // 密码（加密存储）  
-    private String status;      // 账号状态：0正常，1停用  
-    private String email;       // 邮箱  
-    private String phoneNumber; // 手机号  
-    private String sex;         // 性别：0男，1女，2未知  
-    private String avatar;      // 头像地址  
-    private String userType;    // 用户类型：0管理员，1普通用户  
-    private Long createBy;      // 创建人ID  
-    private Date createTime;    // 创建时间  
-    private Long updateBy;      // 更新人ID  
-    private Date updateTime;    // 更新时间  
-    private Integer delFlag;    // 删除标记：0未删除，1已删除（逻辑删除）  
-    
+    private Long id;            // 主键ID
+    private String userName;    // 用户名
+    private String nickName;    // 昵称
+    private String password;    // 密码（加密存储）
+    private String status;      // 账号状态：0正常，1停用
+    private String email;       // 邮箱
+    private String phoneNumber; // 手机号
+    private String sex;         // 性别：0男，1女，2未知
+    private String avatar;      // 头像地址
+    private String userType;    // 用户类型：0管理员，1普通用户
+    private Long createBy;      // 创建人ID
+    private Date createTime;    // 创建时间
+    private Long updateBy;      // 更新人ID
+    private Date updateTime;    // 更新时间
+    private Integer delFlag;    // 删除标记：0未删除，1已删除（逻辑删除）
+
 }
 ```
 
@@ -415,33 +432,33 @@ CREATE TABLE sys_user (
 **准备工作 ②：引入 MyBatis-Plus 与 MySQL 驱动**
 
 ```xml
-<dependency>  
-    <groupId>com.baomidou</groupId>  
-    <artifactId>mybatis-plus-spring-boot3-starter</artifactId>  
-    <version>3.5.5</version>  
+<dependency>
+    <groupId>com.baomidou</groupId>
+    <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+    <version>3.5.5</version>
 </dependency>
-<dependency>  
-    <groupId>com.mysql</groupId>  
-    <artifactId>mysql-connector-j</artifactId>  
-    <scope>runtime</scope>  
+<dependency>
+    <groupId>com.mysql</groupId>
+    <artifactId>mysql-connector-j</artifactId>
+    <scope>runtime</scope>
 </dependency>
 ```
 
 **准备工作 ③：配置数据库信息**
-```yml
-spring:
-	datasource:  
-	  url: jdbc:mysql://localhost:3306/security?useSSL=false&serverTimezone=Asia/Shanghai  
-	  username: root  
-	  password: 131452  
-	  driver-class-name: com.mysql.cj.jdbc.Driver
-```
 
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/security?useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 131452
+    driver-class-name: com.mysql.cj.jdbc.Driver
+```
 
 **准备工作 ④：定义 Mapper 接口**
 
 ```java
-public interface UserMapper extends BaseMapper<User> {  
+public interface UserMapper extends BaseMapper<User> {
 }
 ```
 
@@ -452,79 +469,86 @@ public interface UserMapper extends BaseMapper<User> {
 **准备工作 ⑥：配置 Mapper 扫描**
 
 在启动类配置主键扫描
+
 ```java
-@MapperScan("com.quickstart.mapper")  
+@MapperScan("com.quickstart.mapper")
 ```
 
-**核心代码 ①：实现 `UserDetailsService`** 
+**核心代码 ①：实现 `UserDetailService`**
 
 创建一个类实现 `UserDetailsService` 接口并重写其中的方法，根据用户名从数据库中查询用户信息：
+
 ```java
-@Service  
-public class UserDetailServiceImpl implements UserDetailsService {  
-    @Autowired    
-    private UserMapper userMapper;  
-  
-    @Override  
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {  
-        User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getUserName, username));  
-        if (user == null) {  
-            throw new UsernameNotFoundException("用户不存在");  
-        }  
-        //TODO 根据用户查询权限信息 添加到LoginUser中  
-        return new LoginUser(user);  
-    }  
+@Service
+public class UserDetailServiceImpl implements UserDetailsService {
+    @Autowired
+    private UserMapper userMapper;
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getUserName, username));
+        if (user == null) {
+            throw new UsernameNotFoundException("用户不存在");
+        }
+        //TODO 根据用户查询权限信息 添加到LoginUser中
+        return new LoginUser(user);
+    }
 }
 ```
 
-**核心代码 ②：定义 `LoginUser` 实现 `UserDetails`** 
+**核心代码 ②：定义 `LoginUser` 实现 `UserDetails`**
 
 因为 `UserDetailsService` 方法的返回值是 `UserDetails` 类型，所以需要定义一个类实现该接口，把用户信息封装在其中：
 
 ```java
-@AllArgsConstructor  
-public class LoginUser implements UserDetails {  
-    private User user;  
-    @Override  
-    public Collection<? extends GrantedAuthority> getAuthorities() {  
-        return null;  
-    }  
-  
-    @Override  
-    public String getPassword() {  
-        return user.getPassword();  
-    }  
-  
-    @Override  
-    public String getUsername() {  
-        return user.getUserName();  
-    }  
-  
-    @Override  
-    public boolean isAccountNonExpired() {  
-        return true;  
-    }  
-  
-    @Override  
-    public boolean isAccountNonLocked() {  
-        return true;  
-    }  
-  
-    @Override  
-    public boolean isCredentialsNonExpired() {  
-        return true;  
-    }  
-  
-    @Override  
-    public boolean isEnabled() {  
-        return true;  
-    }  
+@AllArgsConstructor
+public class LoginUser implements UserDetails {
+    private User user;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return null;
+    }
+
+    @Override
+    public String getPassword() {
+        return user.getPassword();
+    }
+
+    @Override
+    public String getUsername() {
+        return user.getUserName();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }
 ```
 
-**注意**：如果要测试，需要往用户表中写入用户数据；如果希望密码以明文存储，需要在密码前加 `{noop}`，例如： 
-![[Pasted image 20261116173136.png]]
+**注意**：如果要测试，需要往用户表中写入用户数据；如果希望密码以明文存储，需要在密码前加 `{noop}`，例如：
+
+![[JavaWeb/img/Spring Security/数据库明文密码noop.png]]
+
 这样登录时就可以用 `admin` 作为用户名、`1234` 作为密码来登录。
+
+#### 2.5.2 密码加密存储
 
 实际项目中不会把密码明文存储在数据库中。默认使用的 `PasswordEncoder` 要求数据库中的密码格式为 `{id}password`，它会根据 `id` 判断密码的加密方式；但我们一般不采用这种方式，所以需要替换 `PasswordEncoder`。
 
@@ -533,11 +557,12 @@ public class LoginUser implements UserDetails {
 定义一个 Spring Security 配置类：
 
 ```java
-@Configuration  
-public class SecurityConfig {  
-    @Bean    public PasswordEncoder passwordEncoder() {  
-        return new BCryptPasswordEncoder();  
-    }  
+@Configuration
+public class SecurityConfig {
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }
 ```
 
@@ -551,70 +576,71 @@ public class SecurityConfig {
 
 ```java
 @RestController
-@RequestMapping("/user")  
-public class LoginController {  
-    @Autowired    private LoginService loginService;  
-  
-    @PostMapping("/login")  
-    public ResponseResult<Map<String, String>> login(String username, String password) {  
-        Map<String, String> result = loginService.login(username, password);  
-        return new ResponseResult<>(200, "登录成功！", result);  
-    }  
+@RequestMapping("/user")
+public class LoginController {
+    @Autowired
+    private LoginService loginService;
+
+    @PostMapping("/login")
+    public ResponseResult<Map<String, String>> login(String username, String password) {
+        Map<String, String> result = loginService.login(username, password);
+        return new ResponseResult<>(200, "登录成功！", result);
+    }
 }
 ```
 
 **service**
 
 ```java
-@Service  
-public class LoginServiceImpl implements LoginService {  
-	// 86400000 milliseconds = 1 day  
-    private final static Long defaultExpire = 86400000L; 
-  
-    @Autowired  
-    private AuthenticationManager authenticationManager;  
-    @Autowired  
-    private JwtUtil jwtUtil;  
-    @Autowired  
-    private RedisTemplate<String, LoginUser> redisTemplate;  
-  
-    @Override  
-    public Map<String, String> login(String username, String password) {  
-        // 创建一个Authentication对象  
-        Authentication authentication = new UsernamePasswordAuthenticationToken(username, password);  
-        // 进行身份验证  
-        Authentication result = authenticationManager.authenticate(authentication);  
-  
-        // 生成JWT令牌  
-        LoginUser loginUser = (LoginUser) result.getPrincipal();  
-        Long userId = loginUser.getUser().getId();  
-        String token = jwtUtil.generateToken(userId.toString());  
-  
-        // 将登录用户信息存储在Redis中  
-        redisTemplate.opsForValue().set("login:" + token, loginUser, defaultExpire, TimeUnit.MILLISECONDS);  
-  
-        // 返回  
-        Map<String, String> map = new HashMap<>();  
-        map.put("token", token);  
-        return map;  
-    }  
+@Service
+public class LoginServiceImpl implements LoginService {
+    // 86400000 milliseconds = 1 day
+    private final static Long defaultExpire = 86400000L;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+    private JwtUtil jwtUtil;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
+    @Override
+    public Map<String, String> login(String username, String password) {
+        // 创建一个Authentication对象
+        Authentication authentication = new UsernamePasswordAuthenticationToken(username, password);
+        // 进行身份验证
+        Authentication result = authenticationManager.authenticate(authentication);
+
+        // 生成JWT令牌
+        LoginUser loginUser = (LoginUser) result.getPrincipal();
+        Long userId = loginUser.getUser().getId();
+        String token = jwtUtil.generateToken(userId.toString());
+
+        // 将登录用户信息存储在Redis中
+        redisTemplate.opsForValue().set("login:" + userId, loginUser, defaultExpire, TimeUnit.MILLISECONDS);
+
+        // 返回
+        Map<String, String> map = new HashMap<>();
+        map.put("token", token);
+        return map;
+    }
 }
 ```
 
 **SecurityConfig（放行登录接口 + 无状态会话 + 暴露 AuthenticationManager）**
 
 ```java
-@Bean  
-public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {  
-    http            
-    		.csrf(AbstractHttpConfigurer::disable)  
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  
-            .authorizeHttpRequests(authorize -> authorize  
-                    // 放行登录接口  
-                    .requestMatchers("/user/login").permitAll()  
-                    .anyRequest().authenticated());  
-  
-    return http.build();  
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+            .csrf(AbstractHttpConfigurer::disable)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(authorize -> authorize
+                    // 放行登录接口
+                    .requestMatchers("/user/login").permitAll()
+                    .anyRequest().authenticated());
+
+    return http.build();
 }
 ```
 
@@ -623,62 +649,64 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
 自定义一个过滤器：获取请求头中的 token → 解析取出 `userid` → 用 `userid` 去 Redis 中获取对应的 `LoginUser` 对象 → 封装 `Authentication` 对象存入 `SecurityContextHolder`。
 
 ```java
-@Component  
-public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {  
-    @Autowired    
-    private JwtUtil jwtUtil;  
-    @Autowired  
-    RedisTemplate redisTemplate;  
-  
-    @Override  
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {  
-        String token = request.getHeader("token");  
-        // 如果没有token，则放行到后面的过滤器  
-        if (!StringUtils.hasText(token)) {  
-            filterChain.doFilter(request, response);  
-            return;  
-        }  
-  
-        // 获取用户id  
-        String subject;  
-        try {  
-            subject = jwtUtil.getSubject(token);  
-        } catch (Exception e) {  
-            throw new RuntimeException("token无效");  
-        }  
-  
-        // 从redis中获取用户信息  
-        String key = "login:" + subject;  
-        LoginUser user = (LoginUser) redisTemplate.opsForValue().get(key);  
-        if (user == null) {  
-            throw new RuntimeException("用户未登录");  
-        }  
-  
-        //存入SecurityContextHolder  
-        // TODO 取权限信息封装到Authentication中  
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null, null);  
-        SecurityContextHolder.getContext().setAuthentication(authentication);  
-  
-        // 继续处理请求  
-        filterChain.doFilter(request, response);  
-    }  
+@Component
+public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
+    @Autowired
+    private JwtUtil jwtUtil;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String token = request.getHeader("token");
+        // 如果没有token，则放行到后面的过滤器
+        if (!StringUtils.hasText(token)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // 获取用户id
+        String subject;
+        try {
+            subject = jwtUtil.getSubject(token);
+        } catch (Exception e) {
+            throw new RuntimeException("token无效");
+        }
+
+        // 从redis中获取用户信息
+        String key = "login:" + subject;
+        LoginUser user = (LoginUser) redisTemplate.opsForValue().get(key);
+        if (user == null) {
+            throw new RuntimeException("用户未登录");
+        }
+
+        //存入SecurityContextHolder
+        // TODO 取权限信息封装到Authentication中
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null, null);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // 继续处理请求
+        filterChain.doFilter(request, response);
+    }
 }
 ```
 
 把过滤器加入过滤器链（放在 `UsernamePasswordAuthenticationFilter` 之前）：
+
 ```java
-@Bean  
-public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {  
-    http            .csrf(AbstractHttpConfigurer::disable)  
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  
-            .authorizeHttpRequests(authorize -> authorize  
-                    // 放行登录接口  
-                    .requestMatchers("/user/login").permitAll()  
-                    .anyRequest().authenticated());  
-  
-    // 将 JwtAuthenticationTokenFilter 添加到 UsernamePasswordAuthenticationFilter 之前  
-    http.addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);  
-    return http.build();  
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+            .csrf(AbstractHttpConfigurer::disable)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(authorize -> authorize
+                    // 放行登录接口
+                    .requestMatchers("/user/login").permitAll()
+                    .anyRequest().authenticated());
+
+    // 将 JwtAuthenticationTokenFilter 添加到 UsernamePasswordAuthenticationFilter 之前
+    http.addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
+    return http.build();
 }
 ```
 
@@ -689,38 +717,38 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
 **controller**
 
 ```java
-@RestController  
-@RequestMapping("/user")  
-public class LoginController {  
-    @Autowired  
-    private LoginService loginService;  
-  
-    @RequestMapping("/logout")  
-    public ResponseResult<String> logout() {  
-        loginService.logout();  
-        return new ResponseResult<>(200, "登出成功！");  
-    }  
+@RestController
+@RequestMapping("/user")
+public class LoginController {
+    @Autowired
+    private LoginService loginService;
+
+    @RequestMapping("/logout")
+    public ResponseResult<String> logout() {
+        loginService.logout();
+        return new ResponseResult<>(200, "登出成功！");
+    }
 }
 ```
 
 **service**
 
 ```java
-@Service  
-public class LoginServiceImpl implements LoginService {  
-    @Autowired  
-    private RedisTemplate<String, Object> redisTemplate;  
+@Service
+public class LoginServiceImpl implements LoginService {
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
-    @Override  
-    public void logout() {  
-        // 获取当前登录用户  
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();  
-        LoginUser user = (LoginUser) authentication.getPrincipal();  
-        Long userId = user.getUser().getId();  
-  
-        // 删除Redis中的用户信息  
-        redisTemplate.delete("login:" + userId);  
-    }  
+    @Override
+    public void logout() {
+        // 获取当前登录用户
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        LoginUser user = (LoginUser) authentication.getPrincipal();
+        Long userId = user.getUser().getId();
+
+        // 删除Redis中的用户信息
+        redisTemplate.delete("login:" + userId);
+    }
 }
 ```
 
@@ -729,12 +757,13 @@ public class LoginServiceImpl implements LoginService {
 | 步骤  | 参与方                                    | 关键动作                                                                                     |
 | --- | -------------------------------------- | ---------------------------------------------------------------------------------------- |
 | 1   | `LoginController` / `LoginServiceImpl` | 用用户名密码构造 `UsernamePasswordAuthenticationToken`，调用 `authenticationManager.authenticate()` |
-| 2   | `UserDetailsServiceImpl`               | 按用户名查库，查不到抛异常；查到后封装为 `LoginUser` 返回                                                      |
+| 2   | `UserDetailServiceImpl`                | 按用户名查库，查不到抛异常；查到后封装为 `LoginUser` 返回                                                      |
 | 3   | `LoginServiceImpl`                     | 用 `userId` 生成 JWT，`login:userId` 为 key 把 `LoginUser` 存入 Redis，返回 token                   |
 | 4   | `JwtAuthenticationTokenFilter`         | 每次请求解析 token → Redis 取用户 → 写入 `SecurityContextHolder`                                    |
 | 5   | `LoginServiceImpl.logout()`            | 从上下文取用户 id，删除 Redis 中的登录缓存                                                               |
 
-> **为什么必须 STATELESS**：认证状态不再由 Session 保存，而是由「JWT + Redis + 每次请求重建 SecurityContext」共同维护，所以配置里关闭了 CSRF 并把会话策略设为 `SessionCreationPolicy.STATELESS`。
+> [!info] 为什么必须 STATELESS
+> 认证状态不再由 Session 保存，而是由「JWT + Redis + 每次请求重建 SecurityContext」共同维护，所以配置里关闭了 CSRF 并把会话策略设为 `SessionCreationPolicy.STATELESS`。
 
 ## 3. 授权
 
@@ -768,111 +797,120 @@ Spring Security 提供了基于注解的权限控制方案，这也是项目中�
 然后即可使用 `@PreAuthorize` 注解修饰接口方法：
 
 ```java
-@RestController  
-public class HelloController {  
-  
+@RestController
+public class HelloController {
+
     @RequestMapping("/hello")
     @PreAuthorize("hasAuthority('test')")
-    public String sayHello(@RequestParam(value = "name", defaultValue = "Tom") String name) {  
-        return "Hello, " + name + "!";  
-    }  
+    public String sayHello(@RequestParam(value = "name", defaultValue = "Tom") String name) {
+        return "Hello, " + name + "!";
+    }
 }
 ```
 
 #### 3.3.2 封装权限信息
 
-前面编写 `UserDetailsServiceImpl` 时提到：查询出用户后还要获取对应的权限信息，封装到 `UserDetails` 中返回。这里先把权限信息写死，用于测试。
+前面编写 `UserDetailServiceImpl` 时提到：查询出用户后还要获取对应的权限信息，封装到 `UserDetails` 中返回。这里先把权限信息写死，用于测试。
 
 修改之前定义的 `UserDetails` 实现类 `LoginUser`，使其能封装权限信息：
 
 ```java
-package com.quickstart.common;  
-  
-import com.fasterxml.jackson.annotation.JsonIgnore;  
-import com.quickstart.entity.User;  
-import lombok.Getter;  
-import lombok.NoArgsConstructor;  
-import org.springframework.security.core.GrantedAuthority;  
-import org.springframework.security.core.authority.SimpleGrantedAuthority;  
-import org.springframework.security.core.userdetails.UserDetails;  
-  
-import java.util.Collection;  
-import java.util.List;  
-import java.util.stream.Collectors;  
-  
-@Getter  
-@NoArgsConstructor  
-public class LoginUser implements UserDetails {  
-    private User user;  
-    private List<String> permissions; // 权限集合  
-  
-    public LoginUser(User user, List<String> permissions) {  
-        this.user = user;  
-        this.permissions = permissions;  
-    }  
-  
-    // 存储 SpringSecurity 所需要的权限集合  
-    private List<GrantedAuthority> authorities;  
-  
-    @Override  
-    @JsonIgnore    public Collection<? extends GrantedAuthority> getAuthorities() {  
-        if (authorities != null) {  
-            return authorities;  
-        }  
-        authorities = permissions.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());  
-        return authorities;  
-    }  
-  
-    @Override  
-    @JsonIgnore    public String getPassword() {  
-        return user.getPassword();  
-    }  
-  
-    @Override  
-    @JsonIgnore    public String getUsername() {  
-        return user.getUsername();  
-    }  
-  
-    @Override  
-    @JsonIgnore    public boolean isAccountNonExpired() {  
-        return true;  
-    }  
-  
-    @Override  
-    @JsonIgnore    public boolean isAccountNonLocked() {  
-        return true;  
-    }  
-  
-    @Override  
-    @JsonIgnore    public boolean isCredentialsNonExpired() {  
-        return true;  
-    }  
-  
-    @Override  
-    @JsonIgnore    public boolean isEnabled() {  
-        return true;  
-    }  
+package com.quickstart.common;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.quickstart.entity.User;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Getter
+@NoArgsConstructor
+public class LoginUser implements UserDetails {
+    private User user;
+    private List<String> permissions; // 权限集合
+
+    public LoginUser(User user, List<String> permissions) {
+        this.user = user;
+        this.permissions = permissions;
+    }
+
+    // 存储 SpringSecurity 所需要的权限集合
+    private List<GrantedAuthority> authorities;
+
+    @Override
+    @JsonIgnore
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (authorities != null) {
+            return authorities;
+        }
+        authorities = permissions.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+        return authorities;
+    }
+
+    @Override
+    @JsonIgnore
+    public String getPassword() {
+        return user.getPassword();
+    }
+
+    @Override
+    @JsonIgnore
+    public String getUsername() {
+        return user.getUserName();
+    }
+
+    @Override
+    @JsonIgnore
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    @JsonIgnore
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    @JsonIgnore
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    @JsonIgnore
+    public boolean isEnabled() {
+        return true;
+    }
 }
 ```
-其中 @JsonIgnore；`getAuthorities()` 采用懒加载方式把字符串权限转换为 `SimpleGrantedAuthority`。
 
-`LoginUser` 修改完后，就可以在 `UserDetailsServiceImpl` 中把权限信息封装进 `LoginUser`。先写死权限测试，后面再从数据库查询：
+其中 `@JsonIgnore`；`getAuthorities()` 采用懒加载方式把字符串权限转换为 `SimpleGrantedAuthority`。
+
+`LoginUser` 修改完后，就可以在 `UserDetailServiceImpl` 中把权限信息封装进 `LoginUser`。先写死权限测试，后面再从数据库查询：
 
 ```java
-@Service  
-public class UserDetailServiceImpl implements UserDetailsService {  
-    @Autowired    private UserMapper userMapper;  
-  
-    @Override  
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {  
-        User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getUsername, username));  
-        if (user == null) {  
-            throw new UsernameNotFoundException("用户不存在");  
-        }  
-        //TODO 根据用户查询权限信息 添加到LoginUser中  
-        List<String> permissions = new ArrayList<>(List.of("test"));  
-        return new LoginUser(user, permissions);  
-    }  
+@Service
+public class UserDetailServiceImpl implements UserDetailsService {
+    @Autowired
+    private UserMapper userMapper;
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getUsername, username));
+        if (user == null) {
+            throw new UsernameNotFoundException("用户不存在");
+        }
+        //TODO 根据用户查询权限信息 添加到LoginUser中
+        List<String> permissions = new ArrayList<>(List.of("test"));
+        return new LoginUser(user, permissions);
+    }
 }
 ```
 
@@ -882,7 +920,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
 **RBAC**（Role-Based Access Control）即「基于角色的权限控制」，是目前开发者最常使用、也相对易用和通用的权限模型。
 
-![RBAC 权限模型](file:///D:/workbuddy_repo/spaces/2026_11_12_21-54-24/imgs/2909814-20220815171513580-99682924.png?lastModify=1794964911)
+![[JavaWeb/img/Spring Security/RBAC权限模型.png]]
 
 ##### 3.3.3.2 准备工作：建库建表
 
@@ -978,7 +1016,7 @@ CREATE TABLE `sys_user_role` (
 **按用户 id 查询权限标识的 SQL**（用户 → 用户角色 → 角色 → 角色菜单 → 菜单，只取正常状态、去重）：
 
 ```sql
-SELECT 
+SELECT
 	DISTINCT m.`perms`
 FROM
 	sys_user_role ur
@@ -991,39 +1029,42 @@ WHERE
 	AND m.`status` = 0
 ```
 
-**菜单实体类 `Menu` **
+**菜单实体类 `Menu`**
 
 ```java
-/**  
- * 菜单表实体类，对应数据库 sys_menu，RBAC权限模型里的菜单&权限点  
- */  
-@TableName("sys_menu")                // // 绑定数据库表名 sys_menu@Data                                 // // lombok：自动生成get、set、toString、equals、hashCode  
-@AllArgsConstructor                   // // lombok：全参构造  
-@NoArgsConstructor                    // // lombok：无参构造  
-@JsonInclude(JsonInclude.Include.NON_NULL) // // jackson序列化时，值为null的字段不返回给前端  
-public class Menu implements Serializable { // // Serializable：支持序列化，可放入redis缓存、跨服务传输  
-  
-    @TableId                           // // 标记该字段是主键  
-    private Long id;                   // // 菜单主键id  
-    private String menuName;           // // 菜单名称  
-    private String path;               // // vue路由地址  
-    private String component;          // // 前端vue组件路径  
-    private String visible;            // // 是否显示菜单：0显示 1隐藏  
-    private String status;             // // 菜单启用状态：0正常 1停用  
-    private String perms;              // // 权限标识，用于@PreAuthorize鉴权，例：system:user:list  
-    private String icon;               // // 菜单图标  
-  
-    private Long createBy;             // // 创建人用户id  
-    private Date createTime;           // // 创建时间  
-    private Long updateBy;             // // 更新人用户id  
-    private Date updateTime;           // // 更新时间  
-    private Integer delFlag;           // // 逻辑删除标记：0未删除 1已删除  
-    private String remark;             // // 备注信息  
+/**
+ * 菜单表实体类，对应数据库 sys_menu，RBAC权限模型里的菜单&权限点
+ */
+@TableName("sys_menu")                // 绑定数据库表名 sys_menu
+@Data                                 // lombok：自动生成 get、set、toString、equals、hashCode
+@AllArgsConstructor                   // lombok：全参构造
+@NoArgsConstructor                    // lombok：无参构造
+@JsonInclude(JsonInclude.Include.NON_NULL) // jackson序列化时，值为null的字段不返回给前端
+public class Menu implements Serializable { // Serializable：支持序列化，可放入redis缓存、跨服务传输
+
+    @TableId                           // 标记该字段是主键
+    private Long id;                   // 菜单主键id
+    private String menuName;           // 菜单名称
+    private String path;               // vue路由地址
+    private String component;          // 前端vue组件路径
+    private String visible;            // 是否显示菜单：0显示 1隐藏
+    private String status;             // 菜单启用状态：0正常 1停用
+    private String perms;              // 权限标识，用于@PreAuthorize鉴权，例：system:user:list
+    private String icon;               // 菜单图标
+
+    private Long createBy;             // 创建人用户id
+    private Date createTime;           // 创建时间
+    private Long updateBy;             // 更新人用户id
+    private Date updateTime;           // 更新时间
+    private Integer delFlag;           // 逻辑删除标记：0未删除 1已删除
+    private String remark;             // 备注信息
 }
 ```
+
 ##### 3.3.3.3 代码实现
 
 只需要根据用户 id 查询到其所对应的权限信息。先定义一个 Mapper，提供根据 `userid` 查询权限信息的方法：
+
 ```java
 public interface MenuMapper extends BaseMapper<Menu> {
     List<String> selectPermsByUserId(Long id);
@@ -1032,54 +1073,61 @@ public interface MenuMapper extends BaseMapper<Menu> {
 
 因为是自定义方法，需要创建对应的 Mapper XML 文件并定义 SQL 语句：
 
-```java
-<?xml version="1.0" encoding="UTF-8" ?>  
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >  
-<mapper namespace="com.quickstart.mapper.MenuMapper">  
-    <select id="selectPermsById" resultType="java.lang.String">  
-        SELECT  
-            DISTINCT m.`perms`        FROM            sys_user_role ur                LEFT JOIN `sys_role` r ON ur.`role_id` = r.`id`                LEFT JOIN `sys_role_menu` rm ON ur.`role_id` = rm.`role_id`                LEFT JOIN `sys_menu` m ON m.`id` = rm.`menu_id`        WHERE            user_id = #{id}          AND r.`status` = 0          AND m.`status` = 0    </select>  
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.quickstart.mapper.MenuMapper">
+    <select id="selectPermsByUserId" resultType="java.lang.String">
+        SELECT
+            DISTINCT m.`perms`
+        FROM
+            sys_user_role ur
+            LEFT JOIN `sys_role` r ON ur.`role_id` = r.`id`
+            LEFT JOIN `sys_role_menu` rm ON ur.`role_id` = rm.`role_id`
+            LEFT JOIN `sys_menu` m ON m.`id` = rm.`menu_id`
+        WHERE
+            user_id = #{id}
+            AND r.`status` = 0
+            AND m.`status` = 0
+    </select>
 </mapper>
 ```
-最后在 `UserDetailsServiceImpl` 中调用该 Mapper 方法，把查询到的权限信息封装进 `LoginUser`：
+
+最后在 `UserDetailServiceImpl` 中调用该 Mapper 方法，把查询到的权限信息封装进 `LoginUser`：
 
 ```java
-@Service  
-public class UserDetailServiceImpl implements UserDetailsService {  
-    private final UserMapper userMapper;  
-    private final MenuMapper menuMapper;  
-  
-    public UserDetailServiceImpl(UserMapper userMapper, MenuMapper menuMapper) {  
-        this.userMapper = userMapper;  
-        this.menuMapper = menuMapper;  
-    }  
-  
-    @Override  
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {  
-        User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getUsername, username));  
-        if (user == null) {  
-            throw new UsernameNotFoundException("用户不存在");  
-        }  
-        List<String> permissions = menuMapper.selectPermsById(user.getId());  
-        // List<String> permissions = new ArrayList<>(List.of("test"));  
-        return new LoginUser(user, permissions);  
-    }  
+@Service
+public class UserDetailServiceImpl implements UserDetailsService {
+    private final UserMapper userMapper;
+    private final MenuMapper menuMapper;
+
+    public UserDetailServiceImpl(UserMapper userMapper, MenuMapper menuMapper) {
+        this.userMapper = userMapper;
+        this.menuMapper = menuMapper;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getUsername, username));
+        if (user == null) {
+            throw new UsernameNotFoundException("用户不存在");
+        }
+        List<String> permissions = menuMapper.selectPermsByUserId(user.getId());
+        // List<String> permissions = new ArrayList<>(List.of("test"));
+        return new LoginUser(user, permissions);
+    }
 }
 ```
 
 **授权闭环**：`menuMapper.selectPermsByUserId()` → `LoginUser.permissions` → `getAuthorities()` → `Authentication` → `FilterSecurityInterceptor` / `@PreAuthorize("hasAuthority('...')")` 完成校验。
-
 
 ## 4. 自定义失败处理
 
 希望在认证失败或授权失败时，也能和业务接口一样返回相同结构的 JSON，便于前端统一处理响应。要实现这一点，需要理解 Spring Security 的异常处理机制：
 
 - 认证或授权过程中出现的异常，会被 `ExceptionTranslationFilter` 捕获，并由它判断是认证失败还是授权失败；
-    
-- 认证过程中的异常会被封装成 `AuthenticationException`，然后调用 ** `AuthenticationEntryPoint` ** 对象的方法进行异常处理；
-    
-- 授权过程中的异常会被封装成 `AccessDeniedException`，然后调用 ** `AccessDeniedHandler` ** 对象的方法进行异常处理。
-    
+- 认证过程中的异常会被封装成 `AuthenticationException`，然后调用 **`AuthenticationEntryPoint`** 对象的方法进行异常处理；
+- 授权过程中的异常会被封装成 `AccessDeniedException`，然后调用 **`AccessDeniedHandler`** 对象的方法进行异常处理。
 
 因此只需自定义 `AuthenticationEntryPoint` 与 `AccessDeniedHandler`，再配置给 Spring Security 即可。
 
@@ -1087,40 +1135,39 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
 ```java
 @Component
-public class AuthenticationEntryPointImpl implements AuthenticationEntryPoint {  
-    // 注入Spring容器里的ObjectMapper  
-    private final ObjectMapper objectMapper;  
-  
-    public AuthenticationEntryPointImpl(ObjectMapper objectMapper) {  
-        this.objectMapper = objectMapper;  
-    }  
-  
-    @Override  
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {  
-        ResponseResult<Object> result = new ResponseResult<>(HttpStatus.UNAUTHORIZED.value(), "认证失败");  
-        String json = objectMapper.writeValueAsString(result);  
-        WebUtils.renderString(response, json);  
-    }  
+public class AuthenticationEntryPointImpl implements AuthenticationEntryPoint {
+    // 注入Spring容器里的ObjectMapper
+    private final ObjectMapper objectMapper;
+
+    public AuthenticationEntryPointImpl(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    @Override
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+        ResponseResult<Object> result = new ResponseResult<>(HttpStatus.UNAUTHORIZED.value(), "认证失败");
+        String json = objectMapper.writeValueAsString(result);
+        WebUtils.renderString(response, json);
+    }
 }
 ```
 
 ```java
 @Component
-public class AccessDeniedHandlerImpl implements AccessDeniedHandler {  
-    // 注入Spring容器里的ObjectMapper  
-    private final ObjectMapper objectMapper;  
-  
-    public AccessDeniedHandlerImpl(ObjectMapper objectMapper) {  
-        this.objectMapper = objectMapper;  
-    }  
-  
-  
-    @Override  
-    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {  
-        ResponseResult<Object> result = new ResponseResult<>(HttpStatus.FORBIDDEN.value(), "没有权限");  
-        String json = objectMapper.writeValueAsString(result);  
-        WebUtils.renderString(response, json);  
-    }  
+public class AccessDeniedHandlerImpl implements AccessDeniedHandler {
+    // 注入Spring容器里的ObjectMapper
+    private final ObjectMapper objectMapper;
+
+    public AccessDeniedHandlerImpl(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    @Override
+    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
+        ResponseResult<Object> result = new ResponseResult<>(HttpStatus.FORBIDDEN.value(), "没有权限");
+        String json = objectMapper.writeValueAsString(result);
+        WebUtils.renderString(response, json);
+    }
 }
 ```
 
@@ -1131,22 +1178,23 @@ public class AccessDeniedHandlerImpl implements AccessDeniedHandler {
 ```java
 @Autowired
 private AuthenticationEntryPoint authenticationEntryPoint;
- 
+
 @Autowired
 private AccessDeniedHandler accessDeniedHandler;
 ```
 
 然后使用 `HttpSecurity` 对象的方法进行配置：
+
 ```java
-http.exceptionHandling(exception -> exception  
-        .authenticationEntryPoint(authenticationEntryPoint)  
+http.exceptionHandling(exception -> exception
+        .authenticationEntryPoint(authenticationEntryPoint)
         .accessDeniedHandler(accessDeniedHandler));
 ```
 
-| 场景         | 异常                        | 处理器                        | 响应状态码                      |
-| ---------- | ------------------------- | -------------------------- | -------------------------- |
-| 未登录 / 认证失败 | `AuthenticationException` | `AuthenticationEntryPoint` | `401 UNAUTHORIZED`，「认证新登录」 |
-| 已登录但权限不足   | `AccessDeniedException`   | `AccessDeniedHandler`      | `403 FORBIDDEN`，「权限不足」     |
+| 场景             | 异常                        | 处理器                        | 响应状态码                            |
+| ---------------- | ------------------------- | -------------------------- | --------------------------------- |
+| 未登录 / 认证失败     | `AuthenticationException` | `AuthenticationEntryPoint` | `401 UNAUTHORIZED`，「认证失败」           |
+| 已登录但权限不足       | `AccessDeniedException`   | `AccessDeniedHandler`      | `403 FORBIDDEN`，「权限不足」             |
 
 ## 5. 跨域
 
@@ -1155,82 +1203,90 @@ http.exceptionHandling(exception -> exception
 前后端分离项目中，前端与后端一般不同源，因此必然存在跨域请求问题，需要处理后才能让前端正常跨域访问。
 
 **① 先需要配置 CorsConfigurationSource**
+
 ```java
-@Bean  
-public CorsConfigurationSource corsConfigurationSource() {  
-    CorsConfiguration configuration = new CorsConfiguration();  
-    // 使用 allowedOriginPatterns 来兼容 allowCredentials(true) 和通配符 "*" 的场景  
-    configuration.setAllowedOriginPatterns(Collections.singletonList("*"));  
-    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "DELETE", "PUT"));  
-    configuration.setAllowedHeaders(Collections.singletonList("*"));  
-    // 注意：如果前端需要携带 Cookie (withCredentials: true)，建议将 "*" 改为具体域名，否则部分浏览器可能拒绝  
-    configuration.setAllowCredentials(true);  
-    configuration.setMaxAge(3600L);  
-  
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();  
-    source.registerCorsConfiguration("/**", configuration);  
-    return source;  
+@Bean
+public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    // 使用 allowedOriginPatterns 来兼容 allowCredentials(true) 和通配符 "*" 的场景
+    configuration.setAllowedOriginPatterns(Collections.singletonList("*"));
+    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "DELETE", "PUT"));
+    configuration.setAllowedHeaders(Collections.singletonList("*"));
+    // 注意：如果前端需要携带 Cookie (withCredentials: true)，建议将 "*" 改为具体域名，否则部分浏览器可能拒绝
+    configuration.setAllowCredentials(true);
+    configuration.setMaxAge(3600L);
+
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
 }
 ```
+
 **② 开启 Spring Security 的跨域访问**
 
 在 `HttpSecurity` 中明确指定上面的 CorsConfigurationSource，下面是整合了过滤器与异常处理器后的完整过滤器链配置
 
 ```java
-@Bean  
-public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {  
-    http            .cors(cors -> cors.configurationSource(corsConfigurationSource()))  
-            .csrf(AbstractHttpConfigurer::disable)  
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  
-            .authorizeHttpRequests(authorize -> authorize  
-                    // 放行登录接口  
-                    .requestMatchers("/user/login").permitAll()  
-                    .anyRequest().authenticated());  
-  
-    // 将 JwtAuthenticationTokenFilter 添加到 UsernamePasswordAuthenticationFilter 之前  
-    http.addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);  
-    // 配置异常处理  
-    http.exceptionHandling(exception -> exception  
-            .authenticationEntryPoint(authenticationEntryPoint)  
-            .accessDeniedHandler(accessDeniedHandler));  
-  
-    return http.build();  
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(AbstractHttpConfigurer::disable)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(authorize -> authorize
+                    // 放行登录接口
+                    .requestMatchers("/user/login").permitAll()
+                    .anyRequest().authenticated());
+
+    // 将 JwtAuthenticationTokenFilter 添加到 UsernamePasswordAuthenticationFilter 之前
+    http.addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
+    // 配置异常处理
+    http.exceptionHandling(exception -> exception
+            .authenticationEntryPoint(authenticationEntryPoint)
+            .accessDeniedHandler(accessDeniedHandler));
+
+    return http.build();
 }
 ```
+
+## 6. 进阶与扩展
 
 ### 6.1 其它权限校验方法
 
 前面都使用 `@PreAuthorize` 配合 `hasAuthority` 进行校验。Spring Security 还提供了 `hasAnyAuthority`、`hasRole`、`hasAnyRole` 等方法。
 
 这里不急于罗列这些方法，而是先理解 `hasAuthority` 的原理，再学其它方法就更容易，而不是死记硬背区别；同时也可以自定义校验方法，实现自己的校验逻辑。
-![[Pasted image 20261119204909.png]]
-「源码 hasAnyAuthorityName()」
+
+![[JavaWeb/img/Spring Security/源码-hasAnyAuthorityName.png]]
+
 `hasAuthority` 实际执行到 `SecurityExpressionRoot` 的 `hasAuthority`，通过断点调试即可了解其内部校验原理：它调用 `authentication.getAuthorities()` 获取用户的权限列表，然后判断注解中传入的参数是否存在于权限列表中。
-![[Pasted image 20261119204937.png]]
-「源码 getAuthoritySet()」
-** `hasAnyAuthority` **：可传入多个权限，用户只要有其中任意一个权限即可访问对应资源。
+
+![[JavaWeb/img/Spring Security/源码-getAuthoritySet.png]]
+
+**`hasAnyAuthority`**：可传入多个权限，用户只要有其中任意一个权限即可访问对应资源。
 
 ```java
 @PreAuthorize("hasAnyAuthority('admin','test','system:dept:list')") // 对应数据库写上
-public String sayHello(@RequestParam(value = "name", defaultValue = "Tom") String name) {  
-    return "Hello, " + name + "!";  
+public String sayHello(@RequestParam(value = "name", defaultValue = "Tom") String name) {
+    return "Hello, " + name + "!";
 }
 ```
-** `hasRole` **：要求有对应角色才能访问，但它内部会把传入参数拼接上 ** `ROLE_` ** 前缀后再比较，因此这种情况下用户对应的权限也要带 `ROLE_` 前缀才可以。
+
+**`hasRole`**：要求有对应角色才能访问，但它内部会把传入参数拼接上 **`ROLE_`** 前缀后再比较，因此这种情况下用户对应的权限也要带 `ROLE_` 前缀才可以。
 
 ```java
 @PreAuthorize("hasRole('system:dept:list')") //对应数据库
-public String sayHello(@RequestParam(value = "name", defaultValue = "Tom") String name) {  
-    return "Hello, " + name + "!";  
+public String sayHello(@RequestParam(value = "name", defaultValue = "Tom") String name) {
+    return "Hello, " + name + "!";
 }
 ```
 
-** `hasAnyRole` **：有任意角色即可访问，内部同样会给参数拼接 `ROLE_` 前缀再比较，因此用户权限也要带 `ROLE_` 前缀。
+**`hasAnyRole`**：有任意角色即可访问，内部同样会给参数拼接 `ROLE_` 前缀再比较，因此用户权限也要带 `ROLE_` 前缀。
 
 ```java
-@PreAuthorize("hasRole('system:dept:list')") // 对应数据库
-public String sayHello(@RequestParam(value = "name", defaultValue = "Tom") String name) {  
-    return "Hello, " + name + "!";  
+@PreAuthorize("hasAnyRole('system:dept:list')") // 对应数据库
+public String sayHello(@RequestParam(value = "name", defaultValue = "Tom") String name) {
+    return "Hello, " + name + "!";
 }
 ```
 
@@ -1238,50 +1294,56 @@ public String sayHello(@RequestParam(value = "name", defaultValue = "Tom") Strin
 
 也可以定义自己的权限校验方法，并在 `@PreAuthorize` 注解中使用：
 
-@Component("ex")  
-public class ExpressionRoot {  
-   
-    public boolean hasAuthority(String authority){  
-        //获取当前用户的权限  
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();  
-        LoginUser loginUser = (LoginUser) authentication.getPrincipal();  
-        List<String> permissions = loginUser.getPermissions();  
-        //判断用户权限集合中是否存在authority  
-        return permissions.contains(authority);  
-    }  
+```java
+@Component("ex")
+public class ExpressionRoot {
+
+    public boolean hasAuthority(String authority){
+        //获取当前用户的权限
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        LoginUser loginUser = (LoginUser) authentication.getPrincipal();
+        List<String> permissions = loginUser.getPermissions();
+        //判断用户权限集合中是否存在authority
+        return permissions.contains(authority);
+    }
 }
+```
 
 在 SpEL 表达式中，`@ex` 相当于获取容器中名字为 `ex` 的 bean，然后调用该对象的 `hasAuthority` 方法：
 
-@RequestMapping("/hello")  
-@PreAuthorize("@ex.hasAuthority('system:dept:list')")  
-public String hello(){  
-    return "hello";  
+```java
+@RequestMapping("/hello")
+@PreAuthorize("@ex.hasAuthority('system:dept:list')")
+public String hello(){
+    return "hello";
 }
+```
 
 ### 6.3 基于配置的权限控制
 
 除了注解，也可以在配置类中用配置的方式对资源进行权限控制：
+
 ```java
-@Bean  
-public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {  
-    http            .cors(cors -> cors.configurationSource(corsConfigurationSource()))  
-            .csrf(AbstractHttpConfigurer::disable)  
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  
-            .authorizeHttpRequests(authorize -> authorize  
-                    // 放行登录接口  
-                    .requestMatchers("/user/login").permitAll()  
-                    .requestMatchers("/hello").hasAuthority("system:dept:list")  
-                    .anyRequest().authenticated());  
-  
-    // 将 JwtAuthenticationTokenFilter 添加到 UsernamePasswordAuthenticationFilter 之前  
-    http.addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);  
-    // 配置异常处理  
-    http.exceptionHandling(exception -> exception  
-            .authenticationEntryPoint(authenticationEntryPoint)  
-            .accessDeniedHandler(accessDeniedHandler));  
-  
-    return http.build();  
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(AbstractHttpConfigurer::disable)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(authorize -> authorize
+                    // 放行登录接口
+                    .requestMatchers("/user/login").permitAll()
+                    .requestMatchers("/hello").hasAuthority("system:dept:list")
+                    .anyRequest().authenticated());
+
+    // 将 JwtAuthenticationTokenFilter 添加到 UsernamePasswordAuthenticationFilter 之前
+    http.addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
+    // 配置异常处理
+    http.exceptionHandling(exception -> exception
+            .authenticationEntryPoint(authenticationEntryPoint)
+            .accessDeniedHandler(accessDeniedHandler));
+
+    return http.build();
 }
 ```
 
@@ -1297,7 +1359,7 @@ Spring Security 防止 CSRF 攻击的方式是 `csrf_token`：后端生成一个
 
 `UsernamePasswordAuthenticationFilter` 进行登录认证时，如果登录成功会调用 `AuthenticationSuccessHandler` 的方法进行认证成功后的处理，它就是登录成功处理器。也可以自定义成功处理器：
 
-```
+```java
 /**
  * 认证成功处理器
  */
@@ -1326,6 +1388,7 @@ public class SGFailureHandler implements AuthenticationFailureHandler {
     }
 }
 ```
+
 ### 6.7 登出成功处理器
 
 ```java
@@ -1342,6 +1405,7 @@ public class SGLogoutSuccessHandler implements LogoutSuccessHandler {
 ```
 
 Security 配置类
+
 ```java
 @Configuration
 public class SecurityConfig {
@@ -1368,154 +1432,176 @@ public class SecurityConfig {
 }
 ```
 
-> **说明**：6.5～6.7 属于 Spring Security 表单登录体系下的处理器示例；本项目主流程采用自定义登录接口 + JWT，认证结果由 `LoginServiceImpl` 自行返回 JSON，仅作为扩展知识了解。
-
+> [!note] 说明
+> 6.5～6.7 属于 Spring Security 表单登录体系下的处理器示例；本项目主流程采用自定义登录接口 + JWT，认证结果由 `LoginServiceImpl` 自行返回 JSON，仅作为扩展知识了解。
 
 ## 附录 A 技术栈与版本清单
-```
-<?xml version="1.0" encoding="UTF-8"?>  
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">  
-    <modelVersion>4.0.0</modelVersion>  
-    <groupId>com</groupId>  
-    <artifactId>quickStart</artifactId>  
-    <version>0.0.1-SNAPSHOT</version>  
-    <name>quickStart</name>  
-    <description>quickStart</description>  
-    <properties>        <java.version>17</java.version>  
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>  
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>  
-        <spring-boot.version>3.2.5</spring-boot.version>  
-    </properties>  
-    <dependencies>        <dependency>  
-            <groupId>org.springframework.boot</groupId>  
-            <artifactId>spring-boot-starter-security</artifactId>  
-        </dependency>  
-        <dependency>            <groupId>org.springframework.boot</groupId>  
-            <artifactId>spring-boot-starter-web</artifactId>  
-        </dependency>  
-  
-        <dependency>            <groupId>com.mysql</groupId>  
-            <artifactId>mysql-connector-j</artifactId>  
-            <scope>runtime</scope>  
-        </dependency>  
-        <dependency>            <groupId>org.projectlombok</groupId>  
-            <artifactId>lombok</artifactId>  
-            <optional>true</optional>  
-        </dependency>  
-        <dependency>            <groupId>org.springframework.boot</groupId>  
-            <artifactId>spring-boot-starter-data-redis</artifactId>  
-        </dependency>  
-        <dependency>            <groupId>org.springframework.boot</groupId>  
-            <artifactId>spring-boot-starter-test</artifactId>  
-            <scope>test</scope>  
-        </dependency>  
-        <dependency>            <groupId>org.springframework.security</groupId>  
-            <artifactId>spring-security-test</artifactId>  
-            <scope>test</scope>  
-        </dependency>  
-  
-        <dependency>            <groupId>com.baomidou</groupId>  
-            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>  
-            <version>3.5.5</version>  
-        </dependency>  
-        <dependency>            <groupId>com.alibaba</groupId>  
-            <artifactId>druid-spring-boot-3-starter</artifactId>  
-            <version>1.2.24</version>  
-        </dependency>  
-        <!-- JJWT 核心依赖 -->  
-        <dependency>  
-            <groupId>io.jsonwebtoken</groupId>  
-            <artifactId>jjwt-api</artifactId>  
-            <version>0.12.5</version>  
-        </dependency>  
-        <dependency>            <groupId>io.jsonwebtoken</groupId>  
-            <artifactId>jjwt-impl</artifactId>  
-            <version>0.12.5</version>  
-            <scope>runtime</scope>  
-        </dependency>  
-        <dependency>            <groupId>io.jsonwebtoken</groupId>  
-            <artifactId>jjwt-jackson</artifactId>  
-            <version>0.12.5</version>  
-            <scope>runtime</scope>  
-        </dependency>  
-    </dependencies>  
-    <dependencyManagement>        <dependencies>  
-            <dependency>  
-                <groupId>org.springframework.boot</groupId>  
-                <artifactId>spring-boot-dependencies</artifactId>  
-                <version>${spring-boot.version}</version>  
-                <type>pom</type>  
-                <scope>import</scope>  
-            </dependency>  
-        </dependencies>  
-    </dependencyManagement>  
-  
-    <build>        <plugins>  
-            <plugin>  
-                <groupId>org.apache.maven.plugins</groupId>  
-                <artifactId>maven-compiler-plugin</artifactId>  
-                <version>3.8.1</version>  
-                <configuration>                    <source>17</source>  
-                    <target>17</target>  
-                    <encoding>UTF-8</encoding>  
-                </configuration>  
-            </plugin>  
-            <plugin>                <groupId>org.springframework.boot</groupId>  
-                <artifactId>spring-boot-maven-plugin</artifactId>  
-                <version>${spring-boot.version}</version>  
-                <configuration>                    <mainClass>com.quickstart.QuickStartApplication</mainClass>  
-                    <skip>true</skip>  
-                </configuration>  
-                <executions>                    <execution>  
-                        <id>repackage</id>  
-                        <goals>                            <goal>repackage</goal>  
-                        </goals>  
-                    </execution>  
-                </executions>  
-            </plugin>  
-        </plugins>  
-    </build>  
-  
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com</groupId>
+    <artifactId>quickStart</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>quickStart</name>
+    <description>quickStart</description>
+    <properties>
+        <java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <spring-boot.version>3.2.5</spring-boot.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+            <version>3.5.5</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid-spring-boot-3-starter</artifactId>
+            <version>1.2.24</version>
+        </dependency>
+        <!-- JJWT 核心依赖 -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.13.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.13.0</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.13.0</version>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+                <configuration>
+                    <mainClass>com.quickstart.QuickStartApplication</mainClass>
+                    <skip>true</skip>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>repackage</id>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
 ```
-这个是 pom 文件 请基于此技术栈与版本清单
 
-表格 组件 | 版本
+组件与版本一览：
 
+| 组件                                               | 版本                     |
+| ------------------------------------------------ | ---------------------- |
+| JDK                                              | 17                     |
+| Spring Boot                                      | 3.2.5                  |
+| Spring Security（spring-boot-starter-security）   | 由 Spring Boot 3.2.5 管理 |
+| Spring Web（spring-boot-starter-web）              | 由 Spring Boot 3.2.5 管理 |
+| MyBatis-Plus（mybatis-plus-spring-boot3-starter） | 3.5.5                  |
+| MySQL Connector/J（mysql-connector-j）             | 由 Spring Boot 3.2.5 管理 |
+| Druid（druid-spring-boot-3-starter）               | 1.2.24                 |
+| Redis（spring-boot-starter-data-redis）             | 由 Spring Boot 3.2.5 管理 |
+| JJWT（jjwt-api / jjwt-impl / jjwt-jackson）        | 0.13.0                 |
+| Lombok                                           | 由 Spring Boot 3.2.5 管理 |
 
 ## 附录 B 核心类 / 接口关系速查
 
-|分类|名称|在笔记中的作用|
-|---|---|---|
-|过滤器|`UsernamePasswordAuthenticationFilter`|表单登录认证入口|
-|过滤器|`ExceptionTranslationFilter`|捕获认证/授权异常并分派|
-|过滤器|`FilterSecurityInterceptor`|权限校验|
-|过滤器|`JwtAuthenticationTokenFilter`|自定义：解析 token、重建 `SecurityContext`|
-|核心接口|`Authentication` / `UsernamePasswordAuthenticationToken`|封装当前访问用户|
-|核心接口|`AuthenticationManager` / `ProviderManager`|执行认证|
-|核心接口|`UserDetailsService` / `UserDetailsServiceImpl`|按用户名查库|
-|核心接口|`UserDetails` / `LoginUser`|封装用户信息与权限集合|
-|核心接口|`PasswordEncoder` / `BCryptPasswordEncoder`|密码加密校验|
-|上下文|`SecurityContextHolder`|存放当前请求的 `Authentication`|
-|异常处理|`AuthenticationEntryPoint` / `AccessDeniedHandler`|401 / 403 统一 JSON|
-|鉴权|`@EnableGlobalMethodSecurity`、`@PreAuthorize`|方法级权限控制|
-|工具|`JwtUtil`、`RedisCache`、`WebUtils`、`FastJsonRedisSerializer`|JWT、缓存、响应渲染、序列化|
-
-这个是旧版本的 里面一些技术栈可能过久 或者有新的替代 请基于上面正文来修改 以便我可以更快的复习
-
+| 分类    | 名称                                                       | 在笔记中的作用                     |
+| ------- | -------------------------------------------------------- | ---------------------------- |
+| 过滤器   | `UsernamePasswordAuthenticationFilter`                   | 表单登录认证入口                   |
+| 过滤器   | `ExceptionTranslationFilter`                             | 捕获认证/授权异常并分派               |
+| 过滤器   | `FilterSecurityInterceptor`                              | 权限校验                         |
+| 过滤器   | `JwtAuthenticationTokenFilter`                           | 自定义：解析 token、重建 `SecurityContext` |
+| 核心接口  | `Authentication` / `UsernamePasswordAuthenticationToken` | 封装当前访问用户                   |
+| 核心接口  | `AuthenticationManager` / `ProviderManager`              | 执行认证                         |
+| 核心接口  | `UserDetailsService` / `UserDetailServiceImpl`           | 按用户名查库                       |
+| 核心接口  | `UserDetails` / `LoginUser`                              | 封装用户信息与权限集合                |
+| 核心接口  | `PasswordEncoder` / `BCryptPasswordEncoder`              | 密码加密校验                       |
+| 上下文   | `SecurityContextHolder`                                  | 存放当前请求的 `Authentication`   |
+| 异常处理  | `AuthenticationEntryPoint` / `AccessDeniedHandler`       | 401 / 403 统一 JSON            |
+| 鉴权    | `@EnableMethodSecurity` / `@PreAuthorize`                | 方法级权限控制                     |
+| 工具    | `JwtUtil`、`WebUtils`、`RedisTemplate` / `GenericJackson2JsonRedisSerializer` | JWT、响应渲染、Redis 序列化 |
 
 ## 附录 C `SecurityConfig` 演进对照
 
 原文中 `SecurityConfig` 随课程推进分多次给出，整理如下，便于对照阅读：
 
-|阶段|新增内容|对应小节|
-|---|---|---|
-|①|注入 `BCryptPasswordEncoder`|[2.5.2](#252-%E5%AF%86%E7%A0%81%E5%8A%A0%E5%AF%86%E5%AD%98%E5%82%A8)|
-|②|关闭 CSRF、STATELESS、放行 `/user/login`、暴露 `AuthenticationManager`|[2.5.3](#253-%E7%99%BB%E5%BD%95%E6%8E%A5%E5%8F%A3)|
-|③|`addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)`|[2.5.4](#254-jwt-%E8%AE%A4%E8%AF%81%E8%BF%87%E6%BB%A4%E5%99%A8)|
-|④|配置 `authenticationEntryPoint` / `accessDeniedHandler`|[第 4 章](#4-%E8%87%AA%E5%AE%9A%E4%B9%89%E5%A4%B1%E8%B4%A5%E5%A4%84%E7%90%86)|
-|⑤|`http.cors()` 开启跨域|[第 5 章](#5-%E8%B7%A8%E5%9F%9F)|
-|⑥|`.antMatchers("/testCors").hasAuthority(...)` 基于配置的权限控制示例|[6.3](#63-%E5%9F%BA%E4%BA%8E%E9%85%8D%E7%BD%AE%E7%9A%84%E6%9D%83%E9%99%90%E6%8E%A7%E5%88%B6)|
-
-附录 C 也是一样 为旧版本 可能有错误 该项目我根据自己的理解（可参考正文） 来对其修改 请帮我修改附录
+| 阶段 | 新增内容                                                                        | 对应小节                          |
+| ---- | --------------------------------------------------------------------------- | ----------------------------- |
+| ①    | 注入 `BCryptPasswordEncoder`                                                 | [[#2.5.2 密码加密存储]]          |
+| ②    | 关闭 CSRF、STATELESS、放行 `/user/login`、暴露 `AuthenticationManager`          | [[#2.5.3 登录接口]]             |
+| ③    | `addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)` | [[#2.5.4 JWT 认证过滤器]] |
+| ④    | 配置 `authenticationEntryPoint` / `accessDeniedHandler`                       | [[#4. 自定义失败处理]]           |
+| ⑤    | `http.cors()` 开启跨域                                                        | [[#5. 跨域]]                  |
+| ⑥    | `.requestMatchers("/hello").hasAuthority(...)` 基于配置的权限控制                  | [[#6.3 基于配置的权限控制]]       |
