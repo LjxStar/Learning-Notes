@@ -994,65 +994,32 @@ WHERE
 **菜单实体类 `Menu` **
 
 ```java
-/**
- * 菜单表(Menu)实体类
- */
-@TableName(value="sys_menu")
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class Menu implements Serializable {
-    private static final long serialVersionUID = -54979041104113736L;
-    
-        @TableId
-    private Long id;
-    /**
-    * 菜单名
-    */
-    private String menuName;
-    /**
-    * 路由地址
-    */
-    private String path;
-    /**
-    * 组件路径
-    */
-    private String component;
-    /**
-    * 菜单状态（0显示 1隐藏）
-    */
-    private String visible;
-    /**
-    * 菜单状态（0正常 1停用）
-    */
-    private String status;
-    /**
-    * 权限标识
-    */
-    private String perms;
-    /**
-    * 菜单图标
-    */
-    private String icon;
-    
-    private Long createBy;
-    
-    private Date createTime;
-    
-    private Long updateBy;
-    
-    private Date updateTime;
-    /**
-    * 是否删除（0未删除 1已删除）
-    */
-    private Integer delFlag;
-    /**
-    * 备注
-    */
-    private String remark;
+/**  
+ * 菜单表实体类，对应数据库 sys_menu，RBAC权限模型里的菜单&权限点  
+ */  
+@TableName("sys_menu")                // // 绑定数据库表名 sys_menu@Data                                 // // lombok：自动生成get、set、toString、equals、hashCode  
+@AllArgsConstructor                   // // lombok：全参构造  
+@NoArgsConstructor                    // // lombok：无参构造  
+@JsonInclude(JsonInclude.Include.NON_NULL) // // jackson序列化时，值为null的字段不返回给前端  
+public class Menu implements Serializable { // // Serializable：支持序列化，可放入redis缓存、跨服务传输  
+  
+    @TableId                           // // 标记该字段是主键  
+    private Long id;                   // // 菜单主键id  
+    private String menuName;           // // 菜单名称  
+    private String path;               // // vue路由地址  
+    private String component;          // // 前端vue组件路径  
+    private String visible;            // // 是否显示菜单：0显示 1隐藏  
+    private String status;             // // 菜单启用状态：0正常 1停用  
+    private String perms;              // // 权限标识，用于@PreAuthorize鉴权，例：system:user:list  
+    private String icon;               // // 菜单图标  
+  
+    private Long createBy;             // // 创建人用户id  
+    private Date createTime;           // // 创建时间  
+    private Long updateBy;             // // 更新人用户id  
+    private Date updateTime;           // // 更新时间  
+    private Integer delFlag;           // // 逻辑删除标记：0未删除 1已删除  
+    private String remark;             // // 备注信息  
 }
-
 ```
 ##### 3.3.3.3 代码实现
 
