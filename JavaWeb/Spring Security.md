@@ -1043,3 +1043,28 @@ public interface MenuMapper extends BaseMapper<Menu> {
 ```
 最后在 `UserDetailsServiceImpl` 中调用该 Mapper 方法，把查询到的权限信息封装进 `LoginUser`：
 
+```java
+@Service  
+public class UserDetailServiceImpl implements UserDetailsService {  
+    private final UserMapper userMapper;  
+    private final MenuMapper menuMapper;  
+  
+    public UserDetailServiceImpl(UserMapper userMapper, MenuMapper menuMapper) {  
+        this.userMapper = userMapper;  
+        this.menuMapper = menuMapper;  
+    }  
+  
+    @Override  
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {  
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getUsername, username));  
+        if (user == null) {  
+            throw new UsernameNotFoundException("用户不存在");  
+        }  
+        List<String> permissions = menuMapper.selectPermsById(user.getId());  
+        // List<String> permissions = new ArrayList<>(List.of("test"));  
+        return new LoginUser(user, permissions);  
+    }  
+}
+```
+
+**授权闭环**：`menuMapper.selectPermsByUserId()` → `LoginUser.permissions` → `getAuthorities()` → `Authentication` → `FilterSecurityInterceptor` / `@PreAuthorize("hasAuthority('...')")` 完成校验。
