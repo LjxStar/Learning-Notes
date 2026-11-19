@@ -466,15 +466,26 @@ public interface UserMapper extends BaseMapper<User> {
 
 在类名上加 `@TableName(value = "sys_user")`，在 `id` 字段上加 `@TableId(type = IdType.AUTO)`：
 
+```java
+@Data
+@TableName(value = "sys_user")
+public class User implements Serializable {
+    @TableId(type = IdType.AUTO)
+    private Long id;
+    private String userName;
+    // ……其余字段保持不变
+}
+```
+
 **准备工作 ⑥：配置 Mapper 扫描**
 
-在启动类配置主键扫描
+在启动类配置 Mapper 接口扫描：
 
 ```java
 @MapperScan("com.quickstart.mapper")
 ```
 
-**核心代码 ①：实现 `UserDetailService`**
+**核心代码 ①：实现 `UserDetailsService`**
 
 创建一个类实现 `UserDetailsService` 接口并重写其中的方法，根据用户名从数据库中查询用户信息：
 
@@ -891,7 +902,7 @@ public class LoginUser implements UserDetails {
 }
 ```
 
-其中 `@JsonIgnore`；`getAuthorities()` 采用懒加载方式把字符串权限转换为 `SimpleGrantedAuthority`。
+其中 `@JsonIgnore` 用于让这些 getter 不参与 JSON 序列化：`LoginUser` 要以 JSON 形式存入 Redis，若把 `getAuthorities()`（返回接口类型 `GrantedAuthority`）等派生 getter 一并序列化，反序列化时 Jackson 无法确定具体实现类型而报错；忽略后只保留 `user`、`permissions` 等字段，同时也避免把密码写进缓存，待从缓存取出时再重建权限信息。`getAuthorities()` 采用懒加载方式把字符串权限转换为 `SimpleGrantedAuthority`。
 
 `LoginUser` 修改完后，就可以在 `UserDetailServiceImpl` 中把权限信息封装进 `LoginUser`。先写死权限测试，后面再从数据库查询：
 
@@ -1224,7 +1235,7 @@ public CorsConfigurationSource corsConfigurationSource() {
 
 **② 开启 Spring Security 的跨域访问**
 
-在 `HttpSecurity` 中明确指定上面的 CorsConfigurationSource，下面是整合了过滤器与异常处理器后的完整过滤器链配置
+在 `HttpSecurity` 中明确指定上面的 CorsConfigurationSource，下面是整合了过滤器与异常处理器后的完整过滤器链配置：
 
 ```java
 @Bean
@@ -1577,21 +1588,21 @@ public class SecurityConfig {
 
 ## 附录 B 核心类 / 接口关系速查
 
-| 分类    | 名称                                                       | 在笔记中的作用                     |
-| ------- | -------------------------------------------------------- | ---------------------------- |
-| 过滤器   | `UsernamePasswordAuthenticationFilter`                   | 表单登录认证入口                   |
-| 过滤器   | `ExceptionTranslationFilter`                             | 捕获认证/授权异常并分派               |
-| 过滤器   | `FilterSecurityInterceptor`                              | 权限校验                         |
-| 过滤器   | `JwtAuthenticationTokenFilter`                           | 自定义：解析 token、重建 `SecurityContext` |
-| 核心接口  | `Authentication` / `UsernamePasswordAuthenticationToken` | 封装当前访问用户                   |
-| 核心接口  | `AuthenticationManager` / `ProviderManager`              | 执行认证                         |
-| 核心接口  | `UserDetailsService` / `UserDetailServiceImpl`           | 按用户名查库                       |
-| 核心接口  | `UserDetails` / `LoginUser`                              | 封装用户信息与权限集合                |
-| 核心接口  | `PasswordEncoder` / `BCryptPasswordEncoder`              | 密码加密校验                       |
-| 上下文   | `SecurityContextHolder`                                  | 存放当前请求的 `Authentication`   |
-| 异常处理  | `AuthenticationEntryPoint` / `AccessDeniedHandler`       | 401 / 403 统一 JSON            |
-| 鉴权    | `@EnableMethodSecurity` / `@PreAuthorize`                | 方法级权限控制                     |
-| 工具    | `JwtUtil`、`WebUtils`、`RedisTemplate` / `GenericJackson2JsonRedisSerializer` | JWT、响应渲染、Redis 序列化 |
+| 分类   | 名称                                                                          | 在笔记中的作用                           |
+| ---- | --------------------------------------------------------------------------- | --------------------------------- |
+| 过滤器  | `UsernamePasswordAuthenticationFilter`                                      | 表单登录认证入口                          |
+| 过滤器  | `ExceptionTranslationFilter`                                                | 捕获认证/授权异常并分派                      |
+| 过滤器  | `FilterSecurityInterceptor`                                                 | 权限校验                              |
+| 过滤器  | `JwtAuthenticationTokenFilter`                                              | 自定义：解析 token、重建 `SecurityContext` |
+| 核心接口 | `Authentication` / `UsernamePasswordAuthenticationToken`                    | 封装当前访问用户                          |
+| 核心接口 | `AuthenticationManager` / `ProviderManager`                                 | 执行认证                              |
+| 核心接口 | `UserDetailsService` / `UserDetailServiceImpl`                              | 按用户名查库                            |
+| 核心接口 | `UserDetails` / `LoginUser`                                                 | 封装用户信息与权限集合                       |
+| 核心接口 | `PasswordEncoder` / `BCryptPasswordEncoder`                                 | 密码加密校验                            |
+| 上下文  | `SecurityContextHolder`                                                     | 存放当前请求的 `Authentication`          |
+| 异常处理 | `AuthenticationEntryPoint` / `AccessDeniedHandler`                          | 401 / 403 统一 JSON                 |
+| 鉴权   | `@EnableMethodSecurity` / `@PreAuthorize`                                   | 方法级权限控制                           |
+| 工具   | `JwtUtil`、`WebUtils`、`RedisTemplate` / `GenericJackson2JsonRedisSerializer` | JWT、响应渲染、Redis 序列化                |
 
 ## 附录 C `SecurityConfig` 演进对照
 
