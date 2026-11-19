@@ -1341,6 +1341,31 @@ public class SGLogoutSuccessHandler implements LogoutSuccessHandler {
 }
 ```
 
+Security 配置类
+```java
+@Configuration
+public class SecurityConfig {
 
-最后需要将
+    private final AuthenticationSuccessHandler successHandler;
+    private final AuthenticationFailureHandler failureHandler;
+    private final LogoutSuccessHandler logoutSuccessHandler;
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .formLogin(form -> form
+                        .successHandler(successHandler)
+                        .failureHandler(failureHandler)
+                )
+                .logout(logout -> logout
+                        .logoutSuccessHandler(logoutSuccessHandler)
+                )
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().authenticated()
+                );
+        return http.build();
+    }
+}
+```
+
 > **说明**：6.5～6.7 属于 Spring Security 表单登录体系下的处理器示例；本项目主流程采用自定义登录接口 + JWT，认证结果由 `LoginServiceImpl` 自行返回 JSON，仅作为扩展知识了解。
