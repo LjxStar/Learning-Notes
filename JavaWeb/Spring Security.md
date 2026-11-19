@@ -1068,3 +1068,19 @@ public class UserDetailServiceImpl implements UserDetailsService {
 ```
 
 **授权闭环**：`menuMapper.selectPermsByUserId()` → `LoginUser.permissions` → `getAuthorities()` → `Authentication` → `FilterSecurityInterceptor` / `@PreAuthorize("hasAuthority('...')")` 完成校验。
+
+
+## 4. 自定义失败处理
+
+希望在认证失败或授权失败时，也能和业务接口一样返回相同结构的 JSON，便于前端统一处理响应。要实现这一点，需要理解 Spring Security 的异常处理机制：
+
+- 认证或授权过程中出现的异常，会被 `ExceptionTranslationFilter` 捕获，并由它判断是认证失败还是授权失败；
+    
+- 认证过程中的异常会被封装成 `AuthenticationException`，然后调用 ** `AuthenticationEntryPoint` ** 对象的方法进行异常处理；
+    
+- 授权过程中的异常会被封装成 `AccessDeniedException`，然后调用 ** `AccessDeniedHandler` ** 对象的方法进行异常处理。
+    
+
+因此只需自定义 `AuthenticationEntryPoint` 与 `AccessDeniedHandler`，再配置给 Spring Security 即可。
+
+**① 自定义实现类**
