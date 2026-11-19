@@ -1342,5 +1342,5 @@ public class SGLogoutSuccessHandler implements LogoutSuccessHandler {
 ```
 
 
-zu
+最后需要将
 > **说明**：6.5～6.7 属于 Spring Security 表单登录体系下的处理器示例；本项目主流程采用自定义登录接口 + JWT，认证结果由 `LoginServiceImpl` 自行返回 JSON，仅作为扩展知识了解。
