@@ -1147,3 +1147,12 @@ http.exceptionHandling(exception -> exception
 | ---------- | ------------------------- | -------------------------- | -------------------------- |
 | 未登录 / 认证失败 | `AuthenticationException` | `AuthenticationEntryPoint` | `401 UNAUTHORIZED`，「认证新登录」 |
 | 已登录但权限不足   | `AccessDeniedException`   | `AccessDeniedHandler`      | `403 FORBIDDEN`，「权限不足」     |
+
+## 5. 跨域
+
+浏览器出于安全考虑，使用 `XMLHttpRequest` 对象发起 HTTP 请求时必须遵守同源策略，否则就是跨域请求，默认被禁止。同源策略要求协议、域名、端口号完全一致。
+
+前后端分离项目中，前端与后端一般不同源，因此必然存在跨域请求问题，需要处理后才能让前端正常跨域访问。
+
+**① 先对 Spring Boot 配置，允许跨域请求**
+
