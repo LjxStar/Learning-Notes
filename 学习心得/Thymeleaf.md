@@ -1,3 +1,16 @@
+Thymeleaf 默认会开启页面缓存，提高页面并发能力。但会导致我们修改页面不会立即被展现，因此我们关闭缓存。
+# 关闭 Thymeleaf 的缓存
+spring:
+  thymeleaf:
+    cache:
+      false
+
+Thymeleaf 崇尚自然模板，意思就是模板是纯正的 html 代码，脱离模板引擎，在纯静态环境也可以直接运行。现在如果我们直接在 html 中编写 ${}这样的表达式，显然在静态环境下就会出错，这不符合 Thymeleaf 的理念。
+
+Thymeleaf 中所有的表达式都需要写在指令中，指令是 HTML 5 中的自定义属性，在 Thymeleaf 中所有指令都是以 th:开头。因为表达式${user.name}是写在自定义属性中，因此在静态环境下，表达式的内容会被当做是普通字符串，浏览器会自动忽略这些指令，这样就不会报错了！
+————————————————
+
+
 
 
 @Controller  
@@ -209,3 +222,8 @@ com 1
 
 <div th:fragment="com3(message)">
 <p th:text="${message}"></p>
+
+局部替换
+<div th:insert="~{component::com4(~{::#message})}"><p id="message">替换的模块</p></div>
+
+<div th:fragment="com4(message)"><div th:replace="${message}"></div></div>
