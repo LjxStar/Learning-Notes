@@ -203,3 +203,9 @@ th：insert 也可以，但是与 th：replace 不同
 <!--/*@thymesVar id="user" type="cn.lookroot.loop.thymeleafdemo.vo.Uservo"*/-->
 <h2 th:text="${user.username"></h2>
 com 1
+
+传递参数
+<div th:insert="~{component::com3（'传递的数据'）}"></div> I
+
+<div th:fragment="com3(message)">
+<p th:text="${message}"></p>
