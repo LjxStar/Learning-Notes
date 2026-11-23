@@ -1,13 +1,5 @@
 Thymeleaf 是 Java 生态中常用的模板引擎，用于在服务端把数据填充到 HTML 页面，也是 Spring Boot 官方推荐的视图技术之一。
 
-> [!abstract] 阅读路线
-> **一、快速入门**：认识 Thymeleaf、准备环境、跑通第一个页面 →
-> **二、基本语法**：`th:*` 属性与表达式 →
-> **三、流程控制**：判断、循环、分支 →
-> **四、页面常用属性**：静态资源、内联、样式 →
-> **五、片段复用**：抽取公共页面 →
-> **六、内置对象**：日期、字符串、集合等工具。
-
 ## 一、快速入门
 
 ### 1.1 认识 Thymeleaf
@@ -46,7 +38,6 @@ spring:
     cache: false
 ```
 
-> [!tip] 提示
 > 生产环境可以保持缓存开启，以获得更好的性能。
 
 ### 1.3 第一个页面
@@ -84,7 +75,7 @@ public class IndexController {
 </html>
 ```
 
-注意标签里同时写了 `th:content` 和 `content`：**静态打开时显示 `content` 的默认值，服务端渲染后被 `th:content` 覆盖**，这正是自然模板的实现方式。同时要加上命名空间 `xmlns:th="http://www.thymeleaf.org"`。
+注意标签里同时写了 `th:content` 和 `content`：**静态打开时显示 `content` 的默认值，服务端渲染后被 `th:content` 覆盖**，这正是自然模板的实现方式。
 
 ### 1.4 用到的 Spring MVC 知识
 
@@ -100,17 +91,17 @@ public class IndexController {
 
 ### 2.1 常用 `th` 属性速览
 
-| 属性 | 作用 |
-| --- | --- |
-| `th:text` / `th:utext` | 设置标签内文本（转义 / 不转义） |
-| `th:xxx` | 替换同名 HTML 属性，如 `th:content`、`th:href`、`th:src` |
-| `th:object` 与 `*{...}` | 选定对象并读取其属性 |
-| `th:if` / `th:unless` | 条件判断 |
-| `th:each` | 遍历集合 |
-| `th:switch` / `th:case` | 多分支选择 |
-| `th:inline` | 在 JS / CSS 中使用表达式 |
-| `th:classappend` | 追加 CSS 类 |
-| `th:fragment` / `th:insert` / `th:replace` | 片段复用 |
+| 属性                                         | 作用                                             |
+| ------------------------------------------ | ---------------------------------------------- |
+| `th:text` / `th:utext`                     | 设置标签内文本（转义 / 不转义）                              |
+| `th:xxx`                                   | 替换同名 HTML 属性，如 `th:content`、`th:href`、`th:src` |
+| `th:object` 与 `*{...}`                     | 选定对象并读取其属性                                     |
+| `th:if` / `th:unless`                      | 条件判断                                           |
+| `th:each`                                  | 遍历集合                                           |
+| `th:switch` / `th:case`                    | 多分支选择                                          |
+| `th:inline`                                | 在 JS / CSS 中使用表达式                              |
+| `th:classappend`                           | 追加 CSS 类                                       |
+| `th:fragment` / `th:insert` / `th:replace` | 片段复用                                           |
 
 所有表达式都写在 `th:*` 属性中，这是 Thymeleaf 自然模板的基础。
 
