@@ -42,3 +42,62 @@ Spring 提供了三种主要的模型表示方式：**Model**、**ModelMap** 和
 
 4. 拼接字符串
 `th:text="'prefix' + ${title}"`  或者   `th:text="|prefix${title}|"`
+
+对于一个对象
+```
+@Data  
+@Builder  
+public class User {  
+    private String name;  
+    private int age;  
+    private boolean isStudent;  
+    private List<String> hobbies;  
+    private LocalDate birthday;  
+}
+```
+
+
+和一个与之关联的 controller
+```java
+@Controller  
+public class ShowController {  
+  
+    @GetMapping("/show")  
+    public String show(Model model) {  
+        User user = User.builder()  
+                .name("张三")  
+                .age(18)  
+                .isStudent(true)  
+                .hobbies(List.of("reading", "traveling"))  
+                .birthday(LocalDate.of(2005, 1, 5))  
+                .build();  
+        model.addAttribute("user", user);  
+        return "profile";  
+    }  
+}
+```
+在 html 引用
+
+
+```html
+<div>  
+<h2 th:text="${user.name}"></h2>  
+    <p th:text="${user.age}"></p> </p>    <p th:text="${user.hobbies}">   <p th:text="${user.birthday}"></p>
+    </div>
+```
+可简化为如下：
+
+```
+<div th:object="${user}">  
+    <h2 th:text="*{name}"></h2>  
+    <p th:text="*{age}"></p>  
+    <p th:text="*{hobbies}"></p>  
+    <p th:text="*{birthday}"></p>  
+</div>
+```
+
+th：if
+
+```
+
+```
