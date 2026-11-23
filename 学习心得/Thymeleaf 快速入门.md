@@ -121,6 +121,7 @@ th：each 循环
     <p th:each="hobby : *{hobbies}" th:text="${hobby}"></p>  
 </div>
 ```
+关于 th:each="hobby，stat : *{hobbies}" 里 stat 常见用法
 
 th：switch
 ```html
@@ -162,3 +163,7 @@ th:inline
 后面的 `{}` 是兜底：渲染失败时，`user` 默认为空对象。
 
 或者渲染动态 css
+
+
+th：classapend
+解释并示例
