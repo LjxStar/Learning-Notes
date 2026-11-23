@@ -13,6 +13,8 @@ Thymeleaf 中所有的表达式都需要写在指令中，指令是 HTML 5 中�
 
 
 
+---
+
 @Controller  
 public class IndexController {  
   
@@ -55,6 +57,13 @@ Spring 提供了三种主要的模型表示方式：**Model**、**ModelMap** 和
 3. th:text 设置标签内文本
 `th:xxx`：直接替换 html 属性，如 `th:content`、`th:href`、`th:src`
 
+`th:text` 指令出于安全考虑，会把表达式读取到的值进行处理，防止 html 的注入。例如，`<p>你好</p>` 将会被格式化输出为 `$lt;p$gt;你好$lt;/p$lt;`。**如果想要不进行格式化输出，而是要输出原始内容，则使用 `th:utext` 来代替.**
+
+**ognl 表达式的语法糖：**
+
+刚才获取变量值，我们使用的是经典的 `对象.属性名` 方式。但有些情况下，我们的属性名可能本身也是变量，怎么办？ognl 提供了类似 js 的语法方式：
+
+例如：`${user.name}` 可以写作 `${user['name']}`
 4. 拼接字符串
 `th:text="'prefix' + ${title}"`  或者   `th:text="|prefix${title}|"`
 
