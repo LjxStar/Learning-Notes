@@ -39,3 +39,5 @@ Spring 提供了三种主要的模型表示方式：**Model**、**ModelMap** 和
 
 3.th:text 设置标签内文本
 `th:xxx`：直接替换 html 属性，如 `th:content`、`th:href`、`th:src`
+
+4.拼接字符串
