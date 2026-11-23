@@ -1,4 +1,4 @@
-# 一、基础语法
+
 
 @Controller  
 public class IndexController {  
@@ -170,4 +170,19 @@ th:inline
 th：classapend
 解释并示例
 
-# 二、组件
+
+在 templates 新建一个 html
+component.html
+```
+<tml lang="ch" xmlns:th="http://www.thymeleaf.org"><div th:fragment="com1"> com1
+</div>
+<div th:fragment="com2"> com2
+</div>
+</html
+```
+
+th:fragmen
+在需要使用的时候 使用 th：replace
+```
+<div th:replace="~{component::com1}"></div>
+```
