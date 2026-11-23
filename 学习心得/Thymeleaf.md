@@ -80,6 +80,12 @@ public class User {
     private LocalDate birthday;  
 }
 ```
+ognl 表达式本身就支持方法调用，例如：
+```
+<h2 th:object="${user}">
+    <p>FirstName: <span th:text="*{name.split(' ')[0]}">first</span>.</p>
+    <p>LastName: <span th:text="*{name.split(' ')[1]}">last</span>.</p>
+```
 
 
 和一个与之关联的 controller
@@ -236,3 +242,31 @@ com 1
 <div th:insert="~{component::com4(~{::#message})}"><p id="message">替换的模块</p></div>
 
 <div th:fragment="com4(message)"><div th:replace="${message}"></div></div>
+
+Thymeleaf 内置对象
+环境相关对象：
+
+#ctx	获取 Thymeleaf 自己的 Context 对象
+#requset	如果是 web 程序，可以获取 HttpServletRequest 对象
+#response	如果是 web 程序，可以获取 HttpServletReponse 对象
+#session	如果是 web 程序，可以获取 HttpSession 对象
+#servletContext	如果是 web 程序，可以获取 HttpServletContext 对象
+
+Thymeleaf 提供的全局对象：
+
+对象	作用
+#dates	处理 java.util.date 的工具对象
+#calendars	处理 java.util.calendar 的工具对象
+#numbers	用来对数字格式化的方法
+#strings	用来处理字符串的方法
+#bools	用来判断布尔值的方法
+#arrays	用来护理数组的方法
+#lists	用来处理 List 集合的方法
+#sets	用来处理 set 集合的方法
+#maps	用来处理 map 集合的方法
+
+例如
+@GetMapping("date") public String date(Model model){ model.addAttribute("today", new Date()); return "date"; }
+
+在页面中
+<p> 今天是: <span th:text="${#dates.format(today,'yyyy-MM-dd')}">2020-03-30</span> </p>
