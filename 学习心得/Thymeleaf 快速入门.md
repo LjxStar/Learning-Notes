@@ -1,18 +1,27 @@
 @Controller  
 public class IndexController {  
   
+```java
+@Controller  
+public class IndexController {  
+  
     @GetMapping("/")  
     public String index(Model model) {  
         model.addAttribute("title", "自定义的title");  
+        model.addAttribute("description", "自定义的description");  
+        model.addAttribute("keywords", "自定义的keywords");  
         return "index";  
     }  
 }
 ```
+```html
 <!DOCTYPE html>  
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">  
 <head>  
     <meta charset="UTF-8">  
     <title th:text="${title}">默认的title</title>  
+    <meta name="description" th:content="${description}" content="默认的description">  
+    <meta name="keywords" th:content="${keywords}" content="默认的keywords">  
 </head>  
 <body>  
   
