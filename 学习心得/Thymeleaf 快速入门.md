@@ -113,8 +113,9 @@ th：each 循环
 <div th:object="${user}">  
     <h2 th:text="*{name}"></h2>  
     <p th:text="*{age}"></p>  
+    <p th:text="*{isStudent}"></p>  
     <p th:text="*{birthday}"></p>  
     <p th:if="*{isStudent}">是学生</p>  
-    
+    <p th:each="hobby : *{hobbies}" th:text="${hobby}"></p>  
 </div>
 ```
