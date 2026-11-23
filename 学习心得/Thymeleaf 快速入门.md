@@ -82,7 +82,8 @@ public class ShowController {
 ```html
 <div>  
 <h2 th:text="${user.name}"></h2>  
-    <p th:text="${user.age}"></p> </p>    <p th:text="${user.hobbies}">   <p th:text="${user.birthday}"></p>
+    <p th:text="${user.age}"></p> </p>     
+    <p th:text="${user.birthday}"></p>
     </div>
 ```
 可简化为如下：
@@ -91,7 +92,6 @@ public class ShowController {
 <div th:object="${user}">  
     <h2 th:text="*{name}"></h2>  
     <p th:text="*{age}"></p>  
-    <p th:text="*{hobbies}"></p>  
     <p th:text="*{birthday}"></p>  
 </div>
 ```
@@ -99,5 +99,22 @@ public class ShowController {
 th：if
 
 ```
+<div th:object="${user}">  
+    <h2 th:text="*{name}"></h2>  
+    <p th:text="*{age}"></p>  
+    <p th:text="*{birthday}"></p>  
+    <p th:if="*{isStudent}">是学生</p>  
+</div>
+```
 
+
+th：each 循环
+```
+<div th:object="${user}">  
+    <h2 th:text="*{name}"></h2>  
+    <p th:text="*{age}"></p>  
+    <p th:text="*{birthday}"></p>  
+    <p th:if="*{isStudent}">是学生</p>  
+    
+</div>
 ```
