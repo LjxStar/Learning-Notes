@@ -176,7 +176,7 @@ component.html
 ```
 <tml lang="ch" xmlns:th="http://www.thymeleaf.org"><div th:fragment="com1"> com1
 </div>
-<div th:fragment="com2"> com2
+<div id="com2"> com2
 </div>
 </html
 ```
@@ -189,3 +189,11 @@ th:fragmen
 
 th：insert 也可以，但是与 th：replace 不同
 他不会覆盖外层的<div>
+
+
+通过 id 的方法引入
+
+```java
+<!--id com-->
+<div th:insert="~{component::com1}"></div>
+```
