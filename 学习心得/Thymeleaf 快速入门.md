@@ -136,3 +136,13 @@ th：switch
     </p>  
 </div>
 ```
+
+还有 th：src
+如果你在 resources /static 下新建了 app.css
+你可以通过如下方式引入：
+```html
+<head>
+<link rel="stylesheet" th:href="@{app.css}">
+</head>
+
+```
