@@ -138,7 +138,7 @@ th：if
     <p th:if="*{isStudent}">是学生</p>  
 </div>
 ```
-
+Thymeleaf 中使用 `th:if` 或者 `th:unless` ，两者的意思恰好相反。
 
 th：each 循环
 ```
@@ -152,6 +152,14 @@ th：each 循环
 </div>
 ```
 关于 th:each="hobby，stat : *{hobbies}" 里 stat 常见用法
+**stat 对象包含以下属性：**
+
+- index，从 0 开始的角标
+- count，元素的个数，从 1 开始
+- size，总元素个数
+- current，当前遍历到的元素
+- even/odd，返回是否为奇偶，boolean 值
+- first/last，返回是否为第一或最后，boolean 值
 
 th：switch
 ```html
@@ -270,3 +278,34 @@ Thymeleaf 提供的全局对象：
 
 在页面中
 <p> 今天是: <span th:text="${#dates.format(today,'yyyy-MM-dd')}">2020-03-30</span> </p>
+
+
+运算
+需要注意：${}内部的是通过 OGNL 表达式引擎解析的，外部的才是通过 Thymeleaf 的引擎解析，因此运算符 尽量放在${}外进行，例如： <span th:text="${user.age}+2"></span>。
+
+算术运算：
+
+支持的算术运算符：+ - * / %
+
+比较运算：
+
+支持的比较运算：>, <, >= , <= ，但是>, <不能直接使用，因为 xml 会解析为标签，要使用别名。
+
+注意 == and !=不仅可以比较数值，类似于 equals 的功能。
+
+可以使用的别名：gt (>), lt (<), ge (>=), le (<=), not (!). Also eq (==), neq/ne (!=).
+
+三元运算：
+
+<span th:text="${user.sex} ? '男':'女'"></span>
+html
+1
+三元运算符的三个部分：conditon ? then : else
+
+condition：条件
+then：条件成立的结果
+else：不成立的结果
+其中的每一个部分都可以是 Thymeleaf 中的任意表达式。有的时候，我们取一个值可能为空，这个时候需要做非空判断，可以使用 表达式 ?: 默认值简写： <span th:text="${user.name} ?: '小红' "></span>，当前面的表达式值为 null 时，就会使用后面的默认值。 注意：?:之间没有空格。
+————————————————
+版权声明：本文为 CSDN 博主「龙源 lll」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/Lzy410992/article/details/115371017
