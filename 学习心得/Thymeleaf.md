@@ -197,3 +197,9 @@ th：insert 也可以，但是与 th：replace 不同
 <!--id com-->
 <div th:insert="~{component::com1}"></div>
 ```
+
+声明对象
+<footer th:fragment="com1">
+<!--/*@thymesVar id="user" type="cn.lookroot.loop.thymeleafdemo.vo.Uservo"*/-->
+<h2 th:text="${user.username"></h2>
+com 1
