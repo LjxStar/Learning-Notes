@@ -68,6 +68,7 @@ public class ShowController {
         User user = User.builder()  
                 .name("张三")  
                 .age(18)  
+                .sex("男")
                 .isStudent(true)  
                 .hobbies(List.of("reading", "traveling"))  
                 .birthday(LocalDate.of(2005, 1, 5))  
@@ -123,11 +124,15 @@ th：each 循环
 
 th：switch
 ```html
-<div th:object="${user}">  
-    <h2 th:text="*{name}"></h2>  
+    <p th:text="*{age}"></p>  
     <p th:text="*{isStudent}"></p>  
     <p th:text="*{birthday}"></p>  
     <p th:if="*{isStudent}">是学生</p>  
     <p th:each="hobby : *{hobbies}" th:text="${hobby}"></p>  
+    <p th:switch="*{sex}">  
+        <span th:case="'男'">男</span>  
+        <span th:case="'女'">女</span>  
+        <span th:case="*">未知</span>  
+    </p>  
 </div>
 ```
