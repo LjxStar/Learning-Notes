@@ -1,10 +1,42 @@
+Thymeleaf 是 Java 生态中常用的模板引擎，用于在服务端把数据填充到 HTML 页面，也是 Spring Boot 官方推荐的视图技术之一。
 
+> [!abstract] 阅读路线
+> **一、快速入门**：认识 Thymeleaf、准备环境、跑通第一个页面 →
+> **二、基本语法**：`th:*` 属性与表达式 →
+> **三、流程控制**：判断、循环、分支 →
+> **四、页面常用属性**：静态资源、内联、样式 →
+> **五、片段复用**：抽取公共页面 →
+> **六、内置对象**：日期、字符串、集合等工具。
 
-Thymeleaf 是 Java 生态中常用的模板引擎。它崇尚**自然模板**：模板本身是纯正的 HTML，脱离模板引擎也能在浏览器中直接打开预览。这依赖于 `th:*` 指令——表达式写在自定义属性里，静态环境下浏览器会直接忽略这些属性，因此不会报错。
+## 一、快速入门
 
-## 一、基础配置
+### 1.1 认识 Thymeleaf
 
-### 关闭缓存
+Thymeleaf 崇尚**自然模板**：模板本身是纯正的 HTML，脱离模板引擎也能在浏览器中直接打开预览。
+
+这依赖于 `th:*` 指令——表达式写在自定义属性里。静态环境下浏览器会直接忽略这些属性，因此不会报错；服务端渲染时再由 Thymeleaf 解析并替换页面内容。例如：
+
+```html
+<title th:text="${title}">默认的 title</title>
+```
+
+直接用浏览器打开时显示「默认的 title」；由 Thymeleaf 渲染后，`th:text` 的值会覆盖标签内的文字。
+
+### 1.2 环境准备
+
+Spring Boot 项目中引入 starter：
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-thymeleaf</artifactId>
+</dependency>
+```
+
+目录约定：
+
+- `resources/templates/`：存放模板页面（如 `index.html`）。
+- `resources/static/`：存放 CSS、JS、图片等静态资源。
 
 Thymeleaf 默认开启页面缓存，以提高并发能力，但会导致修改页面后不能立即生效。开发阶段建议关闭：
 
@@ -17,7 +49,9 @@ spring:
 > [!tip] 提示
 > 生产环境可以保持缓存开启，以获得更好的性能。
 
-## 二、第一个页面：控制器与模板
+### 1.3 第一个页面
+
+控制器准备数据并返回视图名：
 
 ```java
 @Controller
@@ -32,6 +66,8 @@ public class IndexController {
     }
 }
 ```
+
+模板 `index.html`：
 
 ```html
 <!DOCTYPE html>
@@ -48,32 +84,46 @@ public class IndexController {
 </html>
 ```
 
-注意标签里同时写了 `th:content` 和 `content`：**静态打开时显示 `content` 的默认值，服务端渲染后被 `th:content` 覆盖**，这正是自然模板的实现方式。
+注意标签里同时写了 `th:content` 和 `content`：**静态打开时显示 `content` 的默认值，服务端渲染后被 `th:content` 覆盖**，这正是自然模板的实现方式。同时要加上命名空间 `xmlns:th="http://www.thymeleaf.org"`。
 
-### `@Controller` 与 `@RestController`
+### 1.4 用到的 Spring MVC 知识
 
 - `@Controller`：标识 Spring MVC 控制器，方法默认返回**视图名称**，由视图解析器渲染页面。
 - `@RestController`：`@Controller` 与 `@ResponseBody` 的组合注解，返回值直接写入响应体，通常序列化为 JSON。
-
-### Model 的三种形式
 
 `Model` 用于在控制器和视图之间传递数据。Spring 主要提供三种方式：
 
 - `Model`、`ModelMap`：通过 `addAttribute("key", value)` 存放数据。
 - `ModelAndView`：同时封装数据和视图名，例如 `return new ModelAndView("index", "title", "标题")`。
 
-## 三、表达式基础
+## 二、基本语法：`th` 属性与表达式
 
-### 输出文本
+### 2.1 常用 `th` 属性速览
+
+| 属性 | 作用 |
+| --- | --- |
+| `th:text` / `th:utext` | 设置标签内文本（转义 / 不转义） |
+| `th:xxx` | 替换同名 HTML 属性，如 `th:content`、`th:href`、`th:src` |
+| `th:object` 与 `*{...}` | 选定对象并读取其属性 |
+| `th:if` / `th:unless` | 条件判断 |
+| `th:each` | 遍历集合 |
+| `th:switch` / `th:case` | 多分支选择 |
+| `th:inline` | 在 JS / CSS 中使用表达式 |
+| `th:classappend` | 追加 CSS 类 |
+| `th:fragment` / `th:insert` / `th:replace` | 片段复用 |
+
+所有表达式都写在 `th:*` 属性中，这是 Thymeleaf 自然模板的基础。
+
+### 2.2 变量输出：`th:text`、`th:utext` 与 `th:xxx`
 
 - `th:text`：设置标签内的文本。
-- `th:xxx`：直接替换 HTML 属性，如 `th:content`、`th:href`、`th:src` 等。
+- `th:xxx`：直接替换对应的 HTML 属性。
 
 `th:text` 出于安全考虑会对内容做转义，防止 HTML 注入。例如 `<p>你好</p>` 会输出为 `&lt;p&gt;你好&lt;/p&gt;`。如果想输出原始 HTML，改用 `th:utext`。
 
-### OGNL 语法糖
+### 2.3 OGNL 表达式：取值、属性与方法
 
-获取变量通常用 `对象.属性名`。如果属性名本身也是变量，可以用类似 JS 的写法：
+获取变量通常用 `对象.属性名`。如果属性名本身也是变量，可以用类似 JS 的语法糖：
 
 ```html
 <span th:text="${user.name}"></span>
@@ -81,14 +131,14 @@ public class IndexController {
 <span th:text="${user['name']}"></span>
 ```
 
-### 字符串拼接
+OGNL 也支持方法调用，例如拆分姓名（假设 `user.name = "John Smith"`）：
 
 ```html
-<p th:text="'前缀' + ${title}"></p>
-<p th:text="|前缀${title}|"></p>
+<p th:text="${user.name.split(' ')[0]}">John</p>
+<p th:text="${user.name.split(' ')[1]}">Smith</p>
 ```
 
-## 四、对象与选择变量
+### 2.4 选择变量：`th:object` 与 `*{...}`
 
 定义一个对象：
 
@@ -150,18 +200,38 @@ public class ShowController {
 > [!note] `${...}` 与 `*{...}`
 > `${...}` 从上下文（Model）取值，`*{...}` 从最近一层 `th:object` 选定的对象中取值。
 
-OGNL 支持方法调用，例如拆分姓名（假设 `name = "John Smith"`）：
+### 2.5 字符串拼接与运算符
+
+字符串拼接有两种写法：
 
 ```html
-<div th:object="${user}">
-    <p>FirstName: <span th:text="*{name.split(' ')[0]}">John</span></p>
-    <p>LastName: <span th:text="*{name.split(' ')[1]}">Smith</span></p>
-</div>
+<p th:text="'前缀' + ${title}"></p>
+<p th:text="|前缀${title}|"></p>
 ```
 
-## 五、流程控制
+运算符：
 
-### 条件判断：`th:if` / `th:unless`
+> [!warning] 注意
+> `${}` 内部由 OGNL 引擎解析，外部才由 Thymeleaf 解析，因此运算符尽量写在 `${}` 外面，例如 `${user.age} + 2`。
+
+- **算术运算**：`+`、`-`、`*`、`/`、`%`
+- **比较运算**：`>`、`<`、`>=`、`<=` 不能直接使用（会被 XML 解析为标签），要用别名：`gt`、`lt`、`ge`、`le`；另有 `eq`（==）、`neq`/`ne`（!=）、`not`（!）。`==` 和 `!=` 类似 `equals`，可用于比较非数值类型。
+- **逻辑运算**：`and`、`or`、`not`
+- **三元运算**：`condition ? then : else`
+
+```html
+<span th:text="${user.sex} ? '男' : '女'"></span>
+```
+
+取值可能为空时，可以用 `?:` 指定默认值（注意 `?:` 之间没有空格）：
+
+```html
+<span th:text="${user.name} ?: '小红'"></span>
+```
+
+## 三、流程控制
+
+### 3.1 条件判断：`th:if` / `th:unless`
 
 两者含义相反：`th:if` 条件成立时显示，`th:unless` 条件不成立时显示。
 
@@ -173,7 +243,7 @@ OGNL 支持方法调用，例如拆分姓名（假设 `name = "John Smith"`）�
 </div>
 ```
 
-### 循环：`th:each`
+### 3.2 循环：`th:each`
 
 ```html
 <div th:object="${user}">
@@ -192,7 +262,7 @@ OGNL 支持方法调用，例如拆分姓名（假设 `name = "John Smith"`）�
 | `even` / `odd` | 是否为偶数 / 奇数位 |
 | `first` / `last` | 是否为第一个 / 最后一个元素 |
 
-### 分支：`th:switch`
+### 3.3 分支：`th:switch`
 
 `th:case="*"` 表示默认分支。
 
@@ -204,9 +274,9 @@ OGNL 支持方法调用，例如拆分姓名（假设 `name = "John Smith"`）�
 </p>
 ```
 
-## 六、静态资源与内联
+## 四、页面常用属性
 
-### 引入静态资源
+### 4.1 引入静态资源
 
 放在 `resources/static` 下的文件，可以用 `@{...}` 引入：
 
@@ -219,7 +289,7 @@ OGNL 支持方法调用，例如拆分姓名（假设 `name = "John Smith"`）�
 </body>
 ```
 
-### `th:inline`：渲染动态 JS / CSS
+### 4.2 `th:inline`：渲染动态 JS / CSS
 
 ```html
 <script th:inline="javascript">
@@ -234,7 +304,7 @@ OGNL 支持方法调用，例如拆分姓名（假设 `name = "John Smith"`）�
 
 `th:inline="javascript"` 开启 JS 内联模式，`/*[[${user}]]*/` 是 Thymeleaf 的标记：服务端渲染时 `${user}` 会被替换为对应对象的 JSON；如果直接在浏览器打开，这只是一个 JS 注释，不会报错。后面的 `{}` 是静态预览时的兜底值。CSS 内联的用法类似。
 
-### `th:classappend`：追加样式类
+### 4.3 `th:classappend`：追加样式类
 
 `th:classappend` 不会覆盖已有的 `class`，而是在后面追加：
 
@@ -242,7 +312,7 @@ OGNL 支持方法调用，例如拆分姓名（假设 `name = "John Smith"`）�
 <p class="info" th:classappend="${user.isStudent} ? ' active'">学生信息</p>
 ```
 
-## 七、片段复用
+## 五、片段复用
 
 在 `templates` 下新建 `component.html`：
 
@@ -302,7 +372,7 @@ OGNL 支持方法调用，例如拆分姓名（假设 `name = "John Smith"`）�
 </footer>
 ```
 
-## 八、内置对象
+## 六、内置对象
 
 环境相关对象：
 
@@ -344,27 +414,7 @@ public String date(Model model) {
 <p>今天是：<span th:text="${#dates.format(today, 'yyyy-MM-dd')}">2020-03-30</span></p>
 ```
 
-## 九、运算符
-
-> [!warning] 注意
-> `${}` 内部由 OGNL 引擎解析，外部才由 Thymeleaf 解析，因此运算符尽量写在 `${}` 外面，例如 `${user.age} + 2`。
-
-- **算术运算**：`+`、`-`、`*`、`/`、`%`
-- **比较运算**：`>`、`<`、`>=`、`<=` 不能直接使用（会被 XML 解析为标签），要用别名：`gt`、`lt`、`ge`、`le`；另有 `eq`（==）、`neq`/`ne`（!=）、`not`（!）。`==` 和 `!=` 类似 `equals`，可用于比较非数值类型。
-- **逻辑运算**：`and`、`or`、`not`
-- **三元运算**：`condition ? then : else`
-
-```html
-<span th:text="${user.sex} ? '男' : '女'"></span>
-```
-
-取值可能为空时，可以用 `?:` 指定默认值（注意 `?:` 之间没有空格）：
-
-```html
-<span th:text="${user.name} ?: '小红'"></span>
-```
-
-## 参考
+## 七、参考
 
 > 版权声明：本文为 CSDN 博主「龙源 lll」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。
 > 原文链接：https://blog.csdn.net/Lzy410992/article/details/115371017
