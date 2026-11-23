@@ -146,3 +146,19 @@ th：switch
 </head>
 
 ```
+
+th:inline
+
+渲染动态 js
+```
+<body>
+<script th:inline="javascript">const user =/*[[${user}]]*/{};console.log(user)</script>
+</body>
+
+```
+
+`th:inline="javascript"`：开启 Thymeleaf 的 JS 内联模式，让脚本里面可以解析 Thymeleaf 表达式。
+`/*[[${user}]]*/`：Thymeleaf 标记。服务端渲染时，`${user}` 会被替换成后端 model 里 `user` 对象的 JSON；**如果模板直接在浏览器打开、不经过 Thymeleaf 渲染，这段就只是 JS 注释，不会报错**。
+后面的 `{}` 是兜底：渲染失败时，`user` 默认为空对象。
+
+或者渲染动态 css
