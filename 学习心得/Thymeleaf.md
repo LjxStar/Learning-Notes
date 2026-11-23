@@ -182,7 +182,10 @@ component.html
 ```
 
 th:fragmen
-在需要使用的时候 使用 th：replace
+在需要使用的时候 使用 th：replace 来引入
 ```
 <div th:replace="~{component::com1}"></div>
 ```
+
+th：insert 也可以，但是与 th：replace 不同
+他不会覆盖外层的<div>
