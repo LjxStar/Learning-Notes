@@ -50,6 +50,7 @@ Spring 提供了三种主要的模型表示方式：**Model**、**ModelMap** 和
 public class User {  
     private String name;  
     private int age;  
+    private String sex;
     private boolean isStudent;  
     private List<String> hobbies;  
     private LocalDate birthday;  
@@ -113,6 +114,17 @@ th：each 循环
 <div th:object="${user}">  
     <h2 th:text="*{name}"></h2>  
     <p th:text="*{age}"></p>  
+    <p th:text="*{isStudent}"></p>  
+    <p th:text="*{birthday}"></p>  
+    <p th:if="*{isStudent}">是学生</p>  
+    <p th:each="hobby : *{hobbies}" th:text="${hobby}"></p>  
+</div>
+```
+
+th：switch
+```html
+<div th:object="${user}">  
+    <h2 th:text="*{name}"></h2>  
     <p th:text="*{isStudent}"></p>  
     <p th:text="*{birthday}"></p>  
     <p th:if="*{isStudent}">是学生</p>  
