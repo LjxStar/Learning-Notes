@@ -404,8 +404,3 @@ public String date(Model model) {
 ```html
 <p>今天是：<span th:text="${#dates.format(today, 'yyyy-MM-dd')}">2020-03-30</span></p>
 ```
-
-## 七、参考
-
-> 版权声明：本文为 CSDN 博主「龙源 lll」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。
-> 原文链接：https://blog.csdn.net/Lzy410992/article/details/115371017
